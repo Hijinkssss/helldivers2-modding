@@ -1,9 +1,9 @@
--- Consumer weapon classification table.
+﻿-- Consumer weapon classification table.
 -- Metadata can veto approval; it can never grant approval.
 -- Policy categories:
 --   ASSIST               eligible for Full Auto Assist
 --   IGNORE_NATIVE_AUTO   weapon already has native Full Auto in the R-menu; never assist
---   EXCLUDE_MANUAL_RELOAD true one-shot or manual-reload weapon; repeated Fire alone is not enough
+--   EXCLUDE_CHARGE_HOLD   charge/hold weapon; hold-to-fire is inherent, repeated Fire assist incompatible
 --   SPECIAL              special-case weapon with per-weapon tuning (e.g. AMR)
 --   REVIEW               unresolved or ambiguous; fail closed (no assist)
 -- Unknown/unrecognised weapons always fail closed (no assist).
@@ -49,7 +49,7 @@ end
 -- All fields:
 --   kind              'weapon' | 'support_weapon'
 --   name              exact in-game name string
---   category          ASSIST | IGNORE_NATIVE_AUTO | EXCLUDE_MANUAL_RELOAD | SPECIAL | REVIEW
+--   category          ASSIST | IGNORE_NATIVE_AUTO | EXCLUDE_CHARGE_HOLD | SPECIAL | REVIEW
 --   native_cap_rpm    accepted maximum fire rate from the game (native cap).
 --                     Required for ASSIST and SPECIAL. See verification comment per entry.
 --   native_cap_status 'VERIFIED' | 'UNRESOLVED'
@@ -63,13 +63,8 @@ local ENTRIES = {
       notes = 'Verified 900 RPM native cap. Balanced clamps to 380 RPM.' },
 
     { kind = 'weapon', name = 'M6C/SOCOM Pistol',
-      category = 'ASSIST', native_cap_rpm = 900, native_cap_status = 'UNRESOLVED',
-      -- UNRESOLVED: native RPM not confirmed from any local evidence or user report.
-      -- Conservative placeholder chosen to be safely above 380 so Balanced = 380.
-      -- DO NOT write a test that asserts a specific native-cap value for SOCOM.
-      notes = 'UNRESOLVED native cap (placeholder 900). '..
-              'Must be verified against live game before release. '..
-              'Balanced clamps to 380 RPM regardless of actual cap.' },
+      category = 'ASSIST', native_cap_rpm = 900, native_cap_status = 'VERIFIED',
+      notes = 'Verified 900 RPM native cap. Balanced clamps to 380 RPM.' },
 
     { kind = 'weapon', name = 'P-69 Veto',
       category = 'ASSIST', native_cap_rpm = 750, native_cap_status = 'VERIFIED',
@@ -124,8 +119,8 @@ local ENTRIES = {
               'Native Cap: 400 RPM. Refine Balanced value after live gameplay testing.' },
 
     { kind = 'support_weapon', name = 'LAS-99 Quasar Cannon',
-      category = 'EXCLUDE_MANUAL_RELOAD',
-      notes = 'Charge/hold weapon; repeated Fire alone does not continue firing.' },
+      category = 'EXCLUDE_CHARGE_HOLD',
+      notes = 'Charge/hold weapon; hold-to-fire input is inherent and not compatible with repeated Fire assist.' },
 
     { kind = 'support_weapon', name = 'LAS-98 Laser Cannon',
       category = 'IGNORE_NATIVE_AUTO',

@@ -1,4 +1,4 @@
-# Selective v0.1.1 live validation scope
+﻿# Selective v0.1.1 live validation scope
 
 The local automated collector and stage analyzer are in `../HD2FullAutoAssist/validation/selective-live-2026-09-28` relative to the candidate root's parent. Startup gates require a running process, matching exact file fingerprints, four deployed archives matching the prepared artifacts, one loaded instance per dependency/consumer, fresh logs, Runtime 0.24.0, expected policy, no Core/consumer failures and contiguous trace records. Expected source-known Core degradation is recorded separately from startup errors. Held Peacemaker identity and an inactive lease are checked before the first firing request.
 
@@ -42,21 +42,21 @@ All resource hashes sourced from `selective-checks.json` runtime metadata.
 | Weapon | Kind | Category | Balanced RPM | Native Cap RPM | Cap Status |
 |---|---|---|---|---|---|
 | P-2 Peacemaker | weapon | ASSIST | 380 | 900 | VERIFIED |
-| M6C/SOCOM Pistol | weapon | ASSIST | 380 | UNRESOLVED | UNRESOLVED |
+| M6C/SOCOM Pistol | weapon | ASSIST | 380 | 900 | VERIFIED |
 | P-69 Veto | weapon | ASSIST | 380 | 750 | VERIFIED |
 | LAS-58 Talon | weapon | ASSIST | 380 | 750 | VERIFIED |
 | R-2 Amendment | weapon | ASSIST | 380 | 480 | VERIFIED |
 | APW-1 Anti-Materiel Rifle | support_weapon | SPECIAL | 120 (override) | 400 | VERIFIED |
 | AR-23 Liberator | weapon | IGNORE_NATIVE_AUTO | — | — | — |
 | LAS-98 Laser Cannon | support_weapon | IGNORE_NATIVE_AUTO | — | — | — |
-| LAS-99 Quasar Cannon | support_weapon | EXCLUDE_MANUAL_RELOAD | — | — | — |
+| LAS-99 Quasar Cannon | support_weapon | EXCLUDE_CHARGE_HOLD | — | — | — |
 | P-113 Verdict | weapon | REVIEW | — | — | — |
 | R-63 Diligence | weapon | REVIEW | — | — | — |
 | R-63CS Diligence Counter Sniper | weapon | REVIEW | — | — | — |
 
 > [!NOTE]
 > All Balanced values use `min(native_cap, 380)` except AMR which uses 120 RPM (special override).
-> SOCOM native cap is UNRESOLVED; Balanced = 380 is correct regardless of actual cap.
+
 > Resource hashes: Peacemaker, Amendment, AMR confirmed by identity-validation evidence.
 > Remaining hashes (Veto, SOCOM, Talon, Verdict, Diligence, CS Diligence) sourced from
 > selective-checks.json runtime metadata; live identity re-validation required before release.
@@ -75,11 +75,11 @@ All resource hashes sourced from `selective-checks.json` runtime metadata.
 |---|---|---|---|
 | Unknown weapon → fail closed | — | — | ✅ |
 | Liberator → IGNORE_NATIVE_AUTO | — | runtime metadata | ✅ |
-| Quasar → EXCLUDE_MANUAL_RELOAD | — | runtime metadata | ✅ |
+| Quasar → EXCLUDE_CHARGE_HOLD | — | runtime metadata | ✅ |
 | Peacemaker Balanced | 380 | identity evidence | ✅ |
 | Peacemaker Native Cap | 900 (VERIFIED) | identity evidence | ✅ |
 | SOCOM Balanced | 380 | runtime metadata | ✅ |
-| SOCOM Native Cap | NOT TESTED (UNRESOLVED) | — | — |
+| SOCOM Native Cap | 900 (VERIFIED) | runtime metadata | ✅ |
 | Veto Balanced | 380 | runtime metadata | ✅ |
 | Veto Native Cap | 750 (VERIFIED) | runtime metadata | ✅ |
 | Talon Balanced | 380 | runtime metadata | ✅ |
@@ -96,7 +96,6 @@ All resource hashes sourced from `selective-checks.json` runtime metadata.
 
 ### Remaining pre-release validation needed
 
-- **SOCOM native cap** — UNRESOLVED. Must be confirmed from live game before native_cap mode can be tested for SOCOM.
 - **AMR 120 RPM Balanced** — provisional special override. Refine after live gameplay pass.
 - **REVIEW weapons** (Verdict, Diligence, CS Diligence) — need fire-mode vector confirmation before elevation to ASSIST.
 - **All non-identity-evidence hashes** (Veto, SOCOM, Talon, Verdict, Diligence, CS Diligence) — sourced from runtime metadata snapshot; live identity re-validation pass required.

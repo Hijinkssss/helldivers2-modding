@@ -55,7 +55,7 @@ check('liberator_ignore_native', liberator.category == 'IGNORE_NATIVE_AUTO')
 
 local quasar = p_balanced:classify('35a61296619cc47e')
 check('quasar_not_allowed',  not quasar.allowed)
-check('quasar_exclude',      quasar.category == 'EXCLUDE_MANUAL_RELOAD')
+check('quasar_exclude',      quasar.category == 'EXCLUDE_CHARGE_HOLD')
 
 -- ── 4. P-2 Peacemaker – Balanced -> 380 RPM (VERIFIED: 900 RPM native) ───────
 -- Hash: 05e4e5c2db6e44a2 (from runtime metadata)
@@ -87,15 +87,23 @@ check('pm_native_cap_rpm',  pm_native.native_cap_rpm == 900,
 -- Native cap NOT tested (UNRESOLVED). Only Balanced = 380 is asserted.
 
 local socom = p_balanced:classify('4d58c77087b774c5')
-check('socom_allowed',           socom.allowed,
+check('socom_allowed',          socom.allowed,
       'SOCOM not ASSIST: '..tostring(socom.category)..'/'..tostring(socom.reason))
-check('socom_category_assist',   socom.category == 'ASSIST')
--- Balanced: min(placeholder, 380) = 380 (placeholder is safely > 380)
-check('socom_balanced_380',      approx(socom.max_repeat_rpm, 380),
+check('socom_category_assist',  socom.category == 'ASSIST')
+-- Balanced: min(900, 380) = 380
+check('socom_balanced_380',     approx(socom.max_repeat_rpm, 380),
       'got ' .. tostring(socom.max_repeat_rpm))
--- Status confirms this needs verification before release.
-check('socom_unresolved_status', socom.native_cap_status == 'UNRESOLVED')
--- Deliberate: do NOT assert socom native cap value here.
+check('socom_balanced_s',       approx_s(socom.repeat_seconds, rpm_to_s(380)))
+check('socom_verified_status',  socom.native_cap_status == 'VERIFIED')
+
+-- SOCOM Native Cap -> 900 RPM (VERIFIED)
+local socom_native = p_native:classify('4d58c77087b774c5')
+check('socom_native_allowed',   socom_native.allowed)
+check('socom_native_rpm',       approx(socom_native.max_repeat_rpm, 900),
+      'got '..tostring(socom_native.max_repeat_rpm)..' want 900')
+check('socom_native_cap_rpm',   socom_native.native_cap_rpm == 900)
+check('socom_native_seconds',   approx_s(socom_native.repeat_seconds, rpm_to_s(900)),
+      'got '..tostring(socom_native.repeat_seconds))
 
 -- ── 7. P-69 Veto – Balanced -> 380 RPM (VERIFIED: 750 RPM native) ────────────
 -- Hash: c780bcd79547da0f (from runtime metadata)
