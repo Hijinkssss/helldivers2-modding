@@ -1,0 +1,1354 @@
+[
+  {
+    "name": "atlas",
+    "module": "helldivers2.exe",
+    "size": 337,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "4c8bdc49895b1049896b18565741564883ec3048b8dfde6a8797b4c0ea49894b08498943204d8d4bd8488b05"
+      },
+      {
+        "offset": 48,
+        "hex": "498bd84c8bf24d8d4308498d5320488b88f8030000e8"
+      },
+      {
+        "offset": 74,
+        "hex": "33ed448bd5488b4020488b4810448b59284585db0f848a000000488b7920488b35"
+      },
+      {
+        "offset": 111,
+        "hex": "90418bca488b0ccf4885c9746a4c8b8ef803000048896c24504139a9b0020000744833d2488bc148c1e82041f7b1b40200004d8b89a00200004c8d045243837cc110fe742581faffffff7f741d0f1f40008bc2488d1440493b0cd1744b418b54d11081faffffff7f75e7488d4c2450488b094885c9753b41ffc2453bd3728249892e33c048892bc743080000803fc7430c0000803f488b5c2458488b6c24604883c430415e5f5ec3498d4908488d0cd1ebbd488b014989068b4118f30f10411cf30f104920f30f1051248903b801000000f30f114304f30f114b08f30f11530cebb3"
+      }
+    ],
+    "locations": {
+      "1787151926:60755968": "0x342a00",
+      "1789475235:61128704": "0x3439d0",
+      "1790149348:60719104": "0x3439d0"
+    },
+    "field_specs": [
+      {
+        "name": "r29",
+        "displacement_offset": 44,
+        "instruction_end": 48,
+        "kind": "data"
+      },
+      {
+        "name": "c45",
+        "displacement_offset": 70,
+        "instruction_end": 74,
+        "kind": "code"
+      },
+      {
+        "name": "r68",
+        "displacement_offset": 107,
+        "instruction_end": 111,
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "name": "registration",
+    "module": "helldivers2.exe",
+    "size": 14,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "488d05"
+      },
+      {
+        "offset": 7,
+        "hex": "488905"
+      }
+    ],
+    "locations": {
+      "1787151926:60755968": "0x3431bc",
+      "1789475235:61128704": "0x34418c",
+      "1790149348:60719104": "0x34418c"
+    },
+    "field_specs": [
+      {
+        "name": "query",
+        "displacement_offset": 3,
+        "instruction_end": 7,
+        "kind": "code"
+      },
+      {
+        "name": "slot",
+        "displacement_offset": 10,
+        "instruction_end": 14,
+        "kind": "global"
+      }
+    ]
+  },
+  {
+    "name": "hud",
+    "module": "game.dll",
+    "size": 43,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "488b1d"
+      },
+      {
+        "offset": 7,
+        "hex": "488d8b"
+      },
+      {
+        "offset": 14,
+        "hex": "e8"
+      },
+      {
+        "offset": 19,
+        "hex": "ba01000000c683"
+      },
+      {
+        "offset": 30,
+        "hex": "01488d8b"
+      },
+      {
+        "offset": 38,
+        "hex": "e8"
+      }
+    ],
+    "locations": {
+      "1787171630:61255680": "0x1576e14",
+      "1789487892:74907648": "0x1826dc5",
+      "1790161983:74727424": "0x1826e95"
+    },
+    "field_specs": [
+      {
+        "name": "ui_global",
+        "displacement_offset": 3,
+        "instruction_end": 7,
+        "kind": "global"
+      },
+      {
+        "name": "owner_offset",
+        "displacement_offset": 10,
+        "instruction_end": 14,
+        "kind": "offset"
+      },
+      {
+        "name": "ce",
+        "displacement_offset": 15,
+        "instruction_end": 19,
+        "kind": "code"
+      },
+      {
+        "name": "flag_offset",
+        "displacement_offset": 26,
+        "instruction_end": 31,
+        "kind": "offset"
+      },
+      {
+        "name": "owner_check",
+        "displacement_offset": 34,
+        "instruction_end": 38,
+        "kind": "offset"
+      },
+      {
+        "name": "c26",
+        "displacement_offset": 39,
+        "instruction_end": 43,
+        "kind": "code"
+      }
+    ],
+    "rva": "0x1826dc5",
+    "pieces_match": true,
+    "raw_match": true,
+    "fields": {
+      "ui_global": "0x346d538",
+      "owner_offset": "0x3e8e38",
+      "ce": "0x17b9040",
+      "flag_offset": "0x3eaed2",
+      "owner_check": "0x3e8e38",
+      "c26": "0x17b9bf0"
+    },
+    "owner": "0x1825e70",
+    "owner_xrefs": [
+      {
+        "at": "0x12ec040",
+        "owner": "0x12ebc50",
+        "kind": "call",
+        "asm": "call 0x1825e70"
+      },
+      {
+        "at": "0x12ec104",
+        "owner": "0x12ebc50",
+        "kind": "call",
+        "asm": "call 0x1825e70"
+      }
+    ]
+  },
+  {
+    "name": "dot",
+    "module": "game.dll",
+    "size": 129,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "498dbd"
+      },
+      {
+        "offset": 7,
+        "hex": "8bc10fbae90e0fbaf00e84d2ba030000000f44c841894d00488bcfe8"
+      },
+      {
+        "offset": 39,
+        "hex": "4c897d67498bc74889871401000048bb083d0252d6627267c745670000803f4533c0c7456b0000803f488bd3488b4567488bcf4889871c010000c78710010000ffffffff4c89bf480100004c89bf50010000e8"
+      },
+      {
+        "offset": 126,
+        "hex": "488bcf"
+      }
+    ],
+    "locations": {
+      "1787171630:61255680": "0x1506012",
+      "1789487892:74907648": "0x17b4f92",
+      "1790161983:74727424": "0x17b5062"
+    },
+    "field_specs": [
+      {
+        "name": "widget_offset",
+        "displacement_offset": 3,
+        "instruction_end": 7,
+        "kind": "offset"
+      },
+      {
+        "name": "c22",
+        "displacement_offset": 35,
+        "instruction_end": 39,
+        "kind": "code"
+      },
+      {
+        "name": "c79",
+        "displacement_offset": 122,
+        "instruction_end": 126,
+        "kind": "code"
+      }
+    ],
+    "rva": "0x17b4f92",
+    "pieces_match": true,
+    "raw_match": true,
+    "fields": {
+      "widget_offset": "0x848",
+      "c22": "0x14467b0",
+      "c79": "0x144f770"
+    },
+    "owner": "0x17b4760",
+    "owner_xrefs": [
+      {
+        "at": "0x12e98f4",
+        "owner": "0x12e96d0",
+        "kind": "call",
+        "asm": "call 0x17b4760"
+      }
+    ]
+  },
+  {
+    "name": "ring",
+    "module": "game.dll",
+    "size": 178,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "498d9d"
+      },
+      {
+        "offset": 7,
+        "hex": "8bc10fbae90e0fbaf00e84d2ba030000000f44c841890e488bcbe8"
+      },
+      {
+        "offset": 38,
+        "hex": "4c897d67498bc74889831401000048ba907c54d435c7c31fc745670000803f4533c0c7456b0000803f488bcb488b45674889831c010000c78310010000ffffffff4c89bb480100004c89bb50010000e8"
+      },
+      {
+        "offset": 122,
+        "hex": "488bcbe8"
+      },
+      {
+        "offset": 130,
+        "hex": "4885c074114c8d05"
+      },
+      {
+        "offset": 142,
+        "hex": "ba9e200177e8"
+      },
+      {
+        "offset": 152,
+        "hex": "488bcbe8"
+      },
+      {
+        "offset": 160,
+        "hex": "4885c07466e8"
+      },
+      {
+        "offset": 170,
+        "hex": "488bd0e8"
+      }
+    ],
+    "locations": {
+      "1787171630:61255680": "0x1506ad1",
+      "1789487892:74907648": "0x17b5a51",
+      "1790161983:74727424": "0x17b5b21"
+    },
+    "field_specs": [
+      {
+        "name": "widget_offset",
+        "displacement_offset": 3,
+        "instruction_end": 7,
+        "kind": "offset"
+      },
+      {
+        "name": "c21",
+        "displacement_offset": 34,
+        "instruction_end": 38,
+        "kind": "code"
+      },
+      {
+        "name": "c75",
+        "displacement_offset": 118,
+        "instruction_end": 122,
+        "kind": "code"
+      },
+      {
+        "name": "c7d",
+        "displacement_offset": 126,
+        "instruction_end": 130,
+        "kind": "code"
+      },
+      {
+        "name": "r87",
+        "displacement_offset": 138,
+        "instruction_end": 142,
+        "kind": "data"
+      },
+      {
+        "name": "c93",
+        "displacement_offset": 148,
+        "instruction_end": 152,
+        "kind": "code"
+      },
+      {
+        "name": "c9b",
+        "displacement_offset": 156,
+        "instruction_end": 160,
+        "kind": "code"
+      },
+      {
+        "name": "ca5",
+        "displacement_offset": 166,
+        "instruction_end": 170,
+        "kind": "code"
+      },
+      {
+        "name": "cad",
+        "displacement_offset": 174,
+        "instruction_end": 178,
+        "kind": "code"
+      }
+    ],
+    "rva": "0x17b5a51",
+    "pieces_match": true,
+    "raw_match": true,
+    "fields": {
+      "widget_offset": "0xc50",
+      "c21": "0x14467b0",
+      "c75": "0x144f770",
+      "c7d": "0x144f650",
+      "r87": "0x21e2c00",
+      "c93": "0x1449830",
+      "c9b": "0x144f650",
+      "ca5": "0x144f650",
+      "cad": "0x1449370"
+    },
+    "owner": "0x17b4760",
+    "owner_xrefs": [
+      {
+        "at": "0x12e98f4",
+        "owner": "0x12e96d0",
+        "kind": "call",
+        "asm": "call 0x17b4760"
+      }
+    ]
+  },
+  {
+    "name": "normal",
+    "module": "game.dll",
+    "size": 83,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "488b0d"
+      },
+      {
+        "offset": 7,
+        "hex": "0f2805"
+      },
+      {
+        "offset": 14,
+        "hex": "0f280d"
+      },
+      {
+        "offset": 21,
+        "hex": "0f1145c0486391"
+      },
+      {
+        "offset": 32,
+        "hex": "0f2805"
+      },
+      {
+        "offset": 39,
+        "hex": "0f114dd04889442440488d0c5248c7442460000000000f1145e08b448dc8f20f10448dc0f20f114590894598"
+      }
+    ],
+    "locations": {
+      "1787171630:61255680": "0x15086a1",
+      "1789487892:74907648": "0x17b7621",
+      "1790161983:74727424": "0x17b76f1"
+    },
+    "field_specs": [
+      {
+        "name": "settings_global",
+        "displacement_offset": 3,
+        "instruction_end": 7,
+        "kind": "global"
+      },
+      {
+        "name": "palette1",
+        "displacement_offset": 10,
+        "instruction_end": 14,
+        "kind": "data"
+      },
+      {
+        "name": "palette2",
+        "displacement_offset": 17,
+        "instruction_end": 21,
+        "kind": "data"
+      },
+      {
+        "name": "colour_offset",
+        "displacement_offset": 28,
+        "instruction_end": 32,
+        "kind": "offset"
+      },
+      {
+        "name": "palette3",
+        "displacement_offset": 35,
+        "instruction_end": 39,
+        "kind": "data"
+      }
+    ],
+    "rva": "0x17b7621",
+    "pieces_match": true,
+    "raw_match": true,
+    "fields": {
+      "settings_global": "0x3326340",
+      "palette1": "0x23ca5e0",
+      "palette2": "0x23c9e60",
+      "colour_offset": "0xac4c0",
+      "palette3": "0x23c86d0"
+    },
+    "owner": "0x17b7120",
+    "owner_xrefs": [
+      {
+        "at": "0x17b702b",
+        "owner": "0x17b6490",
+        "kind": "call",
+        "asm": "call 0x17b7120"
+      }
+    ]
+  },
+  {
+    "name": "blocked",
+    "module": "game.dll",
+    "size": 81,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "498b4050488d14c9807cd011007416f20f1005"
+      },
+      {
+        "offset": 23,
+        "hex": "8b05"
+      },
+      {
+        "offset": 29,
+        "hex": "f20f114590894598440fb6642420488d0d"
+      },
+      {
+        "offset": 50,
+        "hex": "4584e4488d4590488d542430480f45c1498d8f40040000f20f1018448b6808"
+      }
+    ],
+    "locations": {
+      "1787171630:61255680": "0x150896c",
+      "1789487892:74907648": "0x17b78ec",
+      "1790161983:74727424": "0x17b79bc"
+    },
+    "field_specs": [
+      {
+        "name": "rf",
+        "displacement_offset": 19,
+        "instruction_end": 23,
+        "kind": "data"
+      },
+      {
+        "name": "r17",
+        "displacement_offset": 25,
+        "instruction_end": 29,
+        "kind": "data"
+      },
+      {
+        "name": "r2b",
+        "displacement_offset": 46,
+        "instruction_end": 50,
+        "kind": "data"
+      }
+    ],
+    "rva": "0x17b78ec",
+    "pieces_match": true,
+    "raw_match": true,
+    "fields": {
+      "rf": "0x21e1fd8",
+      "r17": "0x21e1fe0",
+      "r2b": "0x21e1fd8"
+    },
+    "owner": "0x17b7120",
+    "owner_xrefs": [
+      {
+        "at": "0x17b702b",
+        "owner": "0x17b6490",
+        "kind": "call",
+        "asm": "call 0x17b7120"
+      }
+    ]
+  },
+  {
+    "name": "draw",
+    "module": "game.dll",
+    "size": 187,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "8b97100100004c8d872c010000488b05"
+      },
+      {
+        "offset": 20,
+        "hex": "4c8d8f240100004c8d5f2483faff7556488b88d00000000fb797bc000000488b87f80000004c894424404c8b9138010000488d4c24504c8b87480100004c894c24384533c948894c2430488b48084c895c242889542420488d576441ffd2898710010000eb51488b8ff80000004c8b90d00000000fb787bc0000004c894424484c8d442450488b49084c894c24404c8b8f480100004c894424384c8d47644c895c243089442428"
+      }
+    ],
+    "locations": {
+      "1787171630:61255680": "0x119d894",
+      "1789487892:74907648": "0x143ece4",
+      "1790161983:74727424": "0x143ed74"
+    },
+    "field_specs": [
+      {
+        "name": "rd",
+        "displacement_offset": 16,
+        "instruction_end": 20,
+        "kind": "data"
+      }
+    ],
+    "rva": "0x143ece4",
+    "pieces_match": true,
+    "raw_match": true,
+    "fields": {
+      "rd": "0x3326308"
+    },
+    "owner": "0x143ebf0",
+    "owner_xrefs": [
+      {
+        "at": "0x144e020",
+        "owner": "0x144de90",
+        "kind": "branch",
+        "asm": "jmp 0x143ebf0"
+      }
+    ]
+  },
+  {
+    "name": "clip",
+    "module": "game.dll",
+    "size": 161,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "488bc4534881ecf0000000f30f10496c0f57c0f30f106164488bd9f30f10597c0f2970e8f30f107174f30f59f0f30f59d80f2978d8f30f10b98c000000440f2940c80f28d7440f2948b8440f2950a8f3440f109184000000440f295898410f28eaf3440f10999c000000440f296088440f28e4488b05"
+      },
+      {
+        "offset": 122,
+        "hex": "440f296c2470440f29742460440f297c2450f3440f10b994000000f3440f107124f3440f106928"
+      }
+    ],
+    "locations": {
+      "1787171630:61255680": "0x11a8c50",
+      "1789487892:74907648": "0x144a0a0",
+      "1790161983:74727424": "0x144a130"
+    },
+    "field_specs": [
+      {
+        "name": "r73",
+        "displacement_offset": 118,
+        "instruction_end": 122,
+        "kind": "data"
+      }
+    ],
+    "rva": "0x144a0a0",
+    "pieces_match": true,
+    "raw_match": true,
+    "fields": {
+      "r73": "0x3326308"
+    },
+    "owner": "0x144a0a0",
+    "owner_xrefs": [
+      {
+        "at": "0x143b3c8",
+        "owner": "0x143b0d0",
+        "kind": "call",
+        "asm": "call 0x144a0a0"
+      },
+      {
+        "at": "0x143d946",
+        "owner": "0x143d4d0",
+        "kind": "call",
+        "asm": "call 0x144a0a0"
+      },
+      {
+        "at": "0x1440772",
+        "owner": "0x14402d0",
+        "kind": "call",
+        "asm": "call 0x144a0a0"
+      },
+      {
+        "at": "0x1442a72",
+        "owner": "0x1442580",
+        "kind": "call",
+        "asm": "call 0x144a0a0"
+      },
+      {
+        "at": "0x1449eab",
+        "owner": "0x1449ce0",
+        "kind": "call",
+        "asm": "call 0x144a0a0"
+      }
+    ]
+  },
+  {
+    "name": "resize",
+    "module": "game.dll",
+    "size": 511,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "40574883ec40f30f1012488bf9f30f1081140100000f2ec27a167514f30f1081180100000f2e42047a060f848d01000080b92401000000488b02f30f105a0448895c24600f29742430f30f1035"
+      },
+      {
+        "offset": 81,
+        "hex": "0f297c2420f30f103d"
+      },
+      {
+        "offset": 94,
+        "hex": "48898114010000744df30f108114010000f30f108918010000f30f5ec6f30f5ecff30f11442450f30f114c2454488b5424504889542450f30f5e542450f30f5e5c2454f30f11542458f30f115c245c488b5c2458eb46f30f108914010000f30f108118010000f30f5ecef30f5ec7f30f5dc8f30f5ed1f30f5ed9f30f11542450f30f115c2454488b5c2450f30f114c2458f30f114c245c488b54245848895c2450e8"
+      },
+      {
+        "offset": 260,
+        "hex": "488bd3488bcfe8"
+      },
+      {
+        "offset": 271,
+        "hex": "f30f104c2450f30f10542454f30f5cce488b8fe8000000f30f5cd748895f24f30f590d"
+      },
+      {
+        "offset": 310,
+        "hex": "f30f5915"
+      },
+      {
+        "offset": 318,
+        "hex": "f30f114c2450f30f11542454488b4424504889871c010000f30f108f1c010000f30f108720010000f30f58c9f30f58c0f30f58ce0f28742430f30f58c70f287c2420f30f114c2450f30f11442454488b5c24504885c9740b41b001488bd3e8"
+      },
+      {
+        "offset": 417,
+        "hex": "488b8fe00000004885c9740b41b001488bd3e8"
+      },
+      {
+        "offset": 440,
+        "hex": "488b5c24604883c4405fc3cccccccccccccccccccccccccc40534883ec20488bd9e8"
+      },
+      {
+        "offset": 478,
+        "hex": "488b83f80000004885c0746d4c8d9880360000418b43104d8bcb4d2b0b458b4308"
+      }
+    ],
+    "locations": {
+      "1787171630:61255680": "0x11ac430",
+      "1789487892:74907648": "0x144d880",
+      "1790161983:74727424": "0x144d910"
+    },
+    "field_specs": [
+      {
+        "name": "r49",
+        "displacement_offset": 77,
+        "instruction_end": 81,
+        "kind": "data"
+      },
+      {
+        "name": "r56",
+        "displacement_offset": 90,
+        "instruction_end": 94,
+        "kind": "data"
+      },
+      {
+        "name": "cff",
+        "displacement_offset": 256,
+        "instruction_end": 260,
+        "kind": "code"
+      },
+      {
+        "name": "c10a",
+        "displacement_offset": 267,
+        "instruction_end": 271,
+        "kind": "code"
+      },
+      {
+        "name": "r12e",
+        "displacement_offset": 306,
+        "instruction_end": 310,
+        "kind": "data"
+      },
+      {
+        "name": "r136",
+        "displacement_offset": 314,
+        "instruction_end": 318,
+        "kind": "data"
+      },
+      {
+        "name": "c19c",
+        "displacement_offset": 413,
+        "instruction_end": 417,
+        "kind": "code"
+      },
+      {
+        "name": "c1b3",
+        "displacement_offset": 436,
+        "instruction_end": 440,
+        "kind": "code"
+      },
+      {
+        "name": "c1d9",
+        "displacement_offset": 474,
+        "instruction_end": 478,
+        "kind": "code"
+      }
+    ],
+    "rva": "0x144d880",
+    "pieces_match": true,
+    "raw_match": true,
+    "fields": {
+      "r49": "0x23c7dbc",
+      "r56": "0x23c7d50",
+      "cff": "0x1447e40",
+      "c10a": "0x14470d0",
+      "r12e": "0x23c6ac0",
+      "r136": "0x23c6ac0",
+      "c19c": "0x144e4d0",
+      "c1b3": "0x144e4d0",
+      "c1d9": "0x1446a70"
+    },
+    "owner": "0x144d880",
+    "owner_xrefs": [
+      {
+        "at": "0x144d7b8",
+        "owner": "0x144d750",
+        "kind": "call",
+        "asm": "call 0x144d880"
+      },
+      {
+        "at": "0x144d870",
+        "owner": "0x144d810",
+        "kind": "call",
+        "asm": "call 0x144d880"
+      },
+      {
+        "at": "0x144e1aa",
+        "owner": "0x144e110",
+        "kind": "call",
+        "asm": "call 0x144d880"
+      }
+    ]
+  },
+  {
+    "name": "root",
+    "module": "game.dll",
+    "size": 68,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "498dbf58020000ba01000000488bcfe8"
+      },
+      {
+        "offset": 20,
+        "hex": "c74424600000f044488bcfc744246400008744488b542460e8"
+      },
+      {
+        "offset": 49,
+        "hex": "c74424600000003f488bcfc74424640000003f"
+      }
+    ],
+    "locations": {
+      "1787171630:61255680": "0x11e5533",
+      "1789487892:74907648": "0x1486a53",
+      "1790161983:74727424": "0x1486ae3"
+    },
+    "field_specs": [
+      {
+        "name": "cf",
+        "displacement_offset": 16,
+        "instruction_end": 20,
+        "kind": "code"
+      },
+      {
+        "name": "c2c",
+        "displacement_offset": 45,
+        "instruction_end": 49,
+        "kind": "code"
+      }
+    ],
+    "rva": "0x1486a53",
+    "pieces_match": true,
+    "raw_match": true,
+    "fields": {
+      "cf": "0x14467b0",
+      "c2c": "0x14470d0"
+    },
+    "owner": "0x1486790",
+    "owner_xrefs": [
+      {
+        "at": "0x1481bc1",
+        "owner": "0x1481bb0",
+        "kind": "call",
+        "asm": "call 0x1486790"
+      },
+      {
+        "at": "0x1481e42",
+        "owner": "0x1481c00",
+        "kind": "call",
+        "asm": "call 0x1486790"
+      }
+    ]
+  },
+  {
+    "name": "atlas_lookup",
+    "module": "helldivers2.exe",
+    "size": 631,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "4c894424184889542410535556574155415641574883ec30448b99c002000033f6488b024c8bf94c89a424880000004d8be1448bd64585db7422488b99c8020000418bd2488d3c9248c1e7044803fb483907740b41ffc2453bd372e5488bfe8b811803000085c075124881c1d8020000ff15"
+      },
+      {
+        "offset": 118,
+        "hex": "40b501eb034032ed488b542478498d8fe8020000e8"
+      },
+      {
+        "offset": 143,
+        "hex": "4d8b8ff0020000488d542470448bd04983c108488b8424800000004889442428498b87100300004969cad000000048894424204c03c9e8"
+      },
+      {
+        "offset": 202,
+        "hex": "488b184084ed740d498d8fd8020000ff15"
+      },
+      {
+        "offset": 223,
+        "hex": "4d85e4740449891c244c8b542478498d8fe8020000498bd2e8"
+      },
+      {
+        "offset": 252,
+        "hex": "4c8ba424880000003dffffff7f0f84b4000000498bd2498d8fe8020000e8"
+      },
+      {
+        "offset": 286,
+        "hex": "448bd0418b87180300004969ead00000004903aff002000085c07512498d8fd8020000ff15"
+      },
+      {
+        "offset": 327,
+        "hex": "41b301eb034532db39753874454c8b4d2833d2488bc348c1e820f7753c488d0c5241837cc910fe742981faffffff7f74210f1f8400000000008bc2488d0c40493b1cc97479418b54c91081faffffff7f75e78b55208bca4c8d4d208bc23bd10f85800000004584db740d498d8fd8020000ff15"
+      },
+      {
+        "offset": 446,
+        "hex": "4c8b542478488b4748483bc374274885c074224c8d4c247848894424704c8d4424704889742478498bd2498bcfe8"
+      },
+      {
+        "offset": 496,
+        "hex": "488bf0488bc64883c430415f415e415d5f5e5d5bc3448b5520413bd2731666908bc2488d0c40413974c9107d07ffc2413bd272ec418bcae972ffffff8bc2488d0c40498b41088b4cc808488b4510488d148948c1e205488b2c024584db740d498d8fd8020000ff15"
+      },
+      {
+        "offset": 604,
+        "hex": "4885ed0f8459ffffff488bc54883c430415f415e415d5f5e5d5bc3"
+      }
+    ],
+    "locations": {
+      "1787151926:60755968": "0x5f0040",
+      "1789475235:61128704": "0x5f2290",
+      "1790149348:60719104": "0x5f2290"
+    },
+    "field_specs": [
+      {
+        "name": "r70",
+        "displacement_offset": 114,
+        "instruction_end": 118,
+        "kind": "data"
+      },
+      {
+        "name": "c8a",
+        "displacement_offset": 139,
+        "instruction_end": 143,
+        "kind": "code"
+      },
+      {
+        "name": "cc5",
+        "displacement_offset": 198,
+        "instruction_end": 202,
+        "kind": "code"
+      },
+      {
+        "name": "rd9",
+        "displacement_offset": 219,
+        "instruction_end": 223,
+        "kind": "data"
+      },
+      {
+        "name": "cf7",
+        "displacement_offset": 248,
+        "instruction_end": 252,
+        "kind": "code"
+      },
+      {
+        "name": "c119",
+        "displacement_offset": 282,
+        "instruction_end": 286,
+        "kind": "code"
+      },
+      {
+        "name": "r141",
+        "displacement_offset": 323,
+        "instruction_end": 327,
+        "kind": "data"
+      },
+      {
+        "name": "r1b8",
+        "displacement_offset": 442,
+        "instruction_end": 446,
+        "kind": "data"
+      },
+      {
+        "name": "c1eb",
+        "displacement_offset": 492,
+        "instruction_end": 496,
+        "kind": "code"
+      },
+      {
+        "name": "r256",
+        "displacement_offset": 600,
+        "instruction_end": 604,
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "name": "unit_lookup",
+    "module": "helldivers2.exe",
+    "size": 116,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "48895c24084889742410574883ec20488b35"
+      },
+      {
+        "offset": 22,
+        "hex": "8bd9488d8ed0000000ff15"
+      },
+      {
+        "offset": 37,
+        "hex": "8bc325ffff3f003b8698000000720433dbeb1c8bc8488b86a0000000c1eb16381c0175eb488b8688000000488b1cc8488d8ed0000000ff15"
+      },
+      {
+        "offset": 97,
+        "hex": "488b742438488bc3488b5c24304883c4205fc3"
+      }
+    ],
+    "locations": {
+      "1787151926:60755968": "0x9da50",
+      "1789475235:61128704": "0x9d8c0",
+      "1790149348:60719104": "0x9d8c0"
+    },
+    "field_specs": [
+      {
+        "name": "unit_registry",
+        "displacement_offset": 18,
+        "instruction_end": 22,
+        "kind": "global"
+      },
+      {
+        "name": "r1f",
+        "displacement_offset": 33,
+        "instruction_end": 37,
+        "kind": "data"
+      },
+      {
+        "name": "r5b",
+        "displacement_offset": 93,
+        "instruction_end": 97,
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "name": "animation_get",
+    "module": "helldivers2.exe",
+    "size": 298,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "48895c241048896c2418564881ec40010000ba01000000488bf1ff15"
+      },
+      {
+        "offset": 32,
+        "hex": "c1e8028bc8e8"
+      },
+      {
+        "offset": 42,
+        "hex": "488bc8488bd8488b10ff92b0010000488b13488bcbff92b001000041b820000000488d9424b0000000488bc8e8"
+      },
+      {
+        "offset": 91,
+        "hex": "8be889ac24a00000000f108424b00000000f108c24c00000000f294424200f294c24300f108424d00000000f108c24e00000000f294424400f294c24500f108424f00000000f108c24000100000f294424600f294c24700f108424100100000f108c24200100000f298424800000000f298c249000000085c0743d4889bc2450010000488d5c24208bfd486303488bce83f8ff7508ff15"
+      },
+      {
+        "offset": 246,
+        "hex": "eb09488bd0ff15"
+      },
+      {
+        "offset": 257,
+        "hex": "4883c3044883ef0175da488bbc24500100004c8d9c24400100008bc5498b5b18498b6b20498be35ec3"
+      }
+    ],
+    "locations": {
+      "1787151926:60755968": "0x40fd50",
+      "1789475235:61128704": "0x410b20",
+      "1790149348:60719104": "0x410b20"
+    },
+    "field_specs": [
+      {
+        "name": "r1a",
+        "displacement_offset": 28,
+        "instruction_end": 32,
+        "kind": "data"
+      },
+      {
+        "name": "c25",
+        "displacement_offset": 38,
+        "instruction_end": 42,
+        "kind": "code"
+      },
+      {
+        "name": "c56",
+        "displacement_offset": 87,
+        "instruction_end": 91,
+        "kind": "code"
+      },
+      {
+        "name": "rf0",
+        "displacement_offset": 242,
+        "instruction_end": 246,
+        "kind": "data"
+      },
+      {
+        "name": "rfb",
+        "displacement_offset": 253,
+        "instruction_end": 257,
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "name": "animation_states",
+    "module": "helldivers2.exe",
+    "size": 184,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "48896c241848897424204156488b41284c8bf2488bf18b6804413be88bc5410f47c085c00f847f00000048895c24104533db48897c241833db8bf80f1f440000488b46504c8b0c034d85c9743b488b46288b48084803c833c0458b440b044c03c1458b50084585d2741a660f1f440000418b54800c4903d0493bd17410ffc0413bc275ec33c0eb05b8ffffffff438904334883c3084983c3044883ef0175a1488b7c2418488b5c2410488b7424288bc5488b6c2420415ec3"
+      }
+    ],
+    "locations": {
+      "1787151926:60755968": "0x551c40",
+      "1789475235:61128704": "0x5542d0",
+      "1790149348:60719104": "0x5542d0"
+    },
+    "field_specs": []
+  },
+  {
+    "name": "dot_shader",
+    "module": "game.dll",
+    "size": 159,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "48bb083d0252d6627267c745670000803f4533c0c7456b0000803f488bd3488b4567488bcf4889871c010000c78710010000ffffffff4c89bf480100004c89bf50010000e8"
+      },
+      {
+        "offset": 73,
+        "hex": "488bcfe8"
+      },
+      {
+        "offset": 81,
+        "hex": "4885c074114c8d05"
+      },
+      {
+        "offset": 93,
+        "hex": "ba9e200177e8"
+      },
+      {
+        "offset": 103,
+        "hex": "488bcfe8"
+      },
+      {
+        "offset": 111,
+        "hex": "4885c07462e8"
+      },
+      {
+        "offset": 121,
+        "hex": "488bd0e8"
+      },
+      {
+        "offset": 129,
+        "hex": "488b0d"
+      },
+      {
+        "offset": 136,
+        "hex": "4c8d05"
+      },
+      {
+        "offset": 143,
+        "hex": "bace7737e14c8b4928488bc841ff5108"
+      }
+    ],
+    "locations": {
+      "1787171630:61255680": "0x1506047",
+      "1789487892:74907648": "0x17b4fc7",
+      "1790161983:74727424": "0x17b5097"
+    },
+    "field_specs": [
+      {
+        "name": "c44",
+        "displacement_offset": 69,
+        "instruction_end": 73,
+        "kind": "code"
+      },
+      {
+        "name": "c4c",
+        "displacement_offset": 77,
+        "instruction_end": 81,
+        "kind": "code"
+      },
+      {
+        "name": "r56",
+        "displacement_offset": 89,
+        "instruction_end": 93,
+        "kind": "data"
+      },
+      {
+        "name": "c62",
+        "displacement_offset": 99,
+        "instruction_end": 103,
+        "kind": "code"
+      },
+      {
+        "name": "c6a",
+        "displacement_offset": 107,
+        "instruction_end": 111,
+        "kind": "code"
+      },
+      {
+        "name": "c74",
+        "displacement_offset": 117,
+        "instruction_end": 121,
+        "kind": "code"
+      },
+      {
+        "name": "c7c",
+        "displacement_offset": 125,
+        "instruction_end": 129,
+        "kind": "code"
+      },
+      {
+        "name": "r81",
+        "displacement_offset": 132,
+        "instruction_end": 136,
+        "kind": "data"
+      },
+      {
+        "name": "r88",
+        "displacement_offset": 139,
+        "instruction_end": 143,
+        "kind": "data"
+      }
+    ],
+    "rva": "0x17b4fc7",
+    "pieces_match": true,
+    "raw_match": true,
+    "fields": {
+      "c44": "0x144f770",
+      "c4c": "0x144f650",
+      "r56": "0x21e2c00",
+      "c62": "0x1449830",
+      "c6a": "0x144f650",
+      "c74": "0x144f650",
+      "c7c": "0x1449370",
+      "r81": "0x3326308",
+      "r88": "0x21e53a8"
+    },
+    "owner": "0x17b4760",
+    "owner_xrefs": [
+      {
+        "at": "0x12e98f4",
+        "owner": "0x12e96d0",
+        "kind": "call",
+        "asm": "call 0x17b4760"
+      }
+    ]
+  },
+  {
+    "name": "ring_shader",
+    "module": "game.dll",
+    "size": 156,
+    "pieces": [
+      {
+        "offset": 0,
+        "hex": "48ba907c54d435c7c31fc745670000803f4533c0c7456b0000803f488bcb488b45674889831c010000c78310010000ffffffff4c89bb480100004c89bb50010000e8"
+      },
+      {
+        "offset": 70,
+        "hex": "488bcbe8"
+      },
+      {
+        "offset": 78,
+        "hex": "4885c074114c8d05"
+      },
+      {
+        "offset": 90,
+        "hex": "ba9e200177e8"
+      },
+      {
+        "offset": 100,
+        "hex": "488bcbe8"
+      },
+      {
+        "offset": 108,
+        "hex": "4885c07466e8"
+      },
+      {
+        "offset": 118,
+        "hex": "488bd0e8"
+      },
+      {
+        "offset": 126,
+        "hex": "488b0d"
+      },
+      {
+        "offset": 133,
+        "hex": "4c8d05"
+      },
+      {
+        "offset": 140,
+        "hex": "bace7737e14c8b4928488bc841ff5108"
+      }
+    ],
+    "locations": {
+      "1787171630:61255680": "0x1506b05",
+      "1789487892:74907648": "0x17b5a85",
+      "1790161983:74727424": "0x17b5b55"
+    },
+    "field_specs": [
+      {
+        "name": "c41",
+        "displacement_offset": 66,
+        "instruction_end": 70,
+        "kind": "code"
+      },
+      {
+        "name": "c49",
+        "displacement_offset": 74,
+        "instruction_end": 78,
+        "kind": "code"
+      },
+      {
+        "name": "r53",
+        "displacement_offset": 86,
+        "instruction_end": 90,
+        "kind": "data"
+      },
+      {
+        "name": "c5f",
+        "displacement_offset": 96,
+        "instruction_end": 100,
+        "kind": "code"
+      },
+      {
+        "name": "c67",
+        "displacement_offset": 104,
+        "instruction_end": 108,
+        "kind": "code"
+      },
+      {
+        "name": "c71",
+        "displacement_offset": 114,
+        "instruction_end": 118,
+        "kind": "code"
+      },
+      {
+        "name": "c79",
+        "displacement_offset": 122,
+        "instruction_end": 126,
+        "kind": "code"
+      },
+      {
+        "name": "r7e",
+        "displacement_offset": 129,
+        "instruction_end": 133,
+        "kind": "data"
+      },
+      {
+        "name": "r85",
+        "displacement_offset": 136,
+        "instruction_end": 140,
+        "kind": "data"
+      }
+    ],
+    "rva": "0x17b5a85",
+    "pieces_match": true,
+    "raw_match": true,
+    "fields": {
+      "c41": "0x144f770",
+      "c49": "0x144f650",
+      "r53": "0x21e2c00",
+      "c5f": "0x1449830",
+      "c67": "0x144f650",
+      "c71": "0x144f650",
+      "c79": "0x1449370",
+      "r7e": "0x3326308",
+      "r85": "0x21e53a8"
+    },
+    "owner": "0x17b4760",
+    "owner_xrefs": [
+      {
+        "at": "0x12e98f4",
+        "owner": "0x12e96d0",
+        "kind": "call",
+        "asm": "call 0x17b4760"
+      }
+    ]
+  }
+]

@@ -1,0 +1,74 @@
+{
+  "date": "2026-09-28",
+  "repository": "https://github.com/SkyeShade/HD2Runtime",
+  "commit": "fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595",
+  "root_and_tracked_license_candidates": [],
+  "source_sha256": {
+    "api/hd2.lua": "9100f26339bc0175224c94f3997d6e5cf3958687e0c6eb2feb01729392582c5a",
+    "api/target.lua": "8af81b39045b89a64c7057d2407ed130c7a1cf41d9ecb64489824b5e0d9b709b",
+    "api/session.lua": "592b02da8304383eb98e6c79cc761d18e4ee03ee78f31f1d43882021de0eb4af",
+    "api/ensure.lua": "72e9149a8c34c5cbf0dddf0a509db6637d85c1e194758c420cc4b5090f4707d6",
+    "runtime/addon.lua": "e2014b1d6b3c7f6e32e89c3fe542278d057f889c3fc07f128e04f3331ca9bc84",
+    "runtime/scheduler.lua": "f68094dc04ea6ec9abc360506cd7846943de85021d5583631c5dafc1d33b641d",
+    "runtime/exclusive.lua": "ba6f7cd47e8fc474aa717da3daa072572f9d6801d61b5acd3e1484e001c18475",
+    "runtime/log.lua": "b0d5336091cc0f0922faa19fc468d65dc99b678aea77c0b15292fc4c2625d474",
+    "runtime/metrics.lua": "45096b51644507e2ed359cd3224aa3749dead49d3f75818616bb8dc8ed0eef01",
+    "runtime/reader.lua": "89af857f5a1a0fbcc0cec429dcaa9af1860a0b49280663bd690cfc2b47ad57b6",
+    "runtime/windows_readonly.lua": "39c4cc2af25edc987fccb55ec0cdeb344011b4e9fca12f3b58a7328297f403f0",
+    "runtime/windows_write.lua": "b5b9bf078e2d5cff8e1baddc426487d70688437d24b6c9b597cd3cde2804f9a5",
+    "runtime/windows_ffi.lua": "1bdf2498f75e1d9c6821d1e1634272420a8d1d9911300d988a23135fdbdad002",
+    "runtime/discover.lua": "032f5703c7aa1edb002e8f9ea92e21586f47a382eab26e87ce323e16ef6e73c1",
+    "runtime/snapshot_memory_reader.lua": "852bb7b4755809cc237814d0e87d0d50d831a708f64f9ec5817389fcd8fe1a32",
+    "core/entity_catalog.lua": "6ebecb506a249fc19300e60f48fe81fcd57b9be3323d0cbba9055484d9def01b",
+    "core/entity.lua": "dfd2ed776b510381d799314844cb4393c88a1492316577167066051e52f5a713",
+    "core/fingerprint.lua": "baacebe932698ad6250261a255729f128c06e38d50b9fb6d6864fef144cd39af",
+    "core/guarded_transaction.lua": "0ec8ebe75701935344689c77bf4e945ef2c9f303f9973b588e761f7a2d5edccd",
+    "core/settings.lua": "c7a685756f7b163a08f2c59dcd61863e3e80db0597e615a69eec8315adc1fb15",
+    "core/steady_state.lua": "5d4e32947a1559f4e07475b64e0342f02f8282ee6cfc05192e53a414ad3d1f7c",
+    "schemas/current.lua": "2f291a701c92420673a0d8fc94dddf21b20c000c877307d4e1d870bb825063f6",
+    "schemas/sdk.json": "c91472da9b911b5785e9f9c376d35c7ad254b2d0f592af09206042c3c2048086",
+    "sdk/metadata.json": "c91472da9b911b5785e9f9c376d35c7ad254b2d0f592af09206042c3c2048086",
+    "docs/releases/0.24.0.md": "3dca5c3efb821a8b15bf9de1772ddef10e7a557a4f0159e16af2f8194b380c3b",
+    "docs/provenance.json": "58a654e7edcbd1919b6c32b4c6f4bf1ddbed62039d62b25f66597fec88cdb94c",
+    "THIRD_PARTY.md": "a5601b433b878f5c95b60807ef89900c4831a3d4925e061b02e547db0e45afbf"
+  },
+  "supplied_package": {
+    "path": "C:\\Users\\Law\\Downloads\\HD2Runtime-0.24.0-runtime.zip",
+    "sha256": "2891a000d37ccfa74c10d0001c6b7bc38da74e2ed6ee8b49ce2c0b329c8d8f50",
+    "members": [
+      "README.md",
+      "build-report.json",
+      "hd2runtime.json",
+      "manifest.json",
+      "provenance.json",
+      "runtime/9ba626afa44a3aa3.patch_0",
+      "runtime/9ba626afa44a3aa3.patch_0.gpu_resources",
+      "runtime/9ba626afa44a3aa3.patch_0.stream"
+    ],
+    "version": "0.24.0",
+    "declared_commit": "fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595",
+    "commit_matches": true,
+    "manifest_guid": "ae62bcc1-4f14-45ed-b28a-93d239412913",
+    "archive_resource_count": 58,
+    "addon_resources": [
+      {
+        "hash": "0x4a1637b21d7cb913",
+        "declaration": "-- HD2-Addon: mods/skyeshade/hd2runtime",
+        "source_sha256": "5104cac49c2d93d7ec660faea1e420ffb8c386408b10b8dd8470723e34511f03"
+      }
+    ]
+  },
+  "performed": {
+    "source_audit": true,
+    "package_inspection": true,
+    "third_party_build_scripts_run": false,
+    "deployment": false,
+    "game_tests": false,
+    "game_process_access": false
+  },
+  "fullauto_status": "User reports testing the slower candidate; actual outcomes/logs pending. Further firing tests paused.",
+  "unchanged_baselines": {
+    "outputs/HD2ModCore-v0.3-input-candidate/build/HD2ModCore-v0.3.0-Input-Candidate-Arsenal.zip": "df78eb401509d225a62930a7b7a239665a1288c15e8e81850a363fc608123b40",
+    "outputs/HD2FullAutoAssist/build/HD2FullAutoAssist-v0.1-Candidate-Arsenal.zip": "cb09f42bbfc5a0032d4a5f4fa93ec26f1acc931430ddbdf632dccaac9cb38dd2"
+  }
+}

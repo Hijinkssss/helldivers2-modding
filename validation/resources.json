@@ -1,0 +1,29 @@
+[
+  {
+    "key": "a0c715178b5ed72d",
+    "type": "a14e8dfa2cd117e2",
+    "offset": 344,
+    "length": 80106,
+    "size": 80098,
+    "sha256": "8fd02db4853034d0f5f4f850aa970ba079492b171f70503738bd0978712cb338",
+    "file": "amr_reticle.lua"
+  },
+  {
+    "key": "7251fdd9bb62480a",
+    "type": "a14e8dfa2cd117e2",
+    "offset": 80450,
+    "length": 48634,
+    "size": 48626,
+    "sha256": "ab4f6699ad76d5ae3948131229f3e2d91804307475fb4fca892e93e20c6b773f",
+    "file": "7251fdd9bb62480a.lua"
+  },
+  {
+    "key": "323c77238711d28f",
+    "type": "a14e8dfa2cd117e2",
+    "offset": 129084,
+    "length": 978,
+    "size": 970,
+    "sha256": "dbd70a62b9e209bde215a6f07c178373219802bdea80baa899ea926668f48da0",
+    "file": "323c77238711d28f.lua"
+  }
+]

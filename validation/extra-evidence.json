@@ -1,0 +1,201 @@
+{
+  "hud_crosshair": {
+    "rva": "0x225f6d0",
+    "refs": [
+      {
+        "at": "0x102ff09",
+        "owner": "0x102f7a0",
+        "kind": "rip",
+        "asm": "lea rdx, [rip + 0x122f7c0]"
+      },
+      {
+        "at": "0x10309ea",
+        "owner": "0x1030260",
+        "kind": "rip",
+        "asm": "lea rdx, [rip + 0x122ecdf]"
+      }
+    ]
+  },
+  "reticle_outline": {
+    "rva": "0x225f418",
+    "refs": [
+      {
+        "at": "0x102fa3c",
+        "owner": "0x102f7a0",
+        "kind": "rip",
+        "asm": "lea rdx, [rip + 0x122f9d5]"
+      },
+      {
+        "at": "0x10304ed",
+        "owner": "0x1030260",
+        "kind": "rip",
+        "asm": "lea rdx, [rip + 0x122ef24]"
+      }
+    ]
+  },
+  "reticle_color": {
+    "rva": "0x225f3b0",
+    "refs": [
+      {
+        "at": "0x102fa16",
+        "owner": "0x102f7a0",
+        "kind": "rip",
+        "asm": "lea rdx, [rip + 0x122f993]"
+      },
+      {
+        "at": "0x10304c7",
+        "owner": "0x1030260",
+        "kind": "rip",
+        "asm": "lea rdx, [rip + 0x122eee2]"
+      }
+    ]
+  },
+  "0x17b90c0": {
+    "pointers": [],
+    "xrefs": []
+  },
+  "0x12ebc50": {
+    "pointers": [],
+    "xrefs": [
+      {
+        "at": "0x12f589c",
+        "owner": "0x12f53a0",
+        "kind": "call",
+        "asm": "call 0x12ebc50"
+      }
+    ]
+  },
+  "0x102f7a0": {
+    "pointers": [],
+    "xrefs": [
+      {
+        "at": "0x13776d4",
+        "owner": "0x1377640",
+        "kind": "call",
+        "asm": "call 0x102f7a0"
+      }
+    ]
+  },
+  "0x1030260": {
+    "pointers": [],
+    "xrefs": [
+      {
+        "at": "0x137792b",
+        "owner": "0x1377810",
+        "kind": "call",
+        "asm": "call 0x1030260"
+      },
+      {
+        "at": "0x1377dc7",
+        "owner": "0x1377ba0",
+        "kind": "call",
+        "asm": "call 0x1030260"
+      }
+    ]
+  },
+  "global_0x3326d20": {
+    "pointer": "0x1a6d680abd8",
+    "in_capture": false
+  },
+  "global_0x3326d78": {
+    "pointer": "0x1a6d6da4238",
+    "in_capture": false
+  },
+  "global_0x3326420": {
+    "pointer": "0x1a6d6d545c0",
+    "in_capture": false
+  },
+  "global_0x346d538": {
+    "pointer": "0x1a6d6ed5d98",
+    "in_capture": false
+  },
+  "global_0x346bf98": {
+    "pointer": "0x1a6d5eb4a70",
+    "in_capture": false
+  },
+  "animation_hashes": {
+    "e3620580bee7e831": [],
+    "ce60beab43fb0694": [],
+    "c4fac80fd52081ac": [],
+    "a2a1c09d485f39a7": [],
+    "759de60d95b1be15": [],
+    "26288f8e19093546": [],
+    "f793ebcaad616221": [],
+    "dd57fe57da665f00": [],
+    "07056362e990df49": [],
+    "654c8409f6441d0b": [],
+    "c1ca9f98aee70589": [],
+    "38fad44f16bf1487": [],
+    "7faef9385567ea6d": [],
+    "23845c746bc0b0de": [],
+    "129a27953a8bde48": [],
+    "02807ac49639e562": [],
+    "e705c3838eafc6eb": [],
+    "c41a2f2c3f638e12": [],
+    "e95e7287b90a36d0": [],
+    "5abe70fdaee867c5": [],
+    "1212fa3243f20819": [],
+    "4cab42ca423db19c": [],
+    "16cc824b5bcae314": [],
+    "7b86a677958c69a2": [],
+    "65bbba4d189be87f": [],
+    "b5c36b254eadea34": [],
+    "405e909b2a57c705": [],
+    "91653a9979fe143d": [],
+    "cab8feb961d9773b": [],
+    "dda367fd7851059d": [],
+    "7fb22193121435f3": [],
+    "1e329015c8baa71a": [],
+    "84075794ccc79eb5": [],
+    "dec8abc3de33ac62": [],
+    "ac322088fe304b4b": [],
+    "95c6eab8670c2e49": [],
+    "55188840f63cc105": [],
+    "4cdd33551b44a456": [],
+    "86f5385e8891b5c0": [],
+    "1dfc0cb047ec9fe0": [],
+    "6143ee9780d9670a": [],
+    "163a3f4ddf785e9d": [],
+    "bf6fe74b519c060d": [],
+    "ab9aa306c7c2d9fc": [],
+    "7899ab6cba6b78a3": [],
+    "33106f11a6d0454a": [],
+    "118c4942a4c7f56f": [],
+    "39ca30e7be479911": [],
+    "8c81d6c766c97498": [],
+    "d9ded868f3e30c64": [],
+    "cf4b7eb3780b3eea": [],
+    "a0653d431be5bcca": [],
+    "3538a26ccc50f376": [],
+    "681d9aa3316c66f2": [],
+    "05bd7571820549d1": [],
+    "b5f5d9cb70e34a4b": [],
+    "75d94ea3e9be738c": [],
+    "cb082570c16595e5": [],
+    "b932cc8885f6db49": [],
+    "b04161e4821f923b": [],
+    "8ce2f7706eaee5a9": [],
+    "99ad6a4495c9e309": [],
+    "e67eabc8373b13fa": [],
+    "6bd88e8c7ca2d038": [],
+    "6e69fabf2ac5737c": [],
+    "fa327ebde7c7a56c": [],
+    "63f65625dc97e4e0": [],
+    "8092b7b37c9afbe7": [],
+    "c29dda6414d08548": [],
+    "4aba52503a66c484": [],
+    "eb706b837c99fe64": [],
+    "7d2105e32c505af5": [],
+    "fc34d4cd0495e82c": [],
+    "14816d6e109ce82e": [],
+    "df00f2a3f0775bc7": [],
+    "f08f88253c688d90": [],
+    "48a649e634ff539f": [],
+    "9b4c2f0547e2b7ff": [],
+    "b081864711ec6ebc": [],
+    "c02ebb806951790a": [],
+    "f19ffe1566c6f953": [],
+    "67c31a4bc6af16d7": []
+  },
+  "style_0_4_equal": true
+}

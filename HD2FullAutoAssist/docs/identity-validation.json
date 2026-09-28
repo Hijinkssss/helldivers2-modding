@@ -1,0 +1,603 @@
+{
+  "identity_route": "Core owned avatar / weapon-wielder / equipment record; Runtime public semantic metadata",
+  "identity_validated_for_observed_states": true,
+  "supported_layout_build": "25480438",
+  "validated_resources": [
+    {
+      "resource_hash": "05e4e5c2db6e44a2",
+      "semantic_id": "weapon:P-2 Peacemaker",
+      "observed_entity_contexts": [
+        [
+          340,
+          472,
+          477
+        ]
+      ]
+    },
+    {
+      "resource_hash": "0f83639ab8c86165",
+      "semantic_id": "weapon:R-2 Amendment",
+      "observed_entity_contexts": [
+        [
+          160,
+          711,
+          714
+        ],
+        [
+          340,
+          472,
+          475
+        ]
+      ]
+    },
+    {
+      "resource_hash": "89c5493e08ca4207",
+      "semantic_id": "support_weapon:APW-1 Anti-Materiel Rifle",
+      "observed_entity_contexts": [
+        [
+          340,
+          472,
+          486
+        ]
+      ]
+    }
+  ],
+  "captures": [
+    {
+      "file": "amendment-to-peacemaker-171439134753.json",
+      "sha256": "411f5afdf8174cd4aabe90393fbc0c0ab4919cdf4c976146d475b0cf1188e531",
+      "label": "amendment-to-peacemaker",
+      "samples": 193,
+      "changes": [
+        {
+          "first_observed_seconds": 0.0025729000044520944,
+          "conservative_observation_bounds_seconds": [
+            4.2000044520947195e-06,
+            0.0025729000044520944
+          ],
+          "semantic_id": "weapon:P-2 Peacemaker",
+          "state": "present",
+          "entity_id": 477,
+          "resource_hash": "05e4e5c2db6e44a2",
+          "unit_ref": 340,
+          "avatar_id": 472,
+          "error": null
+        }
+      ],
+      "unknown_held_samples": 0,
+      "absent_held_samples": 0,
+      "unavailable_samples": 0,
+      "observer": {
+        "successes": 193,
+        "calls": 193,
+        "reads": 10422,
+        "failures": 0,
+        "unavailable": 0
+      },
+      "performance": {
+        "samples": 193,
+        "mean_us": 1559.9150259067358,
+        "maximum_us": 2633.6,
+        "advisory_2000us_exceedances": 16,
+        "requested_interval_ms": 50
+      },
+      "modules": {
+        "helldivers2.exe": {
+          "base": 140698447249408,
+          "size": 60719104,
+          "sha256": "F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06"
+        },
+        "game.dll": {
+          "base": 140703611420672,
+          "size": 74727424,
+          "sha256": "2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E"
+        }
+      },
+      "source_sha256": {
+        "game_state.lua": "402ba56657bdc12bc93e5617852b2670472a10a92d5a24f0117d39e80fcf17c2",
+        "memory.lua": "3b0c023540d79ebd1049d42d01d021b412e520c80a76c861697cb1ca5df290ea",
+        "example_profile.lua": "0f108ed196e43fd36a2095c8e80eb2b5bc12157ab667b5869bc0654f97712597"
+      },
+      "semantic_metadata_sha256": "1b5e3586ffb39adabe32749a77a8f2f8131115a80a395425d4c0129d04d3efea"
+    },
+    {
+      "file": "amr-back-to-amendment-171551127453.json",
+      "sha256": "165f9fd14e006f06087fa44a6ca6bdb890f30e47566c1da234d2aa2aba537664",
+      "label": "amr-back-to-amendment",
+      "samples": 290,
+      "changes": [
+        {
+          "first_observed_seconds": 0.001345900003798306,
+          "conservative_observation_bounds_seconds": [
+            3.700003798305998e-06,
+            0.001345900003798306
+          ],
+          "semantic_id": "weapon:R-2 Amendment",
+          "state": "present",
+          "entity_id": 475,
+          "resource_hash": "0f83639ab8c86165",
+          "unit_ref": 340,
+          "avatar_id": 472,
+          "error": null
+        }
+      ],
+      "unknown_held_samples": 0,
+      "absent_held_samples": 0,
+      "unavailable_samples": 0,
+      "observer": {
+        "calls": 290,
+        "failures": 0,
+        "successes": 290,
+        "unavailable": 0,
+        "reads": 15660
+      },
+      "performance": {
+        "samples": 290,
+        "mean_us": 1538.8968965517242,
+        "maximum_us": 4015.3,
+        "advisory_2000us_exceedances": 23,
+        "requested_interval_ms": 50
+      },
+      "modules": {
+        "helldivers2.exe": {
+          "base": 140698447249408,
+          "size": 60719104,
+          "sha256": "F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06"
+        },
+        "game.dll": {
+          "base": 140703611420672,
+          "size": 74727424,
+          "sha256": "2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E"
+        }
+      },
+      "source_sha256": {
+        "game_state.lua": "402ba56657bdc12bc93e5617852b2670472a10a92d5a24f0117d39e80fcf17c2",
+        "memory.lua": "3b0c023540d79ebd1049d42d01d021b412e520c80a76c861697cb1ca5df290ea",
+        "example_profile.lua": "0f108ed196e43fd36a2095c8e80eb2b5bc12157ab667b5869bc0654f97712597"
+      },
+      "semantic_metadata_sha256": "1b5e3586ffb39adabe32749a77a8f2f8131115a80a395425d4c0129d04d3efea"
+    },
+    {
+      "file": "controlled-cycle-armed-171742331689.json",
+      "sha256": "5a6fb8240ed5b83a6945502ffb4e9fc5b552e0e454fe8210290ce41aca113dfc",
+      "label": "controlled-cycle-armed",
+      "samples": 866,
+      "changes": [
+        {
+          "first_observed_seconds": 0.0014330999983940274,
+          "conservative_observation_bounds_seconds": [
+            4.799998394027383e-06,
+            0.0014330999983940274
+          ],
+          "semantic_id": "weapon:R-2 Amendment",
+          "state": "present",
+          "entity_id": 475,
+          "resource_hash": "0f83639ab8c86165",
+          "unit_ref": 340,
+          "avatar_id": 472,
+          "error": null
+        },
+        {
+          "first_observed_seconds": 21.265667800005758,
+          "conservative_observation_bounds_seconds": [
+            21.212304000014335,
+            21.265667800005758
+          ],
+          "semantic_id": "weapon:P-2 Peacemaker",
+          "state": "present",
+          "entity_id": 477,
+          "resource_hash": "05e4e5c2db6e44a2",
+          "unit_ref": 340,
+          "avatar_id": 472,
+          "error": null
+        },
+        {
+          "first_observed_seconds": 26.102350100001786,
+          "conservative_observation_bounds_seconds": [
+            26.049374900010623,
+            26.102350100001786
+          ],
+          "semantic_id": "support_weapon:APW-1 Anti-Materiel Rifle",
+          "state": "present",
+          "entity_id": 486,
+          "resource_hash": "89c5493e08ca4207",
+          "unit_ref": 340,
+          "avatar_id": 472,
+          "error": null
+        },
+        {
+          "first_observed_seconds": 31.71889970000484,
+          "conservative_observation_bounds_seconds": [
+            31.664924800003284,
+            31.71889970000484
+          ],
+          "semantic_id": "weapon:R-2 Amendment",
+          "state": "present",
+          "entity_id": 475,
+          "resource_hash": "0f83639ab8c86165",
+          "unit_ref": 340,
+          "avatar_id": 472,
+          "error": null
+        }
+      ],
+      "unknown_held_samples": 0,
+      "absent_held_samples": 0,
+      "unavailable_samples": 0,
+      "observer": {
+        "failures": 0,
+        "successes": 866,
+        "unavailable": 0,
+        "reads": 46764,
+        "calls": 866
+      },
+      "performance": {
+        "samples": 866,
+        "mean_us": 1659.8397228637414,
+        "maximum_us": 3695.9,
+        "advisory_2000us_exceedances": 141,
+        "requested_interval_ms": 50
+      },
+      "modules": {
+        "helldivers2.exe": {
+          "base": 140698447249408,
+          "size": 60719104,
+          "sha256": "F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06"
+        },
+        "game.dll": {
+          "base": 140703611420672,
+          "size": 74727424,
+          "sha256": "2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E"
+        }
+      },
+      "source_sha256": {
+        "game_state.lua": "402ba56657bdc12bc93e5617852b2670472a10a92d5a24f0117d39e80fcf17c2",
+        "memory.lua": "3b0c023540d79ebd1049d42d01d021b412e520c80a76c861697cb1ca5df290ea",
+        "example_profile.lua": "0f108ed196e43fd36a2095c8e80eb2b5bc12157ab667b5869bc0654f97712597"
+      },
+      "semantic_metadata_sha256": "1b5e3586ffb39adabe32749a77a8f2f8131115a80a395425d4c0129d04d3efea"
+    },
+    {
+      "file": "controlled-primary-secondary-support-primary-171648332639.json",
+      "sha256": "5be5673fdf7c4601dd28735f9928e7b4779758c2d3a45a969c07ee3897496646",
+      "label": "controlled-primary-secondary-support-primary",
+      "samples": 578,
+      "changes": [
+        {
+          "first_observed_seconds": 0.0018666000105440617,
+          "conservative_observation_bounds_seconds": [
+            4.700010544061561e-06,
+            0.0018666000105440617
+          ],
+          "semantic_id": "weapon:R-2 Amendment",
+          "state": "present",
+          "entity_id": 475,
+          "resource_hash": "0f83639ab8c86165",
+          "unit_ref": 340,
+          "avatar_id": 472,
+          "error": null
+        }
+      ],
+      "unknown_held_samples": 0,
+      "absent_held_samples": 0,
+      "unavailable_samples": 0,
+      "observer": {
+        "failures": 0,
+        "successes": 578,
+        "unavailable": 0,
+        "reads": 31212,
+        "calls": 578
+      },
+      "performance": {
+        "samples": 578,
+        "mean_us": 1595.2782006920415,
+        "maximum_us": 5012.2,
+        "advisory_2000us_exceedances": 66,
+        "requested_interval_ms": 50
+      },
+      "modules": {
+        "helldivers2.exe": {
+          "base": 140698447249408,
+          "size": 60719104,
+          "sha256": "F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06"
+        },
+        "game.dll": {
+          "base": 140703611420672,
+          "size": 74727424,
+          "sha256": "2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E"
+        }
+      },
+      "source_sha256": {
+        "game_state.lua": "402ba56657bdc12bc93e5617852b2670472a10a92d5a24f0117d39e80fcf17c2",
+        "memory.lua": "3b0c023540d79ebd1049d42d01d021b412e520c80a76c861697cb1ca5df290ea",
+        "example_profile.lua": "0f108ed196e43fd36a2095c8e80eb2b5bc12157ab667b5869bc0654f97712597"
+      },
+      "semantic_metadata_sha256": "1b5e3586ffb39adabe32749a77a8f2f8131115a80a395425d4c0129d04d3efea"
+    },
+    {
+      "file": "initial-loadout-state-171347581375.json",
+      "sha256": "cd904924e131394794116e3a32a66920c2e89f378d9f823343f83f0dc7dd1b3a",
+      "label": "initial-loadout-state",
+      "samples": 39,
+      "changes": [
+        {
+          "first_observed_seconds": 0.0016253999783657491,
+          "conservative_observation_bounds_seconds": [
+            3.7999783657491695e-06,
+            0.0016253999783657491
+          ],
+          "semantic_id": "weapon:R-2 Amendment",
+          "state": "present",
+          "entity_id": 475,
+          "resource_hash": "0f83639ab8c86165",
+          "unit_ref": 340,
+          "avatar_id": 472,
+          "error": null
+        }
+      ],
+      "unknown_held_samples": 0,
+      "absent_held_samples": 0,
+      "unavailable_samples": 0,
+      "observer": {
+        "calls": 39,
+        "unavailable": 0,
+        "failures": 0,
+        "reads": 2106,
+        "successes": 39
+      },
+      "performance": {
+        "samples": 39,
+        "mean_us": 1299.2846153846153,
+        "maximum_us": 2409.8,
+        "advisory_2000us_exceedances": 2,
+        "requested_interval_ms": 50
+      },
+      "modules": {
+        "helldivers2.exe": {
+          "base": 140698447249408,
+          "size": 60719104,
+          "sha256": "F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06"
+        },
+        "game.dll": {
+          "base": 140703611420672,
+          "size": 74727424,
+          "sha256": "2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E"
+        }
+      },
+      "source_sha256": {
+        "game_state.lua": "402ba56657bdc12bc93e5617852b2670472a10a92d5a24f0117d39e80fcf17c2",
+        "memory.lua": "3b0c023540d79ebd1049d42d01d021b412e520c80a76c861697cb1ca5df290ea",
+        "example_profile.lua": "0f108ed196e43fd36a2095c8e80eb2b5bc12157ab667b5869bc0654f97712597"
+      },
+      "semantic_metadata_sha256": "1b5e3586ffb39adabe32749a77a8f2f8131115a80a395425d4c0129d04d3efea"
+    },
+    {
+      "file": "mission-to-ship-172026700060.json",
+      "sha256": "19c5da14b679b3dac3884ef481007edf3b4c339cef300172792eb46e90ac97ba",
+      "label": "mission-to-ship",
+      "samples": 865,
+      "changes": [
+        {
+          "first_observed_seconds": 0.0019480000191833824,
+          "conservative_observation_bounds_seconds": [
+            4.9000191833824865e-06,
+            0.0019480000191833824
+          ],
+          "semantic_id": "weapon:R-2 Amendment",
+          "state": "present",
+          "entity_id": 475,
+          "resource_hash": "0f83639ab8c86165",
+          "unit_ref": 340,
+          "avatar_id": 472,
+          "error": null
+        },
+        {
+          "first_observed_seconds": 15.345626700000139,
+          "conservative_observation_bounds_seconds": [
+            15.29285800002482,
+            15.345626700000139
+          ],
+          "semantic_id": null,
+          "state": null,
+          "entity_id": null,
+          "resource_hash": null,
+          "unit_ref": null,
+          "avatar_id": null,
+          "error": {
+            "stage": "local_avatar",
+            "detail": "no local unit",
+            "code": "Unavailable"
+          }
+        },
+        {
+          "first_observed_seconds": 18.048171600006754,
+          "conservative_observation_bounds_seconds": [
+            17.995426300005615,
+            18.048171600006754
+          ],
+          "semantic_id": "weapon:R-2 Amendment",
+          "state": "present",
+          "entity_id": 714,
+          "resource_hash": "0f83639ab8c86165",
+          "unit_ref": 160,
+          "avatar_id": 711,
+          "error": null
+        },
+        {
+          "first_observed_seconds": 18.100940000003902,
+          "conservative_observation_bounds_seconds": [
+            18.046780700006753,
+            18.100940000003902
+          ],
+          "semantic_id": null,
+          "state": "absent",
+          "entity_id": null,
+          "resource_hash": null,
+          "unit_ref": 160,
+          "avatar_id": 711,
+          "error": null
+        }
+      ],
+      "unknown_held_samples": 0,
+      "absent_held_samples": 516,
+      "unavailable_samples": 53,
+      "observer": {
+        "successes": 812,
+        "calls": 865,
+        "reads": 38437,
+        "failures": 0,
+        "unavailable": 53
+      },
+      "performance": {
+        "samples": 865,
+        "mean_us": 1686.8093641618498,
+        "maximum_us": 3847.9,
+        "advisory_2000us_exceedances": 217,
+        "requested_interval_ms": 50
+      },
+      "modules": {
+        "helldivers2.exe": {
+          "base": 140698447249408,
+          "size": 60719104,
+          "sha256": "F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06"
+        },
+        "game.dll": {
+          "base": 140703611420672,
+          "size": 74727424,
+          "sha256": "2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E"
+        }
+      },
+      "source_sha256": {
+        "game_state.lua": "402ba56657bdc12bc93e5617852b2670472a10a92d5a24f0117d39e80fcf17c2",
+        "memory.lua": "3b0c023540d79ebd1049d42d01d021b412e520c80a76c861697cb1ca5df290ea",
+        "example_profile.lua": "0f108ed196e43fd36a2095c8e80eb2b5bc12157ab667b5869bc0654f97712597"
+      },
+      "semantic_metadata_sha256": "1b5e3586ffb39adabe32749a77a8f2f8131115a80a395425d4c0129d04d3efea"
+    },
+    {
+      "file": "peacemaker-amr-amendment-171508067626.json",
+      "sha256": "b34cd4b9df9df659c25e1e29a9a4027ce58c07eaa60b9c2999b1906df2a8db8c",
+      "label": "peacemaker-amr-amendment",
+      "samples": 386,
+      "changes": [
+        {
+          "first_observed_seconds": 0.0019740999850910157,
+          "conservative_observation_bounds_seconds": [
+            5.399985091015819e-06,
+            0.0019740999850910157
+          ],
+          "semantic_id": "weapon:P-2 Peacemaker",
+          "state": "present",
+          "entity_id": 477,
+          "resource_hash": "05e4e5c2db6e44a2",
+          "unit_ref": 340,
+          "avatar_id": 472,
+          "error": null
+        },
+        {
+          "first_observed_seconds": 5.130183699977351,
+          "conservative_observation_bounds_seconds": [
+            5.076663299991587,
+            5.130183699977351
+          ],
+          "semantic_id": null,
+          "state": "present",
+          "entity_id": 482,
+          "resource_hash": "16f397ca5f51f271",
+          "unit_ref": 340,
+          "avatar_id": 472,
+          "error": null
+        },
+        {
+          "first_observed_seconds": 8.77150289999554,
+          "conservative_observation_bounds_seconds": [
+            8.717768000002803,
+            8.77150289999554
+          ],
+          "semantic_id": "weapon:P-2 Peacemaker",
+          "state": "present",
+          "entity_id": 477,
+          "resource_hash": "05e4e5c2db6e44a2",
+          "unit_ref": 340,
+          "avatar_id": 472,
+          "error": null
+        },
+        {
+          "first_observed_seconds": 15.174555699981283,
+          "conservative_observation_bounds_seconds": [
+            15.121097399982187,
+            15.174555699981283
+          ],
+          "semantic_id": "support_weapon:APW-1 Anti-Materiel Rifle",
+          "state": "present",
+          "entity_id": 486,
+          "resource_hash": "89c5493e08ca4207",
+          "unit_ref": 340,
+          "avatar_id": 472,
+          "error": null
+        }
+      ],
+      "unknown_held_samples": 70,
+      "absent_held_samples": 0,
+      "unavailable_samples": 0,
+      "observer": {
+        "unavailable": 0,
+        "reads": 20844,
+        "calls": 386,
+        "failures": 0,
+        "successes": 386
+      },
+      "performance": {
+        "samples": 386,
+        "mean_us": 1613.2582901554404,
+        "maximum_us": 2838.8,
+        "advisory_2000us_exceedances": 46,
+        "requested_interval_ms": 50
+      },
+      "modules": {
+        "helldivers2.exe": {
+          "base": 140698447249408,
+          "size": 60719104,
+          "sha256": "F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06"
+        },
+        "game.dll": {
+          "base": 140703611420672,
+          "size": 74727424,
+          "sha256": "2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E"
+        }
+      },
+      "source_sha256": {
+        "game_state.lua": "402ba56657bdc12bc93e5617852b2670472a10a92d5a24f0117d39e80fcf17c2",
+        "memory.lua": "3b0c023540d79ebd1049d42d01d021b412e520c80a76c861697cb1ca5df290ea",
+        "example_profile.lua": "0f108ed196e43fd36a2095c8e80eb2b5bc12157ab667b5869bc0654f97712597"
+      },
+      "semantic_metadata_sha256": "1b5e3586ffb39adabe32749a77a8f2f8131115a80a395425d4c0129d04d3efea"
+    }
+  ],
+  "total_samples": 3217,
+  "external_performance": {
+    "mean_us": 1628.6340068386696,
+    "maximum_us": 5012.2,
+    "advisory_2000us_exceedances": 511,
+    "scope": "Python/Lua/remote-read wall time; not in-game callback cost"
+  },
+  "timing_limits": {
+    "animation_relative_timing_measured": false,
+    "input_to_identity_latency_measured": false,
+    "sub_poll_interval_null_windows_excluded": false,
+    "poll_interval_ms": 50
+  },
+  "unknown_item": {
+    "resource_hash": "16f397ca5f51f271",
+    "classification": "REVIEW; no assistance",
+    "user_report": "Called down AMR, picked it up, held it 3-4 seconds, then returned to Amendment.",
+    "semantic_identity": "Unknown; timing is consistent with that interaction, not proof of item type"
+  },
+  "user_reported_location": "Mission during weapon checks; requested normal return to ship for transition capture",
+  "selected_mode_observed": false,
+  "game_memory_writes_by_probe": 0,
+  "injection": false,
+  "synthetic_input": false,
+  "live_selective_firing_validated": false,
+  "hud_implemented": false,
+  "release_ready": false
+}

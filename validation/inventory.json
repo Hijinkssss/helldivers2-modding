@@ -1,0 +1,566 @@
+[
+  {
+    "project": "HD2ModCore",
+    "path": "build\\9ba626afa44a3aa3.patch_0",
+    "classification": "generated; rebuild only",
+    "sha256": "c224307218579672f0fdd4ee263dbb8c86aaca6add72659f39f1948012457bf8"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "build\\9ba626afa44a3aa3.patch_0.gpu_resources",
+    "classification": "generated; rebuild only",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "build\\9ba626afa44a3aa3.patch_0.stream",
+    "classification": "generated; rebuild only",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "build\\build-report.json",
+    "classification": "generated; rebuild only",
+    "sha256": "ecc621eabd6f53652bb71fb5f102614d7eb34c2e15da638d5f84cf74d2de9e69"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "build\\HD2ModCore-v0.3.0-Input-Candidate-Arsenal.zip",
+    "classification": "generated; rebuild only",
+    "sha256": "df78eb401509d225a62930a7b7a239665a1288c15e8e81850a363fc608123b40"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "build\\hd2modcore.lua",
+    "classification": "generated; rebuild only",
+    "sha256": "9a08047daf9bb5d63f5c12611d27922692f36dbf49a10d2e07b2d0f134c9ce1e"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "README.md",
+    "classification": "documentation/config; replace or review",
+    "sha256": "13ca52c25b03f535e275cf816635fecefac5a14f64b183d4a782ea65ec2334cb"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "requirements-test.txt",
+    "classification": "documentation/config; replace or review",
+    "sha256": "c355c313ec4744320b1e0d22e7e70465d899a48e8c62293578ddff95d0672c6b"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "scripts\\__pycache__\\build.cpython-313.pyc",
+    "classification": "documentation/config; replace or review",
+    "sha256": "5de65d91056e24dec9beed132e950aed4e4ef6872719ea8988f8825043089fd5"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "scripts\\build.py",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "4a37caac00ad61a165c1459c867739e28bda0645d2496ad0c4bb52bcdd7ff7d0"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\config.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "0726fc2403c00da146cf4892a52b05c579b773debcb8ce3f6ee3981bf672a55c"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\diagnostics.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "1b7eff1f414337452846c0c91a2331cc71f3f4d7523538e7f00e6bbb41521570"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\entry.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "7cacc1f19b68c883aa08da2a4a889f94082bad4561127897fa0924da8ac22ddf"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\events.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "e49a0b28ad84ec5919ef99fa115189f1e6f3a0f370fdcc23773ac35714f43c9a"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\example_profile.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "0f108ed196e43fd36a2095c8e80eb2b5bc12157ab667b5869bc0654f97712597"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\game_state.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "402ba56657bdc12bc93e5617852b2670472a10a92d5a24f0117d39e80fcf17c2"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\input.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "3bc12cf1aacccbfd2b668540a589e31d9610080793739fe017879a841b3ff1e5"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\input_eligibility.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "217ff54a4a618b3db3ba048730c59efc934f0467fc739b0d81fa824fe78ae93f"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\lifecycle.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "d9c879113e8942d060812970414c51f8bcc0e35b74fb3bbd4a51e80f45532963"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\logger.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "4fe812e8cb623d9aad58d78221c6cfe8798b7911fc770d9bac87e935f6884cc3"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\memory.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "3b0c023540d79ebd1049d42d01d021b412e520c80a76c861697cb1ca5df290ea"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\platform_windows.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "a2bcd8219c66479db33554b65756497c7f79dc7bad96be56aff800e99f5bf637"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\profiles.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "498e0ed4d5fbd3e25a8cd0f00d282ae6f8701f9b95949a1ab8d8bb786dedafd1"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\result.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "89a580342aa6a17d67286b0c0bb72e308f4deadbaeb63bed5c23e3f7fcdb00e6"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\scheduler.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "0cd77377d8580bace18c44f21daac5410e8734646042f840cdd5282ceb3982f8"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\symbols.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "c9b9bf4b498f4f2b632808d57e5277db364bf04b20eca0e2f9ede51774d837b2"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "src\\hd2modcore\\util.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "941fa76422ba8277d3051e724fc28d22c3a79e167870eb538e376702ab36ac16"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "tests\\run.py",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "14f9fa513c76795f9735a43a67811fe7fb297034af03c74e6d554afa4b551f8e"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "tests\\test_entry.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "d73d7efcd8262307e0e300e7c999fe79378aa448e0f9525722226afa701f9033"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "tests\\test_game_state.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "aa212af838b7d1818891e11c7bde5825b1aa3dc13f9cac955d42f6ea205cd813"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "tests\\test_input.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "7ef199e9e77f7b62d957524a95fd398aa80ca12f07a15e7b7f461bec58818b4f"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "tests\\test_input_eligibility.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "c6a55ef44be94c6a196af472565078f9d2457e9f9c1a541dd6ea45b862b24711"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "tests\\test_memory.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "418b10bfcc1f25518efd995d52c2a0ceaafe1e0a1c63a9066ce2700426acbf1c"
+  },
+  {
+    "project": "HD2ModCore",
+    "path": "tests\\test_services.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "a18e71a352502f23fac22802b6acb956b0ddd5c772296241c6d521b408fd40ee"
+  },
+  {
+    "project": "HD2SessionJournal",
+    "path": "build\\9ba626afa44a3aa3.patch_0",
+    "classification": "generated; rebuild only",
+    "sha256": "2b8fbba80d8a027ef17bec3601dd62adbff27da348128166e9df4dda64615888"
+  },
+  {
+    "project": "HD2SessionJournal",
+    "path": "build\\build-report.json",
+    "classification": "generated; rebuild only",
+    "sha256": "25cdae18d8f747895951ea30cb2a4045111820066b88262e80390ed5418aef56"
+  },
+  {
+    "project": "HD2SessionJournal",
+    "path": "build\\HD2SessionJournal-v0.1-Arsenal.zip",
+    "classification": "generated; rebuild only",
+    "sha256": "c84b760330e78cedd120e9fd00f36e8a043b57887156ca06fa1b7a8be0ed76ab"
+  },
+  {
+    "project": "HD2SessionJournal",
+    "path": "HD2SessionJournal.ini.example",
+    "classification": "documentation/config; replace or review",
+    "sha256": "066b653edaa255aa02e609173673b5dc170054cc13300d5994f3df7991fb760e"
+  },
+  {
+    "project": "HD2SessionJournal",
+    "path": "README.md",
+    "classification": "documentation/config; replace or review",
+    "sha256": "74b748be17b2839f3642e666f41b7659e5465945ad65cf020ea8d6d347a09155"
+  },
+  {
+    "project": "HD2SessionJournal",
+    "path": "scripts\\build.py",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "88df13b0cbdbe068da377b8e96855cfee369c4c0cc0027eda596bab8fbe1863b"
+  },
+  {
+    "project": "HD2SessionJournal",
+    "path": "src\\session_journal.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "9f03e6ffc206001d6dd91475e1bace40cf9abaf368862f1967e3b5b7ed6c9da9"
+  },
+  {
+    "project": "HD2SessionJournal",
+    "path": "tests\\test_offline.py",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "284b5b87e0f0cd9505b341cceaed5030d825fddcb529f8d45e5076cd5f666fc3"
+  },
+  {
+    "project": "HD2SessionJournal",
+    "path": "VALIDATION.md",
+    "classification": "documentation/config; replace or review",
+    "sha256": "f3444822101ca36279092dbe2da9b3a8e9278e6e0c70bab9a81787e78c6ca7f0"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "build\\9ba626afa44a3aa3.patch_0",
+    "classification": "generated; rebuild only",
+    "sha256": "b174c59c95b9d47f32b62fa7dafa52ecca26f6adbd9106932d4b1c7cb3d45e30"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "build\\build-report.json",
+    "classification": "generated; rebuild only",
+    "sha256": "1f92d6d78cb2848c75910b54370954a9c4be3012330dc28ff08359b100ee06e1"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "build\\hd2_armory_hotkey.lua",
+    "classification": "generated; rebuild only",
+    "sha256": "6e1918d1337407b0dff03c58d7f73c87eb05ae959a273ddb687deb0b7250f064"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "build\\HD2ArmoryHotkey-v0.1-Candidate-Arsenal.zip",
+    "classification": "generated; rebuild only",
+    "sha256": "6dba20f60ed56fede33092ba79e16779989b8d7ce57790e2d29d159db1808154"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "docs\\ARMORY_RESEARCH.md",
+    "classification": "documentation/config; replace or review",
+    "sha256": "2357df1a5f2f0f5b2357126a39e356d5eb3b11d93ab7b0c6099ed91fb5cfbba5"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "docs\\CHAT_ELIGIBILITY.md",
+    "classification": "documentation/config; replace or review",
+    "sha256": "812b29c8e5e6579f661da241256f0e92d60b1dbde7ed3df76a397313432b2614"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "docs\\INPUT_RESEARCH.md",
+    "classification": "documentation/config; replace or review",
+    "sha256": "a0dd600797638fa86a1bcb11f87764d911c309b79d6cb63889ad0e38000f0b33"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "docs\\VALIDATION.md",
+    "classification": "documentation/config; replace or review",
+    "sha256": "2ac7a8abfdd845ce449d6289f7b5a29f9731928dbb4da7ecea6d2856bd811ea3"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "HD2ArmoryHotkey.ini.example",
+    "classification": "documentation/config; replace or review",
+    "sha256": "137544f9984cb651baf9091d9190c071b64d6883ab198fdc8eab66479abf17a0"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "README.md",
+    "classification": "documentation/config; replace or review",
+    "sha256": "4aaee8ca27d979ecca0e0706b73178eb5d12122a178503092b0ddbb73ff1da73"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "scripts\\build.py",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "ce3ebd52e915853c52b2bd2565ede34edd9fd8f12ac73ea7a1749ea63566ee0f"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "src\\armory_hotkey.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "6a36c8b0b245a212d15857c5c45732496ebe7260924ea5799cbcd17e2abc2328"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "src\\native_armory.lua",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "cd68511501fafc8a65cdd75ee4fc42f8fa665cf1136ca441636268d610d22c97"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "tests\\test_chat_eligibility.py",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "5e2a3f20e16ff58dd9fb6a6390dc13d33ade4e9723b2f0ac909d3ba9256346fa"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "tests\\test_offline.py",
+    "classification": "public source; sanitize build/test paths",
+    "sha256": "bbaaa14a77af7068bb5067ee0c9f1282cfb42784108551755cb095fd36938698"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat\\core-events.log",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "adef0b8098b97f6c174943887fa9e3e45008637fffcf44576a32c2f80f0296bb"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat\\core-status.log",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "ff2ac40c6ee86f32aaa251a935862505a8afda2f4fd4e77edc4688e47fcf8666"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat\\failed-Core.patch_0",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "1a3fb18432dd34831efe7737449acd15ce35af504c61711befb79320e48d6873"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat\\HD2ArmoryHotkey.ini",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "0873cb7d460f60d18dc19e17179402d5de84049991856d4d53d8ac2faac90e8f"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat\\loader.log",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "baa8e27a7ca8a3c570af5a09b7472aa2a620d72839d2987c37c9a867c3904a3a"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat\\result.json",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "6c151c6983a3cddaaf5756085216e0258a56b1f9e3a2a48b037e0bd4e1bdea1d"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat\\verify_live.py",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "a756670ab6a8c1d2ad2dc19ee391cd150f3e315a1ad3fd9e00abe49c5fc59bf5"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat-receiver\\cleanup.json",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "49031a52a477c25629603186cbea5455799fe958d730fa6097dc95a57cab0769"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat-receiver\\core-events.log",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "2b27ddc22eb1274f9aa1a70350e3b120c34ac68c3f0d2893cc072852befbb55b"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat-receiver\\core-status.log",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "142d0fefda05cebeb36d523171481816538ceedf2d2272a4a92481e1c66f5d7f"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat-receiver\\deployment.json",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "fdff01045771cb230f08a6e3866a2837d67e57168b7a652955672a1deccfa10b"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat-receiver\\HD2ArmoryHotkey.ini",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "0873cb7d460f60d18dc19e17179402d5de84049991856d4d53d8ac2faac90e8f"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat-receiver\\loader.log",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "baa8e27a7ca8a3c570af5a09b7472aa2a620d72839d2987c37c9a867c3904a3a"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat-receiver\\normal-profile-before.json",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "c56dbaabfda026c8af2ab8d2b09c15cfcb6562a7813e3f96dc6e39b81ed39aa1"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat-receiver\\result.json",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "703bdee572c76bb50257311255e0816d197f2610885d794d9ce3389854b957f7"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat-receiver\\unchanged-components.json",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "f0cde32bd6304f5c26e2a390887c1200c1242023569b499d447f82a791d92dd5"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat-receiver\\user-observations.json",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "384f0e9214e751d7542ae9cf4e21c261e100f581e1b368d3622f9c08ada0b005"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\chat-receiver\\verify_live.py",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "5c1f18f6297e8d5e9c4d4666656eacf2347f8535b930e23264b44b7b1ce720ea"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\journal\\core-events.log",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "20346ad33cd1d19ec86e40c5ad6e4bb4686fe94b44db8563ca379e5d7c5e248b"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\journal\\core-status.log",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "63b76d3ea8025db5a6e3bf8f6123232fddedce0ee47d11802282beb14a83280c"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\journal\\HD2SessionJournal.ini",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "f1f1d52f18c50f9d25296859b19eca9e3809f49653d0d12844486932aa43aa77"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\journal\\journal.log",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "88e5197ba31cda26e06836a521fc47b75a3c4a363bad8947fcec603dce35f873"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\journal\\loader.log",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "70aceb6a2833cb8dfebff6a752ef87818c25e3cef109ce966401ca6e986e3f87"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\journal\\result.json",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "baee07ed42b138fdc9c7f5af36a4137503f428b472ecc401ad9e7c75e1ec6933"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\journal\\verify_live.py",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "709816992bc8b651e22f52b2085dce5cdb92b1bbf7cb23e83f886474165f273c"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\ship\\core-events.log",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "f18c13155c081f11f6cbdae09778ba563d2b2edcaea0137a1473bce1375594e6"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\ship\\core-status.log",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "25c4cdadb017d932dd271a9c3312a0143cbf011a35c5d0d58919714b8d5e1f2d"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\ship\\HD2ArmoryHotkey.ini",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "0873cb7d460f60d18dc19e17179402d5de84049991856d4d53d8ac2faac90e8f"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\ship\\loader.log",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "baa8e27a7ca8a3c570af5a09b7472aa2a620d72839d2987c37c9a867c3904a3a"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\ship\\original-armory-build-report.json",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "2a7cb0fbbae9e9c6900e75a396c76d027da3882546a84b404ea4d1ff86c91f7f"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\ship\\original-core-build-report.json",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "67eb19d5aaf2f78ae71b79476c3bd5b8a3f0a2264f655b90a207481ff049fb92"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\ship\\original-tested-Armory.zip",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "9683b1265802dd7a8a08341cc7338eab81a6f32dcaf52d379bede30ac6697de0"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\ship\\original-tested-Core.zip",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "42adde48337ebf4f8bb97de07746f77554532a38ff77dda3c9ef58b64c963975"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\ship\\result.json",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "179aa8bd53bdbfa3dfa978c3cafdceeafc7d2cbc678b73c1e1f2d0bb4241b3ee"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\ship\\user-observations.json",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "42a8300049d34a7e53e5679749385dd0f11c828532bac10a155e7b081e6cb647"
+  },
+  {
+    "project": "HD2ArmoryHotkey",
+    "path": "validation\\ship\\verify_live.py",
+    "classification": "internal evidence; exclude raw records",
+    "sha256": "a052dcda94548a7bc1e1a1a03eda896db06205400ed6a35fed8ee7fd536718c8"
+  }
+]

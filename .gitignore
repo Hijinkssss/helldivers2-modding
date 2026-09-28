@@ -1,0 +1,14 @@
+# Build artifacts
+*.zip
+build/
+__pycache__/
+*.pyc
+
+# Local/IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Temporary files
+*.tmp
+*.log
