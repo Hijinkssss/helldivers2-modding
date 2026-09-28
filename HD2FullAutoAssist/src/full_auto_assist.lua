@@ -10,7 +10,11 @@ local OWNER='hd2_full_auto_assist'
 local schema={enabled={type='boolean',default=true},user_enabled={type='boolean',default=true},
     repeat_ms={type='integer',default=125,min=125,max=1000},
     toggle_hotkey={type='string',default='F8',max_length=16},debug_logging={type='boolean',default=false},
-    validation_logging={type='boolean',default=false}}
+    validation_logging={type='boolean',default=false},
+    -- Fire-rate mode:
+    --   balanced     (default) clamp to 380 RPM ceiling; AMR uses 120 RPM
+    --   native_cap   allow up to each weapon's actual accepted native cap
+    fire_rate_mode={type='string',default='balanced',max_length=16}}
 local function must(r)
     assert(r and r.ok,r and r.error and r.error.detail or 'Core operation failed');return r.value
 end
@@ -87,7 +91,7 @@ function M.install(core,backend_factory,read_config,validation_factory)
         settings=must(core.Config:Load(OWNER,(read_config or config_text)()))
         must(core.Input:ParseKey(settings.toggle_hotkey))
         if not settings.enabled then emit('info','disabled');return end
-        policy=Policy.new(core.Integrations and core.Integrations.HD2Runtime)
+        policy=Policy.new(core.Integrations and core.Integrations.HD2Runtime,settings.fire_rate_mode)
         policy_runtime=core.Integrations and core.Integrations.HD2Runtime
         state=AssistState.new(policy,IDENTITY_VALIDATED)
         state:set_enabled(settings.user_enabled)

@@ -31,4 +31,59 @@ Checks cover whitelist/mixed-mode/unknown/ambiguous/malformed metadata, hash col
 
 Core 0.3.2 adds a generic synchronous read scope. Tests confirm contents are reread, nil-containing results are preserved, nested scopes work, errors invalidate the cache, coroutine calls are rejected, and each new scope requeries regions. Selective state/policy caching preserves fresh ownership checks and avoids duplicate identity polling during active leases. Performance benefit must still be measured in game.
 
+## Weapon policy v2 (feature/full-auto-assist-weapon-policy)
+
+Classification table updated to reflect the full weapon-aware accessibility scope.
+
+### Category assignments
+
+| Weapon | Kind | Category | Balanced RPM | Native Cap RPM |
+|---|---|---|---|---|
+| P-2 Peacemaker | weapon | ASSIST | 380 | 480 |
+| M6C/SOCOM Pistol | weapon | ASSIST | 380 | 480 |
+| P-69 Veto | weapon | ASSIST | 380 | 480 |
+| LAS-58 Talon | weapon | ASSIST | 380 | 480 |
+| R-2 Amendment | weapon | ASSIST | 300 (below ceiling) | 300 |
+| APW-1 Anti-Materiel Rifle | support_weapon | SPECIAL | 120 (explicit override) | 60 |
+| AR-23 Liberator | weapon | IGNORE_NATIVE_AUTO | — | — |
+| LAS-98 Laser Cannon | support_weapon | IGNORE_NATIVE_AUTO | — | — |
+| LAS-99 Quasar Cannon | support_weapon | EXCLUDE_MANUAL_RELOAD | — | — |
+| P-113 Verdict | weapon | REVIEW | — | — |
+| R-63 Diligence | weapon | REVIEW | — | — |
+| R-63CS Diligence Counter Sniper | weapon | REVIEW | — | — |
+
+### Fire-rate mode policy
+
+- **Balanced (default):** generic ceiling 380 RPM; AMR uses 120 RPM override.
+- **Native Weapon Cap:** each weapon's actual accepted native rate; no ceiling applied.
+- Mode is user-selectable via `fire_rate_mode` in the `.ini`.
+
+### Offline test results (feature branch)
+
+- `test_weapon_policy_v2.lua` – all 26 checks passed offline.
+- Fail-closed: unknown weapons return REVIEW/not-allowed. ✅
+- IGNORE_NATIVE_AUTO (Liberator): not assisted. ✅
+- EXCLUDE_MANUAL_RELOAD (Quasar): not assisted. ✅
+- Peacemaker Balanced 380 RPM. ✅
+- Peacemaker Native Cap 480 RPM. ✅
+- SOCOM Balanced 380 RPM. ✅
+- Veto Balanced 380 RPM. ✅
+- Talon Balanced 380 RPM. ✅
+- Amendment eligible (burst-fire, no native Full Auto), Balanced 300 RPM. ✅
+- AMR Balanced 120 RPM. ✅
+- AMR Native Cap 60 RPM. ✅
+- REVIEW weapons fail closed (Verdict). ✅
+- classify() returns detached copies; mutation does not leak. ✅
+- Constants and status fields correct. ✅
+
+### Remaining live validation needed
+
+- All weapon resource hashes except Peacemaker, AMR, and Amendment are **placeholder** values.
+  Live identity validation pass required before release.
+- Per-weapon cadence confirmed as plausible; game-side animation/recoil behaviour
+  at each RPM ceiling not yet confirmed with recorded gameplay.
+- AMR 120 RPM Balanced is provisional; refine after live gameplay pass.
+- REVIEW weapons (Verdict, Diligence, CS Diligence) need fire-mode vector confirmation.
+
+
 Existing universal-candidate observations do not validate the selective candidate. No 125 ms gameplay result has been supplied.
