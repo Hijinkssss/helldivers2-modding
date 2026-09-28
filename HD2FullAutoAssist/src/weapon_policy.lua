@@ -14,15 +14,20 @@
 --   "native_cap" – allow repeat up to each weapon's actual accepted native rate.
 --
 -- RPM -> seconds: interval_s = 60 / rpm
+--
+-- native_cap_rpm verification key (per entry):
+--   VERIFIED   confirmed by user from live game observation
+--   UNRESOLVED placeholder value; must be confirmed before release
+--              UNRESOLVED entries must NOT be tested for specific native-cap values.
 
 local M = {}
 
--- Generic Balanced ceiling: 380 RPM ≈ 157.9 ms interval.
+-- Generic Balanced ceiling: 380 RPM ~= 157.9 ms interval.
 -- Chosen as a plausible trained rapid-manual ceiling without turning
 -- high-cap semi-auto weapons into pseudo-SMGs.
 local BALANCED_CEILING_RPM = 380
 
--- AMR Balanced override: 120 RPM ≈ 500 ms interval.
+-- AMR Balanced override: 120 RPM ~= 500 ms interval.
 -- Conservative because of extreme recoil, no vanilla third-person reticle,
 -- and the precision support role. Provisional; refine after gameplay testing.
 local AMR_BALANCED_RPM = 120
@@ -31,47 +36,51 @@ local AMR_BALANCED_RPM = 120
 local function resolve_interval(entry, fire_rate_mode)
     local native_rpm = entry.native_cap_rpm
     if fire_rate_mode == 'native_cap' then
-        -- Use the weapon's actual accepted cap.
         return 60 / native_rpm
     end
-    -- Balanced mode.
     if entry.balanced_rpm then
-        -- Weapon has an explicit Balanced override (e.g. AMR).
         return 60 / entry.balanced_rpm
     end
-    -- Generic Balanced ceiling.
     local rpm = math.min(native_rpm, BALANCED_CEILING_RPM)
     return 60 / rpm
 end
 
 -- Classification table.
 -- All fields:
---   kind           'weapon' | 'support_weapon'
---   name           exact in-game name string
---   category       ASSIST | IGNORE_NATIVE_AUTO | EXCLUDE_MANUAL_RELOAD | SPECIAL | REVIEW
---   native_cap_rpm accepted maximum fire rate from the game (native cap).
---                  Required for ASSIST and SPECIAL.
---   balanced_rpm   (optional) explicit Balanced override; omit to use generic ceiling.
---   notes          (optional) human-readable annotation.
+--   kind              'weapon' | 'support_weapon'
+--   name              exact in-game name string
+--   category          ASSIST | IGNORE_NATIVE_AUTO | EXCLUDE_MANUAL_RELOAD | SPECIAL | REVIEW
+--   native_cap_rpm    accepted maximum fire rate from the game (native cap).
+--                     Required for ASSIST and SPECIAL. See verification comment per entry.
+--   native_cap_status 'VERIFIED' | 'UNRESOLVED'
+--   balanced_rpm      (optional) explicit Balanced override; omit to use generic ceiling.
+--   notes             (optional) human-readable annotation.
 local ENTRIES = {
     -- ─── SEMI-AUTO PISTOLS ────────────────────────────────────────────────
+
     { kind = 'weapon', name = 'P-2 Peacemaker',
-      category = 'ASSIST', native_cap_rpm = 480,
-      notes = 'High native cap; Balanced clamps to 380 RPM.' },
+      category = 'ASSIST', native_cap_rpm = 900, native_cap_status = 'VERIFIED',
+      notes = 'Verified 900 RPM native cap. Balanced clamps to 380 RPM.' },
 
     { kind = 'weapon', name = 'M6C/SOCOM Pistol',
-      category = 'ASSIST', native_cap_rpm = 480,
-      notes = 'High native cap; Balanced clamps to 380 RPM.' },
+      category = 'ASSIST', native_cap_rpm = 900, native_cap_status = 'UNRESOLVED',
+      -- UNRESOLVED: native RPM not confirmed from any local evidence or user report.
+      -- Conservative placeholder chosen to be safely above 380 so Balanced = 380.
+      -- DO NOT write a test that asserts a specific native-cap value for SOCOM.
+      notes = 'UNRESOLVED native cap (placeholder 900). '..
+              'Must be verified against live game before release. '..
+              'Balanced clamps to 380 RPM regardless of actual cap.' },
 
     { kind = 'weapon', name = 'P-69 Veto',
-      category = 'ASSIST', native_cap_rpm = 480,
-      notes = 'High native cap; Balanced clamps to 380 RPM.' },
+      category = 'ASSIST', native_cap_rpm = 750, native_cap_status = 'VERIFIED',
+      notes = 'Verified 750 RPM native cap. Balanced clamps to 380 RPM.' },
 
     { kind = 'weapon', name = 'P-113 Verdict',
       category = 'REVIEW',
       notes = 'Fire mode vector not yet verified offline; leave REVIEW.' },
 
-    -- ─── SEMI-AUTO RIFLES / ASSAULT ──────────────────────────────────────
+    -- ─── SEMI-AUTO RIFLES ────────────────────────────────────────────────
+
     { kind = 'weapon', name = 'R-63 Diligence',
       category = 'REVIEW',
       notes = 'Semi-auto sniper; cadence not yet validated.' },
@@ -87,27 +96,32 @@ local ENTRIES = {
     -- and cadence. The assist interval governs how quickly the next Fire press
     -- is delivered after the previous burst input, not burst internals.
     { kind = 'weapon', name = 'R-2 Amendment',
-      category = 'ASSIST', native_cap_rpm = 300,
-      notes = 'Burst-fire; no native Full Auto. Repeated Fire chains legal bursts. '..
-              '300 RPM native cap; Balanced clamps to 300 RPM (already below ceiling).' },
+      category = 'ASSIST', native_cap_rpm = 480, native_cap_status = 'VERIFIED',
+      notes = 'Burst-fire; no native Full Auto. Verified 480 RPM native cap. '..
+              'Balanced clamps to 380 RPM (480 > 380 ceiling).' },
 
-    -- ─── LASER / ENERGY WITH NATIVE FULL AUTO ────────────────────────────
-    -- These already have native Full Auto in the R-menu. Ignore completely.
+    -- ─── ENERGY PISTOL ───────────────────────────────────────────────────
+
     { kind = 'weapon', name = 'LAS-58 Talon',
-      category = 'ASSIST', native_cap_rpm = 480,
+      category = 'ASSIST', native_cap_rpm = 750, native_cap_status = 'VERIFIED',
       notes = 'Semi-auto energy pistol with no native Full Auto. '..
-              'High native cap; Balanced clamps to 380 RPM.' },
+              'Verified 750 RPM native cap. Balanced clamps to 380 RPM.' },
+
+    -- ─── WEAPONS WITH NATIVE FULL AUTO (always ignored) ──────────────────
 
     { kind = 'weapon', name = 'AR-23 Liberator',
       category = 'IGNORE_NATIVE_AUTO',
       notes = 'Has native Full Auto in R-menu. Never assist.' },
 
     -- ─── SUPPORT WEAPONS ─────────────────────────────────────────────────
+
     { kind = 'support_weapon', name = 'APW-1 Anti-Materiel Rifle',
-      category = 'SPECIAL', native_cap_rpm = 60, balanced_rpm = AMR_BALANCED_RPM,
+      category = 'SPECIAL', native_cap_rpm = 400, native_cap_status = 'VERIFIED',
+      balanced_rpm = AMR_BALANCED_RPM,
       notes = 'Extreme recoil, no vanilla third-person reticle, precision role. '..
-              'Balanced: '..AMR_BALANCED_RPM..' RPM (provisional). '..
-              'Native Cap: ' .. tostring(60) .. ' RPM. Refine after live gameplay testing.' },
+              'Verified 400 RPM native cap. '..
+              'Balanced: '..tostring(AMR_BALANCED_RPM)..' RPM (provisional special override). '..
+              'Native Cap: 400 RPM. Refine Balanced value after live gameplay testing.' },
 
     { kind = 'support_weapon', name = 'LAS-99 Quasar Cannon',
       category = 'EXCLUDE_MANUAL_RELOAD',
@@ -243,16 +257,12 @@ function M.new(bridge, fire_rate_mode)
 
             -- ASSIST and SPECIAL: verify the weapon is NOT natively full-auto
             -- and that repeated Fire alone continues firing.
-            -- For ASSIST we require single-mode semi-auto or burst (no native full auto).
-            -- For SPECIAL we also require no native full auto.
             if is_assisted(category) then
                 local valid_fire_modes = false
                 if type(modes) == 'table' then
                     local semantics = modes.defaultModeSemantics
                     local allowed   = modes.allowedModes
                     local vector    = modes.nativeModeVector
-                    -- Accept single-mode semi_auto or burst_fire; reject any config
-                    -- that includes a native full_auto mode (mode id 1).
                     local has_full_auto = false
                     if type(vector) == 'table' then
                         for _, v in ipairs(vector) do
@@ -265,15 +275,10 @@ function M.new(bridge, fire_rate_mode)
                         end
                     end
                     local is_single_mode = single(allowed)
-                    -- Valid configurations:
-                    --   single semi_auto mode (no full_auto anywhere in vector)
-                    --   single burst_fire mode (no full_auto anywhere in vector)
-                    --   nil modes table for SPECIAL (AMR has no R-menu mode choice)
                     valid_fire_modes = not has_full_auto and
                         (semantics == 'semi_auto' or semantics == 'burst_fire') and
                         (is_single_mode or entry.category == 'SPECIAL')
                 elseif entry.category == 'SPECIAL' then
-                    -- SPECIAL weapons may have nil modes data (e.g. AMR has no mode selector).
                     valid_fire_modes = (modes == nil or modes == false)
                 end
                 if not valid_fire_modes then
@@ -281,14 +286,10 @@ function M.new(bridge, fire_rate_mode)
                 end
             end
 
-            -- IGNORE_NATIVE_AUTO: no further checks needed, just record it.
-            -- EXCLUDE_MANUAL_RELOAD: likewise.
-
             if by_hash[key] then
                 by_hash[key] = { category = 'REVIEW', allowed = false, reason = 'semantic_hash_collision' }
             else
                 local allowed_flag = is_assisted(category)
-                -- Store base entry reference for runtime interval calculation.
                 local record = {
                     name = identity,
                     semantic_id = entry.kind .. ':' .. identity,
@@ -297,10 +298,10 @@ function M.new(bridge, fire_rate_mode)
                     resource_hash = key,
                     reason = reason,
                     notes = entry.notes,
+                    native_cap_status = entry.native_cap_status,
                 }
                 if allowed_flag then
-                    record._base = entry  -- kept for classify(); stripped before returning
-                    -- Populate at-build-time defaults so tests can read them directly.
+                    record._base = entry
                     if mode == 'native_cap' then
                         record.repeat_seconds = native_interval(entry)
                     else
@@ -308,6 +309,7 @@ function M.new(bridge, fire_rate_mode)
                     end
                     record.repeat_ms = math.floor(record.repeat_seconds * 1000 + 0.5)
                     record.max_repeat_rpm = math.floor(60 / record.repeat_seconds + 0.5)
+                    record.native_cap_rpm = entry.native_cap_rpm
                 end
                 by_hash[key] = record
             end

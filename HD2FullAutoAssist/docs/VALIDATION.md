@@ -34,23 +34,32 @@ Core 0.3.2 adds a generic synchronous read scope. Tests confirm contents are rer
 ## Weapon policy v2 (feature/full-auto-assist-weapon-policy)
 
 Classification table updated to reflect the full weapon-aware accessibility scope.
+Native cap corrections applied 2026-09-28 (corrective commit on feature branch).
+All resource hashes sourced from `selective-checks.json` runtime metadata.
 
-### Category assignments
+### Category assignments and native cap verification
 
-| Weapon | Kind | Category | Balanced RPM | Native Cap RPM |
-|---|---|---|---|---|
-| P-2 Peacemaker | weapon | ASSIST | 380 | 480 |
-| M6C/SOCOM Pistol | weapon | ASSIST | 380 | 480 |
-| P-69 Veto | weapon | ASSIST | 380 | 480 |
-| LAS-58 Talon | weapon | ASSIST | 380 | 480 |
-| R-2 Amendment | weapon | ASSIST | 300 (below ceiling) | 300 |
-| APW-1 Anti-Materiel Rifle | support_weapon | SPECIAL | 120 (explicit override) | 60 |
-| AR-23 Liberator | weapon | IGNORE_NATIVE_AUTO | — | — |
-| LAS-98 Laser Cannon | support_weapon | IGNORE_NATIVE_AUTO | — | — |
-| LAS-99 Quasar Cannon | support_weapon | EXCLUDE_MANUAL_RELOAD | — | — |
-| P-113 Verdict | weapon | REVIEW | — | — |
-| R-63 Diligence | weapon | REVIEW | — | — |
-| R-63CS Diligence Counter Sniper | weapon | REVIEW | — | — |
+| Weapon | Kind | Category | Balanced RPM | Native Cap RPM | Cap Status |
+|---|---|---|---|---|---|
+| P-2 Peacemaker | weapon | ASSIST | 380 | 900 | VERIFIED |
+| M6C/SOCOM Pistol | weapon | ASSIST | 380 | UNRESOLVED | UNRESOLVED |
+| P-69 Veto | weapon | ASSIST | 380 | 750 | VERIFIED |
+| LAS-58 Talon | weapon | ASSIST | 380 | 750 | VERIFIED |
+| R-2 Amendment | weapon | ASSIST | 380 | 480 | VERIFIED |
+| APW-1 Anti-Materiel Rifle | support_weapon | SPECIAL | 120 (override) | 400 | VERIFIED |
+| AR-23 Liberator | weapon | IGNORE_NATIVE_AUTO | — | — | — |
+| LAS-98 Laser Cannon | support_weapon | IGNORE_NATIVE_AUTO | — | — | — |
+| LAS-99 Quasar Cannon | support_weapon | EXCLUDE_MANUAL_RELOAD | — | — | — |
+| P-113 Verdict | weapon | REVIEW | — | — | — |
+| R-63 Diligence | weapon | REVIEW | — | — | — |
+| R-63CS Diligence Counter Sniper | weapon | REVIEW | — | — | — |
+
+> [!NOTE]
+> All Balanced values use `min(native_cap, 380)` except AMR which uses 120 RPM (special override).
+> SOCOM native cap is UNRESOLVED; Balanced = 380 is correct regardless of actual cap.
+> Resource hashes: Peacemaker, Amendment, AMR confirmed by identity-validation evidence.
+> Remaining hashes (Veto, SOCOM, Talon, Verdict, Diligence, CS Diligence) sourced from
+> selective-checks.json runtime metadata; live identity re-validation required before release.
 
 ### Fire-rate mode policy
 
@@ -58,32 +67,41 @@ Classification table updated to reflect the full weapon-aware accessibility scop
 - **Native Weapon Cap:** each weapon's actual accepted native rate; no ceiling applied.
 - Mode is user-selectable via `fire_rate_mode` in the `.ini`.
 
-### Offline test results (feature branch)
+### Offline test results (corrective pass)
 
-- `test_weapon_policy_v2.lua` – all 26 checks passed offline.
-- Fail-closed: unknown weapons return REVIEW/not-allowed. ✅
-- IGNORE_NATIVE_AUTO (Liberator): not assisted. ✅
-- EXCLUDE_MANUAL_RELOAD (Quasar): not assisted. ✅
-- Peacemaker Balanced 380 RPM. ✅
-- Peacemaker Native Cap 480 RPM. ✅
-- SOCOM Balanced 380 RPM. ✅
-- Veto Balanced 380 RPM. ✅
-- Talon Balanced 380 RPM. ✅
-- Amendment eligible (burst-fire, no native Full Auto), Balanced 300 RPM. ✅
-- AMR Balanced 120 RPM. ✅
-- AMR Native Cap 60 RPM. ✅
-- REVIEW weapons fail closed (Verdict). ✅
-- classify() returns detached copies; mutation does not leak. ✅
-- Constants and status fields correct. ✅
+`test_weapon_policy_v2.lua` — all checks passed offline. ✅
 
-### Remaining live validation needed
+| Check | RPM | Hash source | Status |
+|---|---|---|---|
+| Unknown weapon → fail closed | — | — | ✅ |
+| Liberator → IGNORE_NATIVE_AUTO | — | runtime metadata | ✅ |
+| Quasar → EXCLUDE_MANUAL_RELOAD | — | runtime metadata | ✅ |
+| Peacemaker Balanced | 380 | identity evidence | ✅ |
+| Peacemaker Native Cap | 900 (VERIFIED) | identity evidence | ✅ |
+| SOCOM Balanced | 380 | runtime metadata | ✅ |
+| SOCOM Native Cap | NOT TESTED (UNRESOLVED) | — | — |
+| Veto Balanced | 380 | runtime metadata | ✅ |
+| Veto Native Cap | 750 (VERIFIED) | runtime metadata | ✅ |
+| Talon Balanced | 380 | runtime metadata | ✅ |
+| Talon Native Cap | 750 (VERIFIED) | runtime metadata | ✅ |
+| Amendment Balanced | 380 (480 > ceiling) | identity evidence | ✅ |
+| Amendment Native Cap | 480 (VERIFIED) | identity evidence | ✅ |
+| AMR Balanced | 120 (special override) | identity evidence | ✅ |
+| AMR Native Cap | 400 (VERIFIED) | identity evidence | ✅ |
+| Verdict → REVIEW, not allowed | — | runtime metadata | ✅ |
+| Diligence → REVIEW, not allowed | — | runtime metadata | ✅ |
+| classify() returns detached copy | — | — | ✅ |
+| Constants and status fields | — | — | ✅ |
+| Balanced unchanged after native call | — | — | ✅ |
 
-- All weapon resource hashes except Peacemaker, AMR, and Amendment are **placeholder** values.
-  Live identity validation pass required before release.
-- Per-weapon cadence confirmed as plausible; game-side animation/recoil behaviour
-  at each RPM ceiling not yet confirmed with recorded gameplay.
-- AMR 120 RPM Balanced is provisional; refine after live gameplay pass.
-- REVIEW weapons (Verdict, Diligence, CS Diligence) need fire-mode vector confirmation.
+### Remaining pre-release validation needed
+
+- **SOCOM native cap** — UNRESOLVED. Must be confirmed from live game before native_cap mode can be tested for SOCOM.
+- **AMR 120 RPM Balanced** — provisional special override. Refine after live gameplay pass.
+- **REVIEW weapons** (Verdict, Diligence, CS Diligence) — need fire-mode vector confirmation before elevation to ASSIST.
+- **All non-identity-evidence hashes** (Veto, SOCOM, Talon, Verdict, Diligence, CS Diligence) — sourced from runtime metadata snapshot; live identity re-validation pass required.
+- **Per-weapon cadence** — game-side animation, recoil, audio at 380 RPM ceiling not yet recorded.
 
 
 Existing universal-candidate observations do not validate the selective candidate. No 125 ms gameplay result has been supplied.
+
