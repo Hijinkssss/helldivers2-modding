@@ -128,8 +128,8 @@ check('veto_native_cap_rpm',  veto_native.native_cap_rpm == 750)
 local talon = p_balanced:classify('416d053372c4e433')
 check('talon_allowed',         talon.allowed,
       'Talon not ASSIST: '..tostring(talon.category)..'/'..tostring(talon.reason))
--- Balanced: min(750, 380) = 380
-check('talon_balanced_380',    approx(talon.max_repeat_rpm, 380),
+-- RC2 battery-efficiency override.
+check('talon_balanced_60',    approx(talon.max_repeat_rpm, 60),
       'got '..tostring(talon.max_repeat_rpm))
 check('talon_verified_status', talon.native_cap_status == 'VERIFIED')
 

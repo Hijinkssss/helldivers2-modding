@@ -34,6 +34,9 @@ local BALANCED_CEILING_RPM = 380
 -- and the precision support role. Provisional; refine after gameplay testing.
 local AMR_BALANCED_RPM = 120
 
+-- Battery-efficiency candidate; heat-neutral operation is not established.
+local TALON_BALANCED_RPM = 60
+
 -- Derive the interval (seconds) for a given entry and fire_rate_mode.
 local function resolve_interval(entry, fire_rate_mode)
     local native_rpm = entry.native_cap_rpm
@@ -104,8 +107,9 @@ local ENTRIES = {
 
     { kind = 'weapon', name = 'LAS-58 Talon',
       category = 'ASSIST', native_cap_rpm = 750, native_cap_status = 'VERIFIED',
+      balanced_rpm = TALON_BALANCED_RPM,
       notes = 'Semi-auto energy pistol with no native Full Auto. '..
-              'Verified 750 RPM native cap. Balanced clamps to 380 RPM.' },
+              'Verified 750 RPM native cap. Balanced 60 RPM battery-efficiency candidate; live follow-up required.' },
 
     -- ─── WEAPONS WITH NATIVE FULL AUTO (always ignored) ──────────────────
 
@@ -323,5 +327,6 @@ end
 -- Expose constants for tests.
 M.BALANCED_CEILING_RPM = BALANCED_CEILING_RPM
 M.AMR_BALANCED_RPM     = AMR_BALANCED_RPM
+M.TALON_BALANCED_RPM   = TALON_BALANCED_RPM
 
 return M
