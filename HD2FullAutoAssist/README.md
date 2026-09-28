@@ -1,35 +1,52 @@
-# HD2 Full Auto Assist v0.1.1: selective live validation candidate
+# HD2 Full Auto Assist v0.1.2 current-patch validation candidate
 
-The held-weapon route passed read-only idle Amendment/Peacemaker/AMR swaps and player-state invalidation. The source identity gate is now enabled for a **Peacemaker-only selective firing validation candidate**. This is not a selective gameplay pass or a release candidate. The previous identity-gated ZIP remains a rollback artifact.
+Full Auto Assist repeats normal Fire while the player holds Fire on explicitly approved weapons. The game decides whether each shot or burst is accepted. It changes no damage, recoil, ammunition or projectile data and automates no reloads, aiming, recoil compensation or combos.
 
-Use Shared Loader v18, HD2ModCore v0.3.2 Runtime bridge candidate and separately installed HD2Runtime 0.24.0+. Missing Runtime disables selective assistance cleanly and leaves normal Fire behavior. Neither dependency is embedded. Nothing has been installed or deployed by the build script.
+This package is prepared for controlled validation on Steam build **25480438**. Earlier Peacemaker-only selective behavior was observed working; this expanded policy and its current cadence values have not passed live validation. Do not publish v0.1 yet.
 
-This validation build requires the reviewed Runtime **0.24.0** during identity resolution. A disconnected/replaced bridge or lost weapon capability invalidates the shared state and restores an active lease. Dependency loss never grants eligibility. Only Peacemaker is an ASSIST candidate; all other entries remain vanilla.
+Required, separately installed dependencies: **Bingus Shared Loader v18 / API 1**, **HD2ModCore 0.3.2-runtime-candidate / API 1** from `integrations/HD2ModCore-runtime-candidate`, and **HD2Runtime exactly 0.24.0 / API 1**, reviewed at commit `fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595`. The consumer checks Runtime 0.24.0 during identity resolution. A missing, disconnected or replaced Runtime leaves assistance unavailable and restores an active lease. No dependency is embedded. The Core build fingerprints and native input anchors remain mandatory.
 
-`validation_logging=true` enables bounded local JSONL collection in `%LOCALAPPDATA%/CowboyBingus/Helldivers2/Logs/HD2FullAutoAssistValidation.jsonl`. Records carry a unique run ID, sequence and in-process monotonic timestamp. State changes, input edges, observed Fire events, acquisition/restoration and warnings/errors are recorded. Native Fire is observed while the toggle is OFF without acquiring a lease. Records are buffered and flushed at most once per second, with five-second cumulative cost histograms and Core diagnostics. The collector preserves each run before a restart overwrites the live file. It adds no scheduler subscription.
+## Weapon policy and cadence
 
-Costs include identity resolution, full callback, idle/held update, repeat controller and trace flush. The reported p95 is an upper bound from fixed histogram bins. Policy cache hits/misses, region cache hits, memory reads and scheduler counters accompany the cost records. Raw left-mouse state is also sampled, but its association with the configured Fire binding is unverified. Input events measure attempts, never successful shots, mechanical RPM, animation or audio. Timing and in-game overhead remain pending until live records exist.
+| Weapon | Category | Balanced RPM | Native Cap RPM | Value source |
+|---|---|---:|---:|---|
+| P-2 Peacemaker | ASSIST | 380 | 900 | Existing user-confirmed policy |
+| M6C/SOCOM Pistol | ASSIST | 380 | 900 | Existing user-confirmed policy |
+| P-69 Veto | ASSIST | 380 | 750 | Existing user-confirmed policy |
+| LAS-58 Talon | ASSIST | 380 | 750 | Existing user-confirmed policy |
+| R-2 Amendment | ASSIST | 380 | 480 | Existing user-confirmed policy; semi/burst vector |
+| P-113 Verdict | ASSIST | 380 | 450 | Reviewed current-build Runtime snapshot |
+| R-63 Diligence | ASSIST | 350 | 350 | Reviewed current-build Runtime snapshot |
+| R-63CS Diligence Counter Sniper | ASSIST | 350 | 350 | Reviewed current-build Runtime snapshot |
+| APW-1 Anti-Materiel Rifle | SPECIAL | 120 | 400 | Existing user-confirmed policy; Balanced override provisional |
+| AR-23 Liberator | IGNORE_NATIVE_AUTO | — | — | Native Full Auto; always vanilla |
+| LAS-99 Quasar Cannon | EXCLUDE_CHARGE_HOLD | — | — | Charge/hold; always vanilla |
+| LAS-98 Laser Cannon | REVIEW in practice | — | — | Multiple resource identities prevent mapping; always vanilla |
 
-The prepared live-test configuration starts `user_enabled=false`, uses 125 ms, and enables validation logging. F8 turns assistance on. The normal example keeps validation logging disabled and retains the user's startup preference. The full guarded identity walk is retained pending measured in-game cost and a validated faster observer; no stale cached identity may authorize a repeat lease. Resolved semantic policy is cached and avatar, entity, resource, invalid snapshot and Runtime transitions invalidate effective state.
+Balanced is the default: `min(native_cap_rpm, 380)`, except AMR at 120. Native Cap uses the per-weapon value in the table. These values select input intervals, not guaranteed measured shot rates. The three new caps are marked `RUNTIME_SNAPSHOT`, because metadata confirmation is distinct from accepted live shots. Their evidence is in `docs/weapon-policy-evidence.json`.
 
-## Policy and state
+Use `fire_rate_mode=balanced` or `fire_rate_mode=native_cap` in the INI. `repeat_ms=0` selects the policy interval. A positive integer through 1000 can only slow it down: actual interval is `max(repeat_ms/1000, 60/policy_rpm)`. Existing positive values remain respected, so an old `repeat_ms=125` caps 900-RPM Native Cap input to 480 attempts/minute. Use zero for the requested Native Cap values. Invalid mode names fail configuration loading.
 
-The consumer owns an explicit whitelist. Only P-2 Peacemaker is an ASSIST candidate, with a provisional ceiling retaining the previous 125 ms interval (480 input attempts/minute). This is not a verified shot rate or native weapon RPM. Native weapon data and its mechanical shot limits are untouched. Cadence must still be validated; a slower configured interval is supported.
+All unlisted, ambiguous, unknown or malformed identities stay REVIEW/vanilla. Metadata can veto explicit approval and cannot add weapons. Any native Full Auto option vetoes assistance on an approved weapon. The only approved semi/burst combination is Amendment's reviewed native vector `[2,3,0]`; Runtime's filtered `allowedModes` alone does not describe that vector. No automatic R-menu discovery is attempted. Laser Cannon's static category is IGNORE_NATIVE_AUTO, but its ambiguous identity fails closed before mapping.
 
-Verdict, Veto, M6C/SOCOM Pistol, Talon, Diligence, Diligence Counter Sniper and AMR are REVIEW candidates pending semantic and gameplay evidence. Liberator and Amendment are REVIEW for all modes. Quasar is IGNORE. Laser Cannon's ambiguous resources remain REVIEW/vanilla. All unlisted, ambiguous, mixed-mode, malformed or unknown identities remain vanilla. Metadata cannot automatically approve a weapon.
+## Controls and limitations
 
-The public Runtime API resolves semantic metadata once at startup. Subsequent classification uses the local policy map and unchanged identities reuse the resolved state. The observer retains its full guarded graph. Core 0.3.2 shares region-query validation within the firing callback and always rereads memory contents. Actual in-game performance is pending.
+`enabled=false` disables the consumer. F8 changes the global user toggle; it persists across weapon swaps within the session, but is not saved to disk. `user_enabled` selects the startup preference. The validation INI starts OFF, selects Balanced at policy cadence, and enables debug and validation records. The normal example starts ON with validation logging disabled.
 
-`consumer:get_state()` returns a detached copy of one consumer-owned state: user toggle, held entity/hash/semantic identity, classification, identity confidence, effective assistance, and repeat lease activity. Identity observed through the candidate route is distinct from identity validated live. The future HUD must consume this same state. No HUD has been implemented yet.
+Release restores the input mapping on the next observed update. Weapon/entity/player changes, toggle changes, menu/chat/focus guards and identity or Runtime failure restore a lease and require Fire release before restarting. The guarded held-weapon observer and selective cache remain intact. Axis mappings remain vanilla. No HUD is included.
 
-F8 changes the global user toggle and does not change on weapon swaps. This persistence is within the running session. `user_enabled` selects the startup preference; pressing F8 does not save a file. `enabled=false` disables the consumer entirely. `repeat_ms` supports 125 through 1000 ms and is bounded by the explicit per-weapon ceiling. Unsupported input mappings remain vanilla.
+Known limits: exact current build only; 0.24.0 Runtime only; accepted shot cadence and audio/animation remain unverified for this package; AMR 120 is provisional; held identities beyond the earlier Peacemaker/Amendment/AMR observations need live confirmation; brief identity windows between polls are unmeasured. Veto, SOCOM and Talon remain existing candidates and are outside this pass's requested live matrix, so this matrix alone cannot establish their release compatibility. Scheduler budgets are advisory; review aggregate slow counts as well as warning lines. Core logs the first and every hundredth over-budget callback.
 
-Idle diagnostic polling runs at most once every 100 ms, including while the user toggle is OFF. It skips duplicate work during an active lease because the firing callback revalidates identity every update. Any entity, hash, player, policy or identity invalidation terminates the lease on the next observed update and requires Fire release before restart. These controller paths have only synthetic offline validation until live firing checks are recorded.
+## Build and validation
 
-## Validation and deployment
+From the repository root, using Python with Lupa/LuaJIT 2.1 installed:
 
-See `docs/VALIDATION.md`, `docs/identity-validation.json` and `build/selective-checks.json` for evidence, exact hashes and scope. The builder verifies the recorded observer source and capture hashes before enabling packaging. The package contains one selective option, with no universal or Maximum variant. It retains the same addon identity as the original consumer and should not be enabled alongside it.
+```text
+python HD2FullAutoAssist/scripts/build.py --identity-records <preserved-original-identity-directory>
+python HD2FullAutoAssist/tests/run_weapon_policy_v2.py
+python HD2FullAutoAssist/tests/run.py --runtime-path <lupa-parent-directory> --loader-source <Loader-v18-src/discover.lua> --hd2runtime-source <reviewed-Runtime-root> --identity-records <preserved-original-identity-directory>
+```
 
-After replacing the original consumer/Core with these candidates and installing Runtime, validate Peacemaker hold/release/toggle and swaps to Amendment/AMR. These latter two must remain vanilla and the global toggle must persist. Measure the actual callback cost before adding further ASSIST entries. Broader representative native-auto/charge checks and HUD integration follow reliable selective behavior.
+The original identity captures must match their recorded hashes. The preserved repository contains CRLF source, while the observed source receipt uses LF; the builder normalizes only line endings for the observer comparison and Lua bundle. It does not replace the observer or manufacture identity proof. The runner checks real reviewed Runtime metadata offline without accessing a game process.
 
-This is **not release-candidate ready**. Live identity evidence is established only for the observed states. Selective firing, HUD, in-game callback cost and gameplay cadence remain unvalidated. Animation-relative timing and input-to-identity latency were not measured; brief windows between 50 ms polls cannot be excluded.
+Output: `build/HD2FullAutoAssist-v0.1.2-Current-Patch-Validation-Arsenal.zip`. One Arsenal option, same existing addon GUID; do not enable another Full Auto Assist instance. Building does not install, deploy or launch anything. Follow `docs/NEXT_TEST.md` for one controlled session and `docs/VALIDATION.md` for evidence boundaries.

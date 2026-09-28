@@ -161,7 +161,7 @@ function M.new(core,make_adapter)
     function self:begin(row,repeat_seconds)
         repeat_seconds=repeat_seconds or REPEAT_SECONDS
         assert(type(repeat_seconds)=='number' and repeat_seconds==repeat_seconds and
-            repeat_seconds>=0.125 and repeat_seconds<=1,'Invalid consumer repeat cadence')
+            repeat_seconds>=60/900 and repeat_seconds<=1,'Invalid consumer repeat cadence')
         assert(not self.lease and row.held and row.gameplay,'Invalid Fire lease request')
         local at,count,header=bucket(row.owner)
         local l={owner=row.owner,bucket=at,count=count,header=header,records={}}

@@ -1,4 +1,4 @@
-﻿-- Consumer weapon classification table.
+-- Consumer weapon classification table.
 -- Metadata can veto approval; it can never grant approval.
 -- Policy categories:
 --   ASSIST               eligible for Full Auto Assist
@@ -17,6 +17,8 @@
 --
 -- native_cap_rpm verification key (per entry):
 --   VERIFIED   confirmed by user from live game observation
+--   RUNTIME_SNAPSHOT confirmed by reviewed current-build Runtime metadata;
+--                    accepted live shot cadence still requires validation
 --   UNRESOLVED placeholder value; must be confirmed before release
 --              UNRESOLVED entries must NOT be tested for specific native-cap values.
 
@@ -52,7 +54,7 @@ end
 --   category          ASSIST | IGNORE_NATIVE_AUTO | EXCLUDE_CHARGE_HOLD | SPECIAL | REVIEW
 --   native_cap_rpm    accepted maximum fire rate from the game (native cap).
 --                     Required for ASSIST and SPECIAL. See verification comment per entry.
---   native_cap_status 'VERIFIED' | 'UNRESOLVED'
+--   native_cap_status 'VERIFIED' | 'RUNTIME_SNAPSHOT' | 'UNRESOLVED'
 --   balanced_rpm      (optional) explicit Balanced override; omit to use generic ceiling.
 --   notes             (optional) human-readable annotation.
 local ENTRIES = {
@@ -71,18 +73,21 @@ local ENTRIES = {
       notes = 'Verified 750 RPM native cap. Balanced clamps to 380 RPM.' },
 
     { kind = 'weapon', name = 'P-113 Verdict',
-      category = 'REVIEW',
-      notes = 'Fire mode vector not yet verified offline; leave REVIEW.' },
+      category = 'ASSIST', native_cap_rpm = 450, native_cap_status = 'RUNTIME_SNAPSHOT',
+      notes = 'Runtime 0.24.0: semi-only [2,0,0], conventional projectile. '..
+              'Snapshot cap 450 RPM; Balanced 380. Live cadence pending.' },
 
     -- ─── SEMI-AUTO RIFLES ────────────────────────────────────────────────
 
     { kind = 'weapon', name = 'R-63 Diligence',
-      category = 'REVIEW',
-      notes = 'Semi-auto sniper; cadence not yet validated.' },
+      category = 'ASSIST', native_cap_rpm = 350, native_cap_status = 'RUNTIME_SNAPSHOT',
+      notes = 'Runtime 0.24.0: semi-only [2,0,0], conventional projectile. '..
+              'Snapshot cap and Balanced 350 RPM. Live cadence pending.' },
 
     { kind = 'weapon', name = 'R-63CS Diligence Counter Sniper',
-      category = 'REVIEW',
-      notes = 'Semi-auto sniper; cadence not yet validated.' },
+      category = 'ASSIST', native_cap_rpm = 350, native_cap_status = 'RUNTIME_SNAPSHOT',
+      notes = 'Runtime 0.24.0: semi-only [2,0,0], conventional projectile. '..
+              'Snapshot cap and Balanced 350 RPM. Live cadence pending.' },
 
     -- ─── BURST-FIRE ───────────────────────────────────────────────────────
     -- Burst weapons without native Full Auto are eligible.
@@ -92,7 +97,7 @@ local ENTRIES = {
     -- is delivered after the previous burst input, not burst internals.
     { kind = 'weapon', name = 'R-2 Amendment',
       category = 'ASSIST', native_cap_rpm = 480, native_cap_status = 'VERIFIED',
-      notes = 'Burst-fire; no native Full Auto. Verified 480 RPM native cap. '..
+      notes = 'Semi/burst modes; no native Full Auto. Verified 480 RPM native cap. '..
               'Balanced clamps to 380 RPM (480 > 380 ceiling).' },
 
     -- ─── ENERGY PISTOL ───────────────────────────────────────────────────
@@ -258,21 +263,22 @@ function M.new(bridge, fire_rate_mode)
                     local semantics = modes.defaultModeSemantics
                     local allowed   = modes.allowedModes
                     local vector    = modes.nativeModeVector
-                    local has_full_auto = false
+                    local mode_id = semantics == 'semi_auto' and 2 or
+                                    semantics == 'burst_fire' and 3 or nil
+                    -- Runtime allowedModes filters the native vector. Check both;
+                    -- only the explicitly approved Amendment may retain semi/burst.
+                    local valid_vector = type(vector) == 'table' and vector[1] == mode_id and
+                        vector[2] == 0 and vector[3] == 0
+                    if entry.name == 'R-2 Amendment' and type(vector) == 'table' then
+                        valid_vector = vector[1] == mode_id and vector[2] == 3 and vector[3] == 0
+                    end
                     if type(vector) == 'table' then
-                        for _, v in ipairs(vector) do
-                            if v == 1 then has_full_auto = true; break end
+                        for key in pairs(vector) do
+                            if key ~= 1 and key ~= 2 and key ~= 3 then valid_vector = false end
                         end
                     end
-                    if type(allowed) == 'table' then
-                        for _, v in ipairs(allowed) do
-                            if v == 1 then has_full_auto = true; break end
-                        end
-                    end
-                    local is_single_mode = single(allowed)
-                    valid_fire_modes = not has_full_auto and
-                        (semantics == 'semi_auto' or semantics == 'burst_fire') and
-                        (is_single_mode or entry.category == 'SPECIAL')
+                    valid_fire_modes = mode_id ~= nil and single(allowed) and
+                        allowed[1] == mode_id and valid_vector
                 elseif entry.category == 'SPECIAL' then
                     valid_fire_modes = (modes == nil or modes == false)
                 end

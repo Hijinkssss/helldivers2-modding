@@ -25,7 +25,7 @@ focused=true;fire=false;tick(520);fire=true;tick(540);gameplay=false;tick(560);a
 gameplay=true;fire=false;tick(580);fire=true;tick(600);assert(backend.lease)
 tick(800,true);assert(not a:get_state().user_enabled and not backend.lease)
 resource_hash='35a61296619cc47e';entity_id=1004;fire=false;tick(1000,false)
-assert(a:get_state().eligibility.category=='IGNORE' and not a:get_state().user_enabled)
+assert(a:get_state().eligibility.category=='EXCLUDE_CHARGE_HOLD' and not a:get_state().user_enabled)
 resource_hash='05e4e5c2db6e44a2';entity_id=1001;tick(1200,false)
 assert(not a:get_state().user_enabled and not a:get_state().effective,'Toggle OFF survives swaps')
 tick(1400,true);assert(a:get_state().user_enabled)

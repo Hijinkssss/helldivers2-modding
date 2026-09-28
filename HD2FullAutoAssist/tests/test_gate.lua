@@ -4,7 +4,7 @@ assert(a:get_state().weapon.name=='P-2 Peacemaker' and a:get_state().eligibility
 assert(not a:get_state().identity_valid and not a:get_state().effective and not a:get_state().repeat_active)
 assert(backend.writes==0 and backend.starts==0 and a:status().counters.input_checks==0)
 resource_hash='968211c0033dce64';tick(240)
-assert(a:get_state().user_enabled and a:get_state().eligibility.category=='REVIEW')
+assert(a:get_state().user_enabled and a:get_state().eligibility.category=='IGNORE_NATIVE_AUTO')
 tick(400,true);assert(not a:get_state().user_enabled)
 resource_hash='05e4e5c2db6e44a2';tick(600,false);assert(not a:get_state().user_enabled)
 assert(not a:status().failed and core.Diagnostics:Status().scheduler.failures==0)

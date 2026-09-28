@@ -183,17 +183,23 @@ check('amr_native_cap_rpm',   amr_native.native_cap_rpm == 400)
 check('amr_native_seconds',   approx_s(amr_native.repeat_seconds, rpm_to_s(400)),
       'got '..tostring(amr_native.repeat_seconds))
 
--- ── 11. REVIEW weapons fail closed ───────────────────────────────────────────
-
--- P-113 Verdict (hash from runtime metadata)
-local verdict = p_balanced:classify('1a437158e1b8d2a1')
-check('verdict_not_allowed', not verdict.allowed)
-check('verdict_review',      verdict.category == 'REVIEW')
-
--- R-63 Diligence (hash from runtime metadata)
-local diligence = p_balanced:classify('03e67a19b07c6523')
-check('diligence_not_allowed', not diligence.allowed)
-check('diligence_review',      diligence.category == 'REVIEW')
+-- ── 11. Three current-build snapshot promotions ─────────────────────────────
+for _, row in ipairs({{'verdict','1a437158e1b8d2a1',450,380},
+                     {'diligence','03e67a19b07c6523',350,350},
+                     {'diligence_cs','4c786785c79d44e7',350,350}}) do
+    local b, n = p_balanced:classify(row[2]), p_native:classify(row[2])
+    check(row[1]..'_assist', b.allowed and n.allowed and b.category == 'ASSIST')
+    check(row[1]..'_snapshot_status', b.native_cap_status == 'RUNTIME_SNAPSHOT')
+    check(row[1]..'_native_cap', n.native_cap_rpm == row[3] and n.max_repeat_rpm == row[3])
+    check(row[1]..'_balanced_cap', b.max_repeat_rpm == row[4])
+    check(row[1]..'_native_interval', approx_s(n.repeat_seconds, rpm_to_s(row[3])))
+    check(row[1]..'_balanced_interval', approx_s(b.repeat_seconds, rpm_to_s(row[4])))
+    local bridge, metadata, modes = policy_fixture()
+    modes[b.name] = {defaultModeSemantics='semi_auto',allowedModes={2},nativeModeVector={2,1,0}}
+    check(row[1]..'_native_auto_veto', not Policy.new(bridge):classify(row[2]).allowed)
+    bridge, metadata, modes = policy_fixture(); modes[b.name] = nil
+    check(row[1]..'_missing_modes_veto', not Policy.new(bridge):classify(row[2]).allowed)
+end
 
 -- ── 12. classify() returns detached copies (mutation does not leak) ───────────
 

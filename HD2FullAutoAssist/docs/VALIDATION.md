@@ -1,106 +1,46 @@
-﻿# Selective v0.1.1 live validation scope
+# Current-patch v0.1 validation scope
 
-The local automated collector and stage analyzer are in `../HD2FullAutoAssist/validation/selective-live-2026-09-28` relative to the candidate root's parent. Startup gates require a running process, matching exact file fingerprints, four deployed archives matching the prepared artifacts, one loaded instance per dependency/consumer, fresh logs, Runtime 0.24.0, expected policy, no Core/consumer failures and contiguous trace records. Expected source-known Core degradation is recorded separately from startup errors. Held Peacemaker identity and an inactive lease are checked before the first firing request.
+## Exact build and dependencies
 
-Offline checks cover trace collection while OFF, cleanup, Runtime disconnect, escaped JSON, stage evidence boundaries, forbidden leases, repeat-after-release, loss of trace records and cadence arithmetic. These are fixtures, not live results. A stage may pass objective input checks while native shots, animation/audio and mechanical limits remain unverified. The system does not automatically label gameplay or release validation complete.
+Prepared 2026-09-28 for Steam build 25480438. Installed files were read and rehashed during this pass:
 
-2026-09-28. Exact guarded layout: Steam build 25480438, game.dll SHA256 `2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E`, EXE SHA256 `F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06`.
+- game.dll: `2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E`
+- helldivers2.exe: `F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06`
 
-Reviewed Runtime: 0.24.0, commit `fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595`. Public metadata only; no Runtime implementation is embedded.
+Dependencies: Loader v18/API 1; Core 0.3.2-runtime-candidate/API 1; Runtime exactly 0.24.0/API 1 at `fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595`. No game process is accessed by the offline runners. Build checks do not demonstrate gameplay.
 
-## Offline scope
+## Classification evidence for this pass
 
-The runner exercises the enabled selective controller against synthetic state/mapping fixtures and an in-memory closed-gate copy as a regression check. It never writes game memory. The source gate was enabled only after the identity evidence below was recorded and reviewed; this does not demonstrate selective gameplay.
+The reviewed Runtime checkout was clean and matched its recorded commit and audited API hashes. Its `hd2.weapon(name):describe()` and `:fire_modes()` public methods were executed offline. The authoring catalog identifies snapshot `F5FEE03DCFDB-20260926T222226Z.hd2snap` with both installed fingerprints above.
 
-Checks cover whitelist/mixed-mode/unknown/ambiguous/malformed metadata, hash collisions, dependency absence, metadata caching, held entity/hash/player invalidation, toggle persistence, guarded lease restoration, chat/menu/focus guards, failure rollback, cancellation/unload, cadence bounds, actual Runtime public metadata, Loader v18 discovery, and source/archive/package parity. Passing results and hashes are written only after the runner completes successfully.
+| Weapon | Hash | Native modes | Native RPM | Balanced RPM | Result |
+|---|---|---|---:|---:|---|
+| P-113 Verdict | 1a437158e1b8d2a1 | [2,0,0], semi_auto | 450 | 380 | ASSIST candidate |
+| R-63 Diligence | 03e67a19b07c6523 | [2,0,0], semi_auto | 350 | 350 | ASSIST candidate |
+| R-63CS Diligence Counter Sniper | 4c786785c79d44e7 | [2,0,0], semi_auto | 350 | 350 | ASSIST candidate |
 
-## Live status
+Each has one UNIQUE resource, `allowedModes=[2]`, no native mode 1 (Full Auto), and implementation family `conventional_projectile`. Repeated normal Fire is the intended continuation input inferred from those semi-only conventional projectile semantics; no charge/hold mode is present. The controlled live pass must confirm actual repetition.
 
-- Held identity: passed for idle Amendment, Peacemaker and AMR in the observed mission.
-- Controlled primary/secondary/support/back cycle: 866 samples, all guards passed, no observed nulls.
-- Player invalidation: observed no-local-unit interval, new unit/avatar, then no held weapon during requested return to ship. Old mission identity was not retained.
-- Animation-relative timing, actual input-to-identity latency and sub-poll null windows: not measured/excluded.
-- Selective semi-auto, native auto, mixed/burst, charge/hold preservation: pending.
-- Per-weapon cadence: pending; 125 ms retains the previous provisional setting.
-- Actual lookup, state-change, idle and repeat callback costs: pending.
-- HUD insertion and synchronization: pending; no safe insertion route established.
-- Arsenal UI/import/deployment: not performed.
-- Release readiness: blocked by missing live evidence.
+Fire-rate evidence comes from the Runtime field `weapon.fire_rate`, `ProjectileWeaponComponentData`, f32 offset 8. Verdict record/index row: 233/540; Diligence: 221/507; Counter Sniper: 222/259. The full compact receipt, source hashes and field provenance are in `weapon-policy-evidence.json`. Runtime explicitly marks these fields `gameplay_proven=false`, `native_consumer_proven=false` and `current_live_ownership_proven=false`. Accordingly, all three caps are `RUNTIME_SNAPSHOT`, not claimed live-verified accepted rates. No weapon-stat field is read from or written to a game process by this evidence pass.
 
-`identity-validation.json` compiles seven captures / 3217 samples with their hashes, raw identities, guard outcomes and transition observation intervals. External lookup averaged 1628.634 us with maximum 5012.2 us; those include Python/Lua/remote-read overhead and are not deployed callback measurements. The temporary unknown item `16f397ca5f51f271` remains REVIEW, consistent in timing with the user's AMR call-down but semantically unidentified.
+Existing policy stays at Peacemaker/SOCOM 900/380, Veto/Talon 750/380, Amendment 480/380, and AMR 400/120. AMR remains SPECIAL with its provisional Balanced override. Liberator remains IGNORE_NATIVE_AUTO; Quasar remains EXCLUDE_CHARGE_HOLD; unknown identities remain REVIEW. Laser Cannon's multiple resources fail the single-resource guard and leave it REVIEW/vanilla. No additional weapon is added.
 
-Core 0.3.2 adds a generic synchronous read scope. Tests confirm contents are reread, nil-containing results are preserved, nested scopes work, errors invalidate the cache, coroutine calls are rejected, and each new scope requeries regions. Selective state/policy caching preserves fresh ownership checks and avoids duplicate identity polling during active leases. Performance benefit must still be measured in game.
+The actual Amendment metadata has native `[2,3,0]`, default semi_auto, filtered `allowedModes=[2]`. Its corrected fixture uses that actual vector. The consumer's explicit Amendment approval permits its semi/burst vector and never permits native Full Auto. Other mixed/unknown vectors still fail closed.
 
-## Weapon policy v2 (feature/full-auto-assist-weapon-policy)
+## Offline verification
 
-Classification table updated to reflect the full weapon-aware accessibility scope.
-Native cap corrections applied 2026-09-28 (corrective commit on feature branch).
-All resource hashes sourced from `selective-checks.json` runtime metadata.
+The original full runner is retained and reconciled with policy v2, including its previously stale Peacemaker-only assertions. It covers metadata caching and vetoes, collisions, malformed identity, closed identity gate, swaps/toggle/player transitions, chat/menu/focus guards, OFF-state traces, Runtime disconnect, config rejection, startup preference, failure rollback, restoration retries, cancellation and unload. Existing native mapping tests retain exact restoration, edit preservation and axis exclusion checks.
 
-### Category assignments and native cap verification
+Added checks verify each promoted weapon in Balanced and Native Cap, missing/native-auto metadata vetoes, policy values through the installed controller, AMR SPECIAL activation, eligible-to-eligible held swaps, negative controls, and a slower explicit override. Native mapping fixtures exercise all distinct candidate intervals: 900, 750, 480, 450, 400, 380, 350 and 120 RPM. The adapter only lowers its accepted interval bound to 60/900; its input mechanism, build anchors and restoration logic are retained.
 
-| Weapon | Kind | Category | Balanced RPM | Native Cap RPM | Cap Status |
-|---|---|---|---|---|---|
-| P-2 Peacemaker | weapon | ASSIST | 380 | 900 | VERIFIED |
-| M6C/SOCOM Pistol | weapon | ASSIST | 380 | 900 | VERIFIED |
-| P-69 Veto | weapon | ASSIST | 380 | 750 | VERIFIED |
-| LAS-58 Talon | weapon | ASSIST | 380 | 750 | VERIFIED |
-| R-2 Amendment | weapon | ASSIST | 380 | 480 | VERIFIED |
-| APW-1 Anti-Materiel Rifle | support_weapon | SPECIAL | 120 (override) | 400 | VERIFIED |
-| AR-23 Liberator | weapon | IGNORE_NATIVE_AUTO | — | — | — |
-| LAS-98 Laser Cannon | support_weapon | IGNORE_NATIVE_AUTO | — | — | — |
-| LAS-99 Quasar Cannon | support_weapon | EXCLUDE_CHARGE_HOLD | — | — | — |
-| P-113 Verdict | weapon | REVIEW | — | — | — |
-| R-63 Diligence | weapon | REVIEW | — | — | — |
-| R-63CS Diligence Counter Sniper | weapon | REVIEW | — | — | — |
+The runner compares promotions to real pinned Runtime metadata, checks source hashes, compiles and executes the bundle in an isolated missing-game fixture, performs Loader v18 discovery, verifies archive format, and checks packaged-source/config/document parity. It writes `build/selective-checks.json` and marks `build/build-report.json` offline-tested only after every check completes. The standalone v2 runner also writes `tests/weapon_policy_v2_results.json`; a skip is not a passing test.
 
-> [!NOTE]
-> All Balanced values use `min(native_cap, 380)` except AMR which uses 120 RPM (special override).
+The builder still verifies every original capture SHA256 and the observer source against `identity-validation.json`. Only CRLF-to-LF normalization is allowed for the source comparison. No capture is regenerated. `native_fire.lua` remains current-build-specific; update resilience and backend architecture changes are deferred.
 
-> Resource hashes: Peacemaker, Amendment, AMR confirmed by identity-validation evidence.
-> Remaining hashes (Veto, SOCOM, Talon, Verdict, Diligence, CS Diligence) sourced from
-> selective-checks.json runtime metadata; live identity re-validation required before release.
+## Observed history and release gates
 
-### Fire-rate mode policy
+`HANDOFF.md` records earlier selective Peacemaker hold/release and swaps to vanilla Amendment/AMR working, with normal audio/animation. `identity-validation.json` retains the original idle Peacemaker/Amendment/AMR identities and player invalidation evidence. That history does not validate the expanded policy or new cadence.
 
-- **Balanced (default):** generic ceiling 380 RPM; AMR uses 120 RPM override.
-- **Native Weapon Cap:** each weapon's actual accepted native rate; no ceiling applied.
-- Mode is user-selectable via `fire_rate_mode` in the `.ini`.
+Follow `NEXT_TEST.md` once. Still required: current candidate startup; actual hold/release and clean input restoration; new held identities; selected cadence and continuous audio/animation; native-auto and charge controls; eligible swaps; chat/menu/focus isolation; no errors; measured callback cost and scheduler warnings; clean shutdown. Input-attempt counters are not successful shots or accepted RPM. Veto/SOCOM/Talon compatibility remains outside this requested matrix. No HUD is implemented; HUD and future patch resilience are deferred and are not requirements of this scoped pass.
 
-### Offline test results (corrective pass)
-
-`test_weapon_policy_v2.lua` — all checks passed offline. ✅
-
-| Check | RPM | Hash source | Status |
-|---|---|---|---|
-| Unknown weapon → fail closed | — | — | ✅ |
-| Liberator → IGNORE_NATIVE_AUTO | — | runtime metadata | ✅ |
-| Quasar → EXCLUDE_CHARGE_HOLD | — | runtime metadata | ✅ |
-| Peacemaker Balanced | 380 | identity evidence | ✅ |
-| Peacemaker Native Cap | 900 (VERIFIED) | identity evidence | ✅ |
-| SOCOM Balanced | 380 | runtime metadata | ✅ |
-| SOCOM Native Cap | 900 (VERIFIED) | runtime metadata | ✅ |
-| Veto Balanced | 380 | runtime metadata | ✅ |
-| Veto Native Cap | 750 (VERIFIED) | runtime metadata | ✅ |
-| Talon Balanced | 380 | runtime metadata | ✅ |
-| Talon Native Cap | 750 (VERIFIED) | runtime metadata | ✅ |
-| Amendment Balanced | 380 (480 > ceiling) | identity evidence | ✅ |
-| Amendment Native Cap | 480 (VERIFIED) | identity evidence | ✅ |
-| AMR Balanced | 120 (special override) | identity evidence | ✅ |
-| AMR Native Cap | 400 (VERIFIED) | identity evidence | ✅ |
-| Verdict → REVIEW, not allowed | — | runtime metadata | ✅ |
-| Diligence → REVIEW, not allowed | — | runtime metadata | ✅ |
-| classify() returns detached copy | — | — | ✅ |
-| Constants and status fields | — | — | ✅ |
-| Balanced unchanged after native call | — | — | ✅ |
-
-### Remaining pre-release validation needed
-
-- **AMR 120 RPM Balanced** — provisional special override. Refine after live gameplay pass.
-- **REVIEW weapons** (Verdict, Diligence, CS Diligence) — need fire-mode vector confirmation before elevation to ASSIST.
-- **All non-identity-evidence hashes** (Veto, SOCOM, Talon, Verdict, Diligence, CS Diligence) — sourced from runtime metadata snapshot; live identity re-validation pass required.
-- **Per-weapon cadence** — game-side animation, recoil, audio at 380 RPM ceiling not yet recorded.
-
-
-Existing universal-candidate observations do not validate the selective candidate. No 125 ms gameplay result has been supplied.
-
+No package has been imported or deployed by this preparation. The game was not launched. This is a validation candidate, not a release.

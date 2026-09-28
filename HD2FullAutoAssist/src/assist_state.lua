@@ -14,7 +14,8 @@ function M.new(policy,validated)
         identity_observed=false,effective=false,repeat_active=false,reason='identity_unavailable',revision=0}
     local self={cache_hits=0,cache_misses=0}
     local function derive()
-        state.effective=state.user_enabled and state.identity_valid and state.eligibility.category=='ASSIST'
+        state.effective=state.user_enabled and state.identity_valid and
+            (state.eligibility.category=='ASSIST' or state.eligibility.category=='SPECIAL')
     end
     function self:set_enabled(enabled)
         state.user_enabled=enabled==true;derive();state.revision=state.revision+1

@@ -1,7 +1,8 @@
 -- Synthetic metadata fixtures, not live game evidence.
 -- Resource hashes are sourced from selective-checks.json runtime metadata
 -- where available, or marked PLACEHOLDER pending live identity validation.
--- Verification status per entry matches weapon_policy.lua native_cap_status.
+-- The three promoted weapons match docs/weapon-policy-evidence.json.
+-- These fixtures exercise the controller; they do not prove successful shots.
 function policy_fixture()
     local metadata = {
         -- ── Hashes from selective-checks.json runtime metadata (authoritative) ──
@@ -43,14 +44,14 @@ function policy_fixture()
         ['M6C/SOCOM Pistol'] = { defaultModeSemantics = 'semi_auto',  allowedModes = { 2 }, nativeModeVector = { 2, 0, 0 } },
         ['P-69 Veto']        = { defaultModeSemantics = 'semi_auto',  allowedModes = { 2 }, nativeModeVector = { 2, 0, 0 } },
         ['LAS-58 Talon']     = { defaultModeSemantics = 'semi_auto',  allowedModes = { 2 }, nativeModeVector = { 2, 0, 0 } },
-        -- Amendment: burst-fire only, no native full-auto (mode id 1 absent)
-        ['R-2 Amendment']    = { defaultModeSemantics = 'burst_fire', allowedModes = { 3 }, nativeModeVector = { 3, 0, 0 } },
+        -- Runtime reports semi/burst vector; allowedModes exposes only semi.
+        ['R-2 Amendment']    = { defaultModeSemantics = 'semi_auto', allowedModes = { 2 }, nativeModeVector = { 2, 3, 0 } },
         -- Liberator: has native full-auto (mode id 1 present) -> IGNORE_NATIVE_AUTO
         ['AR-23 Liberator']  = { defaultModeSemantics = 'full_auto',  allowedModes = { 1, 2 }, nativeModeVector = { 1, 2, 3 } },
-        -- Snipers (REVIEW pending verification)
+        -- Promoted using reviewed Runtime snapshot metadata, not these fixtures.
         ['R-63 Diligence']               = { defaultModeSemantics = 'semi_auto', allowedModes = { 2 }, nativeModeVector = { 2, 0, 0 } },
         ['R-63CS Diligence Counter Sniper'] = { defaultModeSemantics = 'semi_auto', allowedModes = { 2 }, nativeModeVector = { 2, 0, 0 } },
-        -- Verdict (REVIEW pending verification)
+        -- Verdict: reviewed semi-only Runtime vector.
         ['P-113 Verdict']    = { defaultModeSemantics = 'semi_auto',  allowedModes = { 2 }, nativeModeVector = { 2, 0, 0 } },
         -- AMR: SPECIAL; no R-menu mode selector -> fire_modes returns false (nil equivalent)
         ['APW-1 Anti-Materiel Rifle'] = false,

@@ -8,7 +8,8 @@ local IDENTITY_VALIDATED=true
 local installed=setmetatable({},{__mode='k'})
 local OWNER='hd2_full_auto_assist'
 local schema={enabled={type='boolean',default=true},user_enabled={type='boolean',default=true},
-    repeat_ms={type='integer',default=125,min=125,max=1000},
+    -- Zero selects the policy interval; positive values can only slow it down.
+    repeat_ms={type='integer',default=0,min=0,max=1000},
     toggle_hotkey={type='string',default='F8',max_length=16},debug_logging={type='boolean',default=false},
     validation_logging={type='boolean',default=false},
     -- Fire-rate mode:
@@ -89,6 +90,8 @@ function M.install(core,backend_factory,read_config,validation_factory)
     local loaded=core:OnLoad(OWNER,function()
         must(core.Config:Register(OWNER,schema))
         settings=must(core.Config:Load(OWNER,(read_config or config_text)()))
+        assert(settings.fire_rate_mode=='balanced' or settings.fire_rate_mode=='native_cap',
+            'fire_rate_mode must be balanced or native_cap')
         must(core.Input:ParseKey(settings.toggle_hotkey))
         if not settings.enabled then emit('info','disabled');return end
         policy=Policy.new(core.Integrations and core.Integrations.HD2Runtime,settings.fire_rate_mode)
@@ -265,7 +268,7 @@ function M.install(core,backend_factory,read_config,validation_factory)
                     trace:flush(false)
                 end
             end)) end
-        emit('info','initialized',{version='0.1.1-selective-live-validation',hotkey=settings.toggle_hotkey,
+        emit('info','initialized',{version='0.1.2-current-patch-validation',hotkey=settings.toggle_hotkey,
             active=active,mechanism='selective_native_repeat_interval',identity_validated=IDENTITY_VALIDATED})
     end)
     if not loaded.ok then core:Unregister(OWNER);error(loaded.error.detail) end

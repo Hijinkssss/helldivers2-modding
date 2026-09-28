@@ -1,0 +1,218 @@
+{
+  "date": "2026-09-28",
+  "starting_feature_head": "fde16e9a2137364ced2a8d3431c86f5e242aaa0e",
+  "runtime_repository": "https://github.com/SkyeShade/HD2Runtime",
+  "runtime_commit": "fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595",
+  "runtime_version": "0.24.0",
+  "runtime_source_sha256": {
+    "api/hd2.lua": "9100f26339bc0175224c94f3997d6e5cf3958687e0c6eb2feb01729392582c5a",
+    "api/target.lua": "8af81b39045b89a64c7057d2407ed130c7a1cf41d9ecb64489824b5e0d9b709b",
+    "domains/player_weapon_authoring.lua": "d133f5998941a33d655be6adf82780dcf3c7ad00ae651108cb25d43ff2f198f2",
+    "schemas/player_weapon_authoring_catalog.json": "1a991f887f4c10c5fb34ef48f54b98c03138f3218fdcaebb28c80bf8704600d2"
+  },
+  "supported_steam_build": "25480438",
+  "snapshot": "F5FEE03DCFDB-20260926T222226Z.hd2snap",
+  "game_fingerprints": {
+    "dll": "2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E",
+    "exe": "F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06"
+  },
+  "game_process_accessed": false,
+  "classification_scope": "Promotion for controlled candidate validation; no live shot-rate claim",
+  "weapons": [
+    {
+      "name": "P-113 Verdict",
+      "resource_hash": "0x1A437158E1B8D2A1",
+      "category": "ASSIST",
+      "native_cap_rpm": 450,
+      "balanced_rpm": 380,
+      "native_cap_status": "RUNTIME_SNAPSHOT",
+      "fire_modes": {
+        "backing": {
+          "component": "WeaponDataComponentData",
+          "indexRow": 340,
+          "width": 4,
+          "recordIndex": 318,
+          "offset": 144,
+          "storage": "u32"
+        },
+        "nativeValue": 2,
+        "reason": "Only conventional, uniquely resolved weapons with both native 1 and 2 in their three-slot vector are writable.",
+        "nativeModeVector": [
+          2,
+          0,
+          0
+        ],
+        "writable": false,
+        "allowedModes": [
+          2
+        ],
+        "defaultModeSemantics": "semi_auto"
+      },
+      "fire_rate_field": {
+        "semanticFieldId": "weapon.fire_rate",
+        "currentDefault": 450,
+        "unit": "rpm",
+        "backing": {
+          "component": "ProjectileWeaponComponentData",
+          "storage": "f32",
+          "width": 4,
+          "offset": 8,
+          "indexRow": 540,
+          "ownerCount": 1,
+          "recordIndex": 233,
+          "uniqueOwner": true,
+          "kind": "component"
+        },
+        "provenance": {
+          "structural_candidate": true,
+          "correlation_proven": true,
+          "pending_gameplay_confirmation": true,
+          "source": "schemas/player_weapon_fields.json + F5FEE03DCFDB snapshot",
+          "gameplay_proven": false,
+          "native_consumer_proven": false,
+          "schema_labelled": true,
+          "current_live_ownership_proven": false
+        }
+      },
+      "continuation_input": "Repeated normal Fire",
+      "continuation_basis": "Inferred from conventional_projectile family and semi-only native vector; no charge/hold mode. Confirm in controlled live pass.",
+      "live_held_identity_validated": false,
+      "live_assist_cadence_validated": false,
+      "missing_release_evidence": [
+        "Held identity in current mission",
+        "Accepted shots and cadence",
+        "Release/guards/audio/animation/cleanup for this candidate"
+      ]
+    },
+    {
+      "name": "R-63 Diligence",
+      "resource_hash": "0x03E67A19B07C6523",
+      "category": "ASSIST",
+      "native_cap_rpm": 350,
+      "balanced_rpm": 350,
+      "native_cap_status": "RUNTIME_SNAPSHOT",
+      "fire_modes": {
+        "backing": {
+          "component": "WeaponDataComponentData",
+          "indexRow": 691,
+          "width": 4,
+          "recordIndex": 303,
+          "offset": 144,
+          "storage": "u32"
+        },
+        "nativeValue": 2,
+        "reason": "Only conventional, uniquely resolved weapons with both native 1 and 2 in their three-slot vector are writable.",
+        "nativeModeVector": [
+          2,
+          0,
+          0
+        ],
+        "writable": false,
+        "allowedModes": [
+          2
+        ],
+        "defaultModeSemantics": "semi_auto"
+      },
+      "fire_rate_field": {
+        "semanticFieldId": "weapon.fire_rate",
+        "currentDefault": 350,
+        "unit": "rpm",
+        "backing": {
+          "component": "ProjectileWeaponComponentData",
+          "storage": "f32",
+          "width": 4,
+          "offset": 8,
+          "indexRow": 507,
+          "ownerCount": 1,
+          "recordIndex": 221,
+          "uniqueOwner": true,
+          "kind": "component"
+        },
+        "provenance": {
+          "structural_candidate": true,
+          "correlation_proven": true,
+          "pending_gameplay_confirmation": true,
+          "source": "schemas/player_weapon_fields.json + F5FEE03DCFDB snapshot",
+          "gameplay_proven": false,
+          "native_consumer_proven": false,
+          "schema_labelled": true,
+          "current_live_ownership_proven": false
+        }
+      },
+      "continuation_input": "Repeated normal Fire",
+      "continuation_basis": "Inferred from conventional_projectile family and semi-only native vector; no charge/hold mode. Confirm in controlled live pass.",
+      "live_held_identity_validated": false,
+      "live_assist_cadence_validated": false,
+      "missing_release_evidence": [
+        "Held identity in current mission",
+        "Accepted shots and cadence",
+        "Release/guards/audio/animation/cleanup for this candidate"
+      ]
+    },
+    {
+      "name": "R-63CS Diligence Counter Sniper",
+      "resource_hash": "0x4C786785C79D44E7",
+      "category": "ASSIST",
+      "native_cap_rpm": 350,
+      "balanced_rpm": 350,
+      "native_cap_status": "RUNTIME_SNAPSHOT",
+      "fire_modes": {
+        "backing": {
+          "component": "WeaponDataComponentData",
+          "indexRow": 408,
+          "width": 4,
+          "recordIndex": 304,
+          "offset": 144,
+          "storage": "u32"
+        },
+        "nativeValue": 2,
+        "reason": "Only conventional, uniquely resolved weapons with both native 1 and 2 in their three-slot vector are writable.",
+        "nativeModeVector": [
+          2,
+          0,
+          0
+        ],
+        "writable": false,
+        "allowedModes": [
+          2
+        ],
+        "defaultModeSemantics": "semi_auto"
+      },
+      "fire_rate_field": {
+        "semanticFieldId": "weapon.fire_rate",
+        "currentDefault": 350,
+        "unit": "rpm",
+        "backing": {
+          "component": "ProjectileWeaponComponentData",
+          "storage": "f32",
+          "width": 4,
+          "offset": 8,
+          "indexRow": 259,
+          "ownerCount": 1,
+          "recordIndex": 222,
+          "uniqueOwner": true,
+          "kind": "component"
+        },
+        "provenance": {
+          "structural_candidate": true,
+          "correlation_proven": true,
+          "pending_gameplay_confirmation": true,
+          "source": "schemas/player_weapon_fields.json + F5FEE03DCFDB snapshot",
+          "gameplay_proven": false,
+          "native_consumer_proven": false,
+          "schema_labelled": true,
+          "current_live_ownership_proven": false
+        }
+      },
+      "continuation_input": "Repeated normal Fire",
+      "continuation_basis": "Inferred from conventional_projectile family and semi-only native vector; no charge/hold mode. Confirm in controlled live pass.",
+      "live_held_identity_validated": false,
+      "live_assist_cadence_validated": false,
+      "missing_release_evidence": [
+        "Held identity in current mission",
+        "Accepted shots and cadence",
+        "Release/guards/audio/animation/cleanup for this candidate"
+      ]
+    }
+  ]
+}
