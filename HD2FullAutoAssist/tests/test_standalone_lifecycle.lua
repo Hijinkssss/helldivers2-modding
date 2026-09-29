@@ -27,16 +27,19 @@ put(G+0x347ce28,ptr(UI));put(UI,string.rep('\0',8));put(UI+0x4294,string.rep('\0
 put(G+0x14aeb30,'\x48\x89\x74\x24\x10\x57\x48\x83\xec\x30')
 local now,focused,cursor,down,held=0,true,false,false,false
 local bad_hash,bad_page=false,false
+local page_queries=0
 local p={clock_us=function()return now end,module_hash=function(_,name)
     if bad_hash then return 'bad'end
     return name and '2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E' or
         'F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06'
     end,module_address=function()return G end,query_region=function()
+        page_queries=page_queries+1
         return {base=G,size=0x60000000,state=0x1000,protect=bad_page and 0x104 or 4}
     end,read=function(_,at,n)return read(at,n)end,prepare_input=function()return true end,
     input_focused=function()return focused end,input_down=function(_,key)assert(key==0xbb,'default must use VK_OEM_PLUS');return down end}
 local log_closed=0
-local loader={api=1,open_log=function()return {write=function(self)return self end,flush=function()return true end,
+local lifecycle_log_lines={}
+local loader={api=1,open_log=function()return {write=function(self,text)lifecycle_log_lines[#lifecycle_log_lines+1]=text;return self end,flush=function()return true end,
     close=function()log_closed=log_closed+1;return true end}end}
 local stock_calls=0
 local stock=function(marker)assert(marker=='fixture');stock_calls=stock_calls+1;return 'stock',nil,7 end
@@ -58,13 +61,33 @@ end
 bad_hash=true;assert(not pcall(Life.start,env,options) and env.update==stock and b.writes==0);bad_hash=false
 bad_page=true;assert(not pcall(Life.start,env,options) and env.update==stock);bad_page=false
 local h=Life.new(env,options)
+local before_identity=h:diagnostics()
 assert(h:local_avatar().value.held.resource_hash=='05e4e5c2db6e44a2')
+local after_identity=h:diagnostics()
+assert(after_identity.memory.reads-before_identity.memory.reads==
+    after_identity.observer.reads-before_identity.observer.reads,
+    'Identity symbol resolution must not duplicate its guarded global reads')
 assert(h:eligibility().value.allowed)
 assert(h:parse_key('=')==0xbb and h:parse_key('+')==0xbb)
 assert(not pcall(h.read,h,0,4) and not pcall(h.read,h,G,32769))
 assert(not pcall(h.symbol,h,'unknown'))
 assert(not pcall(h.read_scope,h,function()error('scope failure')end) and h.regions==nil)
 assert(h:stop().ok)
+-- Identity and Fire share page information only until the stock update.
+local shared=Life.new(env,options)
+shared:on_identity(function()shared:read(G,2)end)
+shared:on_fire(function()shared:read(G,2)end)
+shared:attach()
+local before_update=page_queries
+env.update('fixture')
+assert(page_queries-before_update==1 and shared.regions==nil,
+    'Same-update callbacks should share one page query and clear the scope')
+before_update=page_queries
+env.update('fixture')
+assert(page_queries-before_update==1,'Next update must revalidate the page')
+bad_page=true;env.update('fixture');bad_page=false
+assert(env.update==stock and shared.regions==nil,
+    'A newly guarded page must fail and clear the update scope')
 options.read_config=function()return 'enabled=bad'end
 assert(not pcall(Life.start,env,options) and env.update==stock and b.writes==0)
 options.read_config=function()return ''end
@@ -111,4 +134,23 @@ env.HD2FullAutoAssistStandalone=nil
 env.update=function()error('stock failure')end
 held=false;local c=Life.start(env,options);assert(not pcall(env.update,'fixture'));assert(not b.lease and not c:get_state().effective)
 assert(c:get_state().user_enabled,'A lifecycle failure must not rewrite the saved preference')
+env.update=stock;env.HD2FullAutoAssistStandalone=nil
+options.read_config=function()return 'performance_profile=true\nperformance_label=fixture\n' end
+local profiled=Life.start(env,options);tick(1400)
+local writes_before_updates=#lifecycle_log_lines
+for i=1,8 do tick(1400+i)end
+assert(#lifecycle_log_lines==writes_before_updates,'Profiling must not write a log on gameplay updates')
+held=true;tick(1410);assert(b.lease)
+tick(1420);assert(b.lease)
+held=false;tick(1430);assert(not b.lease)
+assert(#lifecycle_log_lines==writes_before_updates,'Held-Fire profiling still defers log output')
+assert(profiled:stop().ok)
+assert(#lifecycle_log_lines==writes_before_updates+1,'Profiling summary is written once at shutdown')
+assert(lifecycle_log_lines[#lifecycle_log_lines]:find('performance',1,true) and
+    lifecycle_log_lines[#lifecycle_log_lines]:find('fixture',1,true),
+    'Shutdown log includes the requested profiler label and summary')
+for _,phase in ipairs({'update_wrapper','native_input_sample','input_eligibility',
+    'identity_snapshot','policy_resolution','native_fire_begin','native_fire_refresh'})do
+    assert(lifecycle_log_lines[#lifecycle_log_lines]:find(phase,1,true),'Missing phase '..phase)
+end
 print('standalone host and native identity integration passed')

@@ -58,6 +58,7 @@ function M.new()
     local ticks_per_second = frequency[0] + frequency[1] * 4294967296
     precise = precise and ticks_per_second > 0
     return setmetatable({ffi=ffi, kernel=kernel, bcrypt=bcrypt,
+        safe_cached_reads=true, -- RPM checks current access and length on every read.
         process=kernel.GetCurrentProcess(),
         query=ffi.cast('size_t (*)(const void *, void *, size_t)',kernel.VirtualQuery),
         count=ffi.new('size_t[1]'), scratch=ffi.new('uint8_t[32768]'),

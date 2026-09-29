@@ -1,3 +1,5 @@
+> Historical development record. Current release status and validation are in [RELEASE_1.0.1.md](RELEASE_1.0.1.md).
+
 # Full Auto Assist 1.0 pre-release live validation
 
 RC7 is pre-release. Offline checks establish controller and package behavior;

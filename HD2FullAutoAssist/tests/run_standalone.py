@@ -4,7 +4,7 @@ Requires Python + lupa.luajit21 and git. Never opens a game process.
 The reference is read from commit a93008f; it is not packaged with the mod.
 """
 from pathlib import Path
-import hashlib,json,subprocess,tempfile,zipfile,sys
+import hashlib,json,subprocess,tempfile,zipfile,sys,math
 from lupa.luajit21 import LuaRuntime
 ROOT=Path(__file__).resolve().parents[1]
 REPO=ROOT.parent
@@ -86,10 +86,15 @@ def native_test(rpm=None):
     if rpm:
         interval=60/rpm
         code=code.replace('assert(b:begin(row)==2);assert(read(bucket+8,20)~=original)',
-            f"assert(b:begin(row,{interval!r})==2);local f=ffi.new('float[1]');ffi.copy(f,read(bucket+24,4),4);assert(math.abs(tonumber(f[0])-{interval!r})<.000001)")
+            f"assert(b:begin(row,{interval!r})==2);local f=ffi.new('float[1]');ffi.copy(f,read(bucket+24,4),4);assert(math.abs(tonumber(f[0])-{interval / math.ceil(interval)!r})<.000001)")
     lua.execute(code)
 def native_intervals():
-    for rpm in (900,750,480,450,400,380,350,120,60):native_test(rpm)
+    for rpm in (900,750,480,450,400,380,350,120,80,60,50,32):native_test(rpm)
+
+def native_transition_checks(name):
+    lua=lua_at(ROOT/'src')
+    lua.globals().package.path=(ROOT/'tests').as_posix()+'/?.lua;'+lua.globals().package.path
+    lua.execute((ROOT/'tests'/name).read_text(encoding='utf-8'))
 def static_checks():
     lua=lua_at(ROOT/'src')
     for f in (ROOT/'src').glob('*.lua'):
@@ -190,11 +195,15 @@ def main():
         check('differential replay: 9 reference weapons, 2 modes, 2 overrides; existing roster preserved',lambda:parity(ref))
     check('native mapping safety, conflicts, axis exclusion and partial rollback',native_test)
     check('actual native mapping bytes and restore at every policy interval',native_intervals)
+    check('real native weapon transitions, all policies/profiles, identity recovery and ship/death lifecycle',lambda:native_transition_checks('test_native_transitions.lua'))
+    check('within-update page cache rejects incorrect/new addresses and expires after failure',lambda:native_transition_checks('test_page_scope.lua'))
     check('Lua syntax, no external imports, strict config and unknown fail-closed',static_checks)
     check('actual standalone lifecycle, native observer and UI/input guards',lifecycle_checks)
     check('Arsenal settings precedence and every selectable profile reaches policy',arsenal_profile_checks)
     check('preserved observer layout/race/bounds and complete native UI guard fixtures',preserved_guard_checks)
     check('known resource table matches pinned real Runtime metadata; no discovery',known_data_checks)
+    check('opt-in performance profiler summaries and percentiles',lambda:lua_at(ROOT/'src').execute(
+        (ROOT/'tests/test_performance_profile.lua').read_text(encoding='utf-8')))
     report={'reference_commit':REFERENCE,'checks':checks,'offline_passed':True,
         'core_behavior_parity':'preserved for known identities, guards and input intervals except intentional Talon Balanced change',
         'live_standalone_validated':False,'game_process_accessed':False,

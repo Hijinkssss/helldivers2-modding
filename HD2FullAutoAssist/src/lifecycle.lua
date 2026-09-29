@@ -24,24 +24,45 @@ function M.new(environment,options)
     local loader=assert(options.loader or environment.CowboyBingusModLoader,'Bingus Shared Loader required')
     assert(loader.api==1 and type(loader.open_log)=='function','Shared Loader API 1 required')
     local platform=options.platform or Platform.new()
-    assert(platform:module_hash(nil)==EXE and platform:module_hash('game.dll')==DLL,
+    local startup_exe_started=platform:clock_us()
+    local exe_hash=platform:module_hash(nil)
+    local startup_exe_hash_us=math.max(0,platform:clock_us()-startup_exe_started)
+    local startup_dll_started=platform:clock_us()
+    local dll_hash=platform:module_hash('game.dll')
+    local startup_game_dll_hash_us=math.max(0,platform:clock_us()-startup_dll_started)
+    assert(exe_hash==EXE and dll_hash==DLL,
         'Unsupported build: exact EXE and game.dll fingerprints required')
     local base=assert(platform:module_address('game.dll'))
     local self={platform=platform,base=base,callbacks={},closed=false,reads=0,queries=0,
-        failures=0,slow=0,slow_by_kind={},log_errors=0}
+        failures=0,slow=0,slow_by_kind={},log_errors=0,
+        startup_metrics={exe_hash_us=startup_exe_hash_us,game_dll_hash_us=startup_game_dll_hash_us}}
     local file
     function self:log(level,event,fields)
         if file then
+            local started=self.profiler and self.profiler:start()
             local good=pcall(function()
                 assert(file:write(Json.json({level=level,event=event,fields=fields or {}})..'\n'))
                 assert(file:flush())
             end)
+            if self.profiler then self.profiler:finish('log_io',started)end
             if not good then self.log_errors=self.log_errors+1 end
         end
+    end
+    function self:clock_us()return platform:clock_us()end
+    function self:set_profiler(profiler)self.profiler=profiler end
+    function self:startup_timing()return self.startup_metrics end
+    local observer
+    function self:invalidate_native_cache()
+        self.live_regions=nil
+        self.native_cache_revision=(self.native_cache_revision or 0)+1
+        if observer then observer:invalidate()end
     end
     function self:read(at,n)
         assert(integer(at,0x10000,0x7fffffffffff) and integer(n,1,32768) and
             n-1<=0x7fffffffffff-at,'Read outside supported bounds')
+        local profiler=self.profiler
+        local validation_started=profiler and profiler:sample('memory_page_validation',profiler.memory_samples_every)
+            and profiler:start()
         local cursor,last,walk=at,at+n,0
         while cursor<last do
             walk=walk+1;assert(walk<=64,'Memory region walk budget exceeded')
@@ -50,6 +71,7 @@ function M.new(environment,options)
                 if cursor>=r.base and cursor<r.base+r.size then region=r;break end
             end end
             if not region then
+                if profiler then profiler:increment('page_queries')end
                 region=assert(platform:query_region(cursor),'Memory page unavailable');self.queries=self.queries+1
                 if self.regions and #self.regions<64 then self.regions[#self.regions+1]=region end
             end
@@ -59,8 +81,53 @@ function M.new(environment,options)
                 READABLE[region.protect%256] and math.floor(region.protect/256)%2==0,'Unreadable or guarded page')
             cursor=math.min(last,region.base+region.size)
         end
+        if profiler then profiler:finish('memory_page_validation',validation_started)end
+        local read_started=profiler and profiler:sample('memory_platform_read',profiler.memory_samples_every)
+            and profiler:start()
+        if profiler then profiler:increment('memory_reads')end
         local bytes=platform:read(at,n);self.reads=self.reads+1
+        if profiler then profiler:finish('memory_platform_read',read_started)end
         assert(type(bytes)=='string' and #bytes==n,'Short or failed memory read');return bytes
+    end
+    function self:read_live(at,n)
+        if not platform.safe_cached_reads then return self:read(at,n)end
+        assert(integer(at,0x10000,0x7fffffffffff) and integer(n,1,32768) and
+            n-1<=0x7fffffffffff-at,'Read outside supported bounds')
+        local good,value=pcall(function()
+            local now=platform:clock_us()
+            if not self.live_regions or now>=self.live_regions_until then
+                self.live_regions={};self.live_regions_until=now+1000000
+            end
+            local cursor,last,walk=at,at+n,0
+            while cursor<last do
+                walk=walk+1;assert(walk<=64,'Memory region walk budget exceeded')
+                local region
+                for _,r in ipairs(self.live_regions)do
+                    if cursor>=r.base and cursor<r.base+r.size then region=r;break end
+                end
+                if not region then
+                    self.queries=self.queries+1
+                    if self.profiler then self.profiler:increment('page_queries')end
+                    region=assert(platform:query_region(cursor),'Memory page unavailable')
+                    assert(integer(region.base,0,0x7fffffffffff) and integer(region.size,1,0x7fffffffffff) and
+                        integer(region.protect,0,0xffffffff) and region.size<=0x7fffffffffff-region.base+1 and
+                        cursor>=region.base and cursor<region.base+region.size and region.state==0x1000 and
+                        READABLE[region.protect%256] and math.floor(region.protect/256)%2==0,
+                        'Unreadable or guarded page')
+                    if #self.live_regions<64 then self.live_regions[#self.live_regions+1]=region end
+                end
+                cursor=math.min(last,region.base+region.size)
+            end
+            -- Current access is checked on EVERY reuse, including protection
+            -- changes between metadata refreshes. Never dereference game memory
+            -- with ffi.copy: RPM must return the full span or no value.
+            local bytes=platform:read(at,n);self.reads=self.reads+1
+            if self.profiler then self.profiler:increment('memory_reads')end
+            assert(type(bytes)=='string' and #bytes==n,'Short or failed memory read')
+            return bytes
+        end)
+        if not good then self:invalidate_native_cache();error(value,0)end
+        return value
     end
     function self:read_scope(fn)
         if self.regions then return fn() end
@@ -82,18 +149,31 @@ function M.new(environment,options)
     assert(self:read(base+pe,4)=='PE\0\0','Invalid PE signature')
     assert(self:read(base+pe+24,2)=='\x0b\x02','Expected PE32+ image')
     local size=self:u32(base+pe+24+56);assert(integer(size,4096,0x80000000),'Invalid module image size')
-    function self:symbol(name)
+    local function symbol_address(name)
         local rva=assert(RVAS[name],'Unknown assist symbol')
-        assert(rva<=size-8,'Symbol outside module image');self:read(base+rva,8);return base+rva
+        assert(rva<=size-8,'Symbol outside module image');return base+rva
+    end
+    function self:symbol(name)
+        local address=symbol_address(name)
+        self:read(address,8)
+        return address
     end
     function self:build_status()return {id=PROFILE,state='exact_fingerprints_matched'}end
     function self:config(schema,text,arsenal_options)return Config.load(schema,text,arsenal_options)end
-    local memory={read=function(_,at,n)return attempt(function()return self:read(at,n)end)end,
-        read_pointer=function(_,at)return attempt(function()return self:ptr(at)end)end,
+    local memory={read=function(_,at,n)return attempt(function()return self:read_live(at,n)end)end,
+        read_pointer=function(_,at)return attempt(function()
+            local bytes=self:read_live(at,8);local a,b,c,d,e,f,g,h=bytes:byte(1,8)
+            local p=a+b*256+c*65536+d*16777216+(e+f*256+g*65536+h*16777216)*4294967296
+            assert(integer(p,0x10000,0x7fffffffffff),'Invalid pointer');return p
+        end)end,
         with_region_cache=function(_,fn)return self:read_scope(fn)end}
-    local symbols={resolve=function(_,name)return attempt(function()return {address=self:symbol(name)}end)end}
-    local observer=Identity.new(memory,symbols)
+    -- Identity immediately reads and later revalidates each resolved global.
+    -- Keep the startup-facing symbol API guarded, but avoid reading the same
+    -- global a third time on every full identity snapshot.
+    local symbols={resolve=function(_,name)return attempt(function()return {address=symbol_address(name)}end)end}
+    observer=Identity.new(memory,symbols)
     function self:local_avatar()return observer:snapshot()end
+    function self:invalidate_identity()observer:invalidate()end
     function self:eligibility()return Input.sample(platform,memory,{id=PROFILE},environment.stingray)end
     function self:parse_key(key)
         local named={SPACE=32,TAB=9,ENTER=13,ESCAPE=27,INSERT=45,DELETE=46,HOME=36,END=35,
@@ -123,6 +203,7 @@ function M.new(environment,options)
     function self:diagnostics()
         local active=0;for _ in pairs(self.callbacks)do active=active+1 end
         return {memory={reads=self.reads,queries=self.queries},observer=observer:status(),
+            startup_timing=self.startup_metrics,
             scheduler={active=active,failures=self.failures,slow=self.slow},log_errors=self.log_errors}
     end
     function self:write_status()self:log('info','status',self:diagnostics())end
@@ -141,10 +222,14 @@ function M.new(environment,options)
     end
     local function dispatch(kind)
         local row=self.callbacks[kind];if not row or self.closed then return end
-        local started=platform:clock_us()
+        local started=(self.profiler or kind=='identity') and platform:clock_us()
         if kind=='identity' then if started<row.next_us then return end;row.next_us=started+100000 end
         local good,why=pcall(row.callback)
-        local elapsed=math.max(0,platform:clock_us()-started)
+        local elapsed=self.profiler and math.max(0,platform:clock_us()-started) or 0
+        if self.profiler then
+            local phase=kind=='fire' and 'callback_fire' or kind=='identity' and 'callback_identity' or 'callback_toggle'
+            self.profiler:observe(phase,elapsed)
+        end
         if elapsed>2000 then
             self.slow=self.slow+1;self.slow_by_kind[kind]=(self.slow_by_kind[kind]or 0)+1
             local count=self.slow_by_kind[kind]
@@ -157,7 +242,11 @@ function M.new(environment,options)
     end
     local function toggle_tick()
         local row=self.callbacks.toggle;if not row or self.closed then return end
-        if not platform:input_focused()then row.armed=false;row.down=false;return end
+        local profile_started=self.profiler and self.profiler:start()
+        if not platform:input_focused()then row.armed=false;row.down=false
+            if self.profiler then self.profiler:finish('toggle_poll',profile_started)end
+            return
+        end
         local down
         if row.binding and not row.native_binding then
             local now=platform:clock_us()
@@ -171,6 +260,7 @@ function M.new(environment,options)
                     if ok and registered==true then
                         row.native_binding=menu
                         row.armed=false;row.down=false
+                        if self.profiler then self.profiler:finish('toggle_poll',profile_started)end
                         return
                     end
                 end
@@ -189,14 +279,27 @@ function M.new(environment,options)
         if pressed then local now=platform:clock_us();local due=now-row.last>=150000;row.last=now
             if due then dispatch('toggle')end
         end
+        if self.profiler then self.profiler:finish('toggle_poll',profile_started)end
     end
     function self:attach()
         assert(type(previous_update)=='function','Game update unavailable')
         update_wrapper=function(...)
-            dispatch('identity');dispatch('fire')
+            local before_started=self.profiler and self.profiler:start()
+            -- Both callbacks run before the stock update. Share only this
+            -- update's page-query rows, then discard them before game code runs.
+            self:read_scope(function()
+                dispatch('identity');dispatch('fire')
+            end)
+            local before_stock=before_started and math.max(0,platform:clock_us()-before_started) or 0
             local values=pack(pcall(previous_update,...))
-            if not values[1]then self:stop();error(values[2],0)end
+            if not values[1]then
+                if self.profiler then self.profiler:observe('update_wrapper',before_stock)end
+                self:stop();error(values[2],0)
+            end
+            local after_started=self.profiler and self.profiler:start()
             local good,why=pcall(toggle_tick)
+            local after_stock=after_started and math.max(0,platform:clock_us()-after_started) or 0
+            if self.profiler then self.profiler:observe('update_wrapper',before_stock+after_stock)end
             if not good then self:log('error','input_failed',{reason=tostring(why)});self:stop()end
             return unpack(values,2,values.n)
         end
@@ -224,6 +327,7 @@ function M.start(environment,options)
         amr_profile={'balanced','full_auto'},
         hyena_profile={'balanced','full_auto'},
         bushwhacker_profile={'balanced','full_auto'},
+        eruptor_profile={'balanced','full_auto'},
     }
     local application=environment.stingray and environment.stingray.Application
     local global_require=rawget(_G,'require')

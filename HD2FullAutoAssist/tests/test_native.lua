@@ -22,10 +22,14 @@ fake={Build={Status=function()return {id='steam-25480438-v02-candidate'}end},
         Read=function(_,at,n)return ok(read(at,n))end,
         ReadPointer=function(_,at)return ok(tonumber(ffi.cast('uint64_t *',ffi.new('uint8_t[8]',{read(at,8):byte(1,8)}))[0]))end,
         ReadU32=function(_,at)local s=read(at,4);local a,b,c,d=s:byte(1,4);return ok(a+b*256+c*65536+d*16777216)end}}
+local physical_samples=0
 local function factory()return {base=base,clock_us=function()return 0 end,float_bytes=fbytes,
     float=function(s,at)local f=ffi.new('float[1]');ffi.copy(f,s:sub(at+1,at+4),4);return tonumber(f[0])end,
+    raw_lmb_down=function()physical_samples=physical_samples+1;return true end,
     write=function(at,s)write_count=write_count+1;if fail_write and write_count==2 then error('failed second write')end;put(at,s)end}end
 b=native.new(fake,factory);local row=b:sample();assert(row.held and row.gameplay and row.unit_ref==123)
+assert(row.raw_lmb_down==nil and physical_samples==0,'Normal sampling skips trace-only physical input')
+assert(b:sample(true).raw_lmb_down==true and physical_samples==1,'Validation trace retains physical input')
 assert(b:begin(row)==2);assert(read(bucket+8,20)~=original)
 assert(b:sample().held,'Repeat binding preserves held observation')
 b:refresh(row);assert(b:restore());assert(read(bucket+8,40)==original..original,'Exact restoration')
