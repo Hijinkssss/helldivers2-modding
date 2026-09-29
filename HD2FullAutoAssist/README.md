@@ -1,4 +1,4 @@
-# HD2 Full Auto Assist v0.1 Standalone RC3
+# Full Auto Assist V4
 
 An accessibility/QoL mod that repeats normal Fire while you hold Fire on a small,
 explicitly reviewed set of weapons. The game decides whether each shot or burst
@@ -13,26 +13,31 @@ planned, and is not provided by this version.
 
 ## Current status
 
-- Standalone current-patch RC3 candidate; offline checks are being rerun.
-- Reference implementation passed user-reported Balanced gameplay on the weapons
-  below, except the new Talon cadence. Native-auto/charge negative controls passed.
-- The standalone refactor still needs the focused live follow-up in
-  [NEXT_TEST.md](docs/NEXT_TEST.md). It has not been deployed or played in this task.
-- No HUD or per-weapon Arsenal UI is included. `=` toggles assistance by default;
-  the optional Mod Bindings Menu can register a persistent rebindable action.
+RC3 runtime behavior, Talon Balanced at 210 RPM, and compatibility with the user's
+personal modpack passed live testing. V4 / RC4 packages the same runtime with
+updated Arsenal branding and configurable outlier profiles. The RC4 UI and
+selected-profile path still need the focused live follow-up in
+[NEXT_TEST.md](docs/NEXT_TEST.md).
+
+Full Auto Assist starts ON. `=` toggles assistance by default; the optional Mod
+Bindings Menu can register a persistent rebindable action and takes precedence
+after successful registration.
 
 ## Install
 
 1. Close the game. Install one copy of Bingus Shared Loader v18 / API 1.
-2. Import `HD2FullAutoAssist-v0.1.3-Standalone-RC3-Arsenal.zip` into Arsenal.
+2. Import `Full-Auto-Assist-V4-RC4-Arsenal.zip` into Arsenal.
    Replace the older Full Auto Assist entry; enable only one copy of this mod.
 3. Enable the standalone option and the loader. Give the loader winning startup
    priority as described in its instructions, then Purge / Deploy.
 4. If Full Auto Assist was your only reason to install Core or Runtime, disable
    those entries for the standalone follow-up. Other mods may still need them.
-5. To configure the mod, copy `HD2FullAutoAssist.example.ini` to
-   `%LOCALAPPDATA%/CowboyBingus/Helldivers2/HD2FullAutoAssist.ini`. Restart the game
-   after editing. No INI selects the normal defaults: ON, `=`, Balanced.
+5. Use Arsenal's **Change Active Options** for the normal configuration path.
+   Each weapon group offers mutually exclusive profiles and starts at Balanced.
+   The INI remains for advanced/fallback settings. Copy
+   `HD2FullAutoAssist.example.ini` to
+   `%LOCALAPPDATA%/CowboyBingus/Helldivers2/HD2FullAutoAssist.ini` and restart
+   after editing. Startup defaults to ON with `=` and Balanced policy.
    The Mod Bindings Menu API cannot set a custom first-use key; its reserved
    third-party action supplies the native action's initial default.
    The validation INI starts OFF and enables local diagnostic records.
@@ -63,11 +68,22 @@ fail closed. The supported weapon set is unchanged from the reference.
 
 ## Cadence and limitations
 
-`fire_rate_mode=balanced` uses a 380 RPM ceiling and AMR's 120 RPM override.
-Talon uses the separate `talon_mode` profile: `balanced` (210), `efficiency` (60),
-`full_auto` (380), or `fuller_auto` (750 RPM). These are input-attempt cadences.
-`fire_rate_mode=native_cap` selects other weapons' caps; Talon retains its chosen
-profile. `repeat_ms=0` selects that policy interval.
+Arsenal exposes only the outliers: Peacemaker, SOCOM, Veto, Talon, and AMR. Their
+Balanced/Full Auto RPM values are 380/900, 380/900, 380/750, and 120/400,
+respectively. Talon additionally offers Efficiency at 60 RPM and FULLER AUTO at
+750 RPM. Other supported weapons use `min(native cap, 380 RPM)` automatically.
+These are input-attempt cadences, not guaranteed shot rates. No weapon statistics
+are changed.
+
+Configuration precedence is **selected Arsenal profile**, then an explicit
+per-weapon INI profile when no Arsenal choice is present, then the legacy INI
+`fire_rate_mode` / `talon_mode`, then the built-in Balanced policy. Arsenal
+options are compiled as separate option archives following the Aggro Counter
+pattern and write into the existing policy's profile table. They do not add a
+second runtime policy.
+
+`fire_rate_mode=native_cap` remains available in the advanced INI. Talon retains
+its selected profile. `repeat_ms=0` selects the resulting policy interval.
 A positive integer up to 1000 only slows input: `max(repeat_ms/1000, 60/policy_rpm)`.
 For example, an old `repeat_ms=125` limits Native Cap to 480 input attempts/minute.
 Unknown, duplicate or malformed configuration entries disable startup.
@@ -83,9 +99,8 @@ Live gameplay remains required. Native Cap retains the full-speed option.
 full-auto-like output. The game still controls burst internals. No special burst
 gap or burst-mode logic was added.
 
-AMR Balanced remains the user-tested 120 RPM. Future optional per-weapon modes:
-Recenter (recoil recovery friendly), Balanced (120), FULLER AUTO (native 400).
-Native Cap already selects 400 through the INI; a per-weapon UI is deferred.
+AMR Balanced remains the live-tested 120 RPM. Its Arsenal Full Auto profile uses
+the verified native 400 RPM cap. No Recenter mode is included.
 
 The configured toggle changes the session state, which survives weapon swaps but is not written
 back to the INI. Toggle, weapon/entity/player changes, chat, menus, lost focus,
@@ -112,8 +127,8 @@ python HD2FullAutoAssist/scripts/build.py
 python HD2FullAutoAssist/tests/test_package.py --loader-discovery <BingusSharedLoader-v18/src/discover.lua>
 ```
 
-Output: `HD2FullAutoAssist/build/HD2FullAutoAssist-v0.1.3-Standalone-RC3-Arsenal.zip`.
-The builder owns the resource encoding and bundles only mod-specific helpers.
-It creates one Arsenal option with the retained addon GUID.
+Output: `HD2FullAutoAssist/build/Full-Auto-Assist-V4-RC4-Arsenal.zip`.
+The builder owns resource encoding, writes the supplied artwork as `thumbnail.png`,
+and creates one required core option plus five Aggro Counter-style profile groups.
 [Dependency audit](docs/DEPENDENCIES.md) and [validation boundaries](docs/VALIDATION.md)
 describe exactly what was extracted, preserved and verified.
