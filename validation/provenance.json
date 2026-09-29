@@ -1,9 +1,9 @@
 {
-  "zip": "C:\\Users\\Law\\Downloads\\Recreated AMR Reticle 16264 5 2026-09-24T15-52Z gWSqN4AGD.zip",
+  "zip": "Recreated AMR Reticle 16264 5 2026-09-24T15-52Z gWSqN4AGD.zip",
   "zip_sha256": "c2512d765ac4261ed62de5259726de2e3979a91391b60be4d885a6dedb7468d6",
-  "analysis": "C:\\Users\\Law\\Documents\\Codex\\2026-09-24\\files-pasted-by-the-user-task\\outputs\\game-25327279-analysis.dll",
+  "analysis": "game-25327279-analysis.dll",
   "analysis_sha256": "2ac9faae26644b5361c46f75aae3bb78f16103f09ade4de2be6f3c387f777b4e",
-  "raw": "C:\\Users\\Law\\Documents\\Codex\\2026-09-24\\files-pasted-by-the-user-task\\outputs\\game-25327279-memory.bin",
+  "raw": "game-25327279-memory.bin",
   "raw_sha256": "6da3c32031551bb5a53796ad3912253f1d7dfcb60f3dfc8cfbdecee957a245f2",
   "installed_exe_sha256": "f5fee03dcfdb2e553a4752c283590950ac13316b376d8196aa556ff0400d5f06",
   "mode_pseudocode_consistency_cases": 480,
