@@ -199,9 +199,26 @@ def main():
     check('actual native mapping bytes and restore at every policy interval',native_intervals)
     check('Lua syntax, no external imports, strict config and unknown fail-closed',static_checks)
     check('actual standalone lifecycle, native observer and UI/input guards',lifecycle_checks)
+    check('compatibility profile issuance, mutated hashes and zero-write unknown startup',
+        lambda:lua_at(ROOT/'src').execute((ROOT/'tests/test_compatibility.lua').read_text()))
+    def release_lifecycle():
+        with tempfile.TemporaryDirectory(dir=ROOT/'build') as tmp:
+            target=Path(tmp)
+            paths=subprocess.check_output(['git','ls-tree','--name-only','f5c52219:HD2FullAutoAssist/src'],cwd=REPO).decode().splitlines()
+            for name in paths:
+                (target/name).write_bytes(subprocess.check_output(['git','show','f5c52219:HD2FullAutoAssist/src/'+name],cwd=REPO))
+            lua_at(target).execute((ROOT/'tests/test_standalone_lifecycle.lua').read_text())
+    check('v1.0.0 lifecycle regression oracle uses identical fixture',release_lifecycle)
     check('Arsenal settings precedence and every selectable profile reaches policy',arsenal_profile_checks)
     check('preserved observer layout/race/bounds and complete native UI guard fixtures',preserved_guard_checks)
     check('known resource table matches pinned real Runtime metadata; no discovery',known_data_checks)
+    def unchanged_release_behavior():
+        for name in ('weapon_policy.lua','full_auto_assist.lua','assist_state.lua','identity.lua','config.lua','platform.lua','validation_trace.lua'):
+            original=subprocess.check_output(['git','show','f5c52219:HD2FullAutoAssist/src/'+name],cwd=REPO)
+            assert (ROOT/'src'/name).read_bytes().replace(b'\r\n',b'\n')==original.replace(b'\r\n',b'\n'),name
+    check('v1.0.0 policy, controller, state, identity, config and platform source unchanged',unchanged_release_behavior)
+    from test_evidence_tool import main as evidence_tests
+    check('offline bounded evidence inventory never authorizes runtime',evidence_tests)
     report={'reference_commit':REFERENCE,'checks':checks,'offline_passed':True,
         'core_behavior_parity':'preserved for known identities, guards and input intervals except intentional Talon Balanced change',
         'live_standalone_validated':False,'game_process_accessed':False,
