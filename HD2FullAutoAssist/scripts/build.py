@@ -1,10 +1,10 @@
-"""Build the Shared Loader-only Full Auto Assist 1.0.0-RC8-Diagnostic Arsenal package."""
+"""Build the Shared Loader-only Full Auto Assist 1.0.0 Arsenal package."""
 from pathlib import Path
 import hashlib,json,struct,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-PACKAGE='Full-Auto-Assist-1.0.0-RC8-Diagnostic-Arsenal.zip'
+PACKAGE='Full-Auto-Assist-1.0.0-Arsenal.zip'
 LUA_TYPE=0xA14E8DFA2CD117E2
 MIX=0xC6A4A7935BD1E995
 MASK=(1<<64)-1
@@ -119,7 +119,7 @@ def main():
             option_archives[(setting,profile)]=packed
     out=ROOT/'build';out.mkdir(exist_ok=True)
     (out/'hd2_full_auto_assist.lua').write_bytes(source);(out/ARCHIVE).write_bytes(archive)
-    description='An accessibility-focused QoL mod that lets supported semi-auto and burst weapons continue firing while Fire is held, without altering damage, recoil, ammo, projectiles, or native weapon stats.'
+    description='An accessibility-focused QoL mod that lets supported semi-auto, burst, and game-cycled weapons continue firing while Fire is held, without altering damage, recoil, ammo, projectiles, or native weapon stats.'
     groups=[{'Name':'Full Auto Assist','Description':'Required. The assistance feature and its supported-weapon policy.',
         'Include':['Core'],'Image':'thumbnail.png'}]
     files={'thumbnail.png':(ROOT/'thumbnail.png').read_bytes(),
@@ -137,25 +137,28 @@ def main():
             'SubOptions':children})
     files['manifest.json']=(json.dumps({'Version':1,'Guid':'cf368f5c-f686-453f-a566-435b4b7fcf26',
         'Name':'Full Auto Assist','Description':description,'Options':groups},indent=2)+'\n').encode()
-    for name in ('README.md','HD2FullAutoAssist.example.ini','HD2FullAutoAssist.validation.ini',
-                 'docs/RC8_DIAGNOSTIC.md','docs/RC2_NOTES.md','docs/NEXT_TEST.md','docs/VALIDATION.md','docs/DEPENDENCIES.md',
-                 'docs/talon-heat-evidence.json','docs/identity-validation.json',
-                 'docs/weapon-candidate-matrix.md','docs/expansion-evidence.md'):
+    for name in ('README.md','CHANGELOG.md','HD2FullAutoAssist.example.ini'):
         files[name]=(ROOT/name).read_bytes()
     with zipfile.ZipFile(out/PACKAGE,'w',zipfile.ZIP_DEFLATED) as z:
         for name,raw in sorted(files.items()):
             info=zipfile.ZipInfo(name,(1980,1,1,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED
             info.external_attr=0o100644<<16;z.writestr(info,raw)
+    package_hash=hashlib.sha256((out/PACKAGE).read_bytes()).hexdigest()
+    (out/(PACKAGE+'.sha256')).write_text(f'{package_hash}  {PACKAGE}\n',encoding='ascii')
     checks=out/'standalone-checks.json'
     hashes={f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in sorted((ROOT/'src').glob('*.lua'))}
     tested=json.loads(checks.read_text()) if checks.exists() else {}
-    report={'version':'1.0.0-rc8-diagnostic','supported_build':'25480438','name':'Full Auto Assist',
+    report={'version':'1.0.0','supported_build':'25480438','name':'Full Auto Assist',
         'description':description,'configuration_precedence':'Arsenal selected profile > explicit per-weapon INI profile > legacy INI mode > built-in Balanced policy',
         'external_dependencies':['Bingus Shared Loader v18 / API 1'],
         'source_sha256':hashlib.sha256(source).hexdigest(),'archive_sha256':hashlib.sha256(archive).hexdigest(),
-        'package_sha256':hashlib.sha256((out/PACKAGE).read_bytes()).hexdigest(),
+        'package_sha256':package_hash,
         'offline_tested':tested.get('offline_passed') is True and tested.get('source_sha256')==hashes,
-        'live_standalone_validated':False,'reference_user_reported_live_pass':True,
+        'live_standalone_validated':True,'live_validation_source':'user_reported_complete',
+        'rc8_diagnostic_cleanup':{'removed':['startup_diagnostic.lua','RC8_DIAGNOSTIC.md','test_startup_diagnostic.lua',
+            'phase/restore/toggle/avatar/hold diagnostic taps','lifecycle activation counters and diagnostic status',
+            'native diagnostic sampling and mapping records'],
+            'retained':['existing opt-in validation_trace.lua; disabled unless validation_logging=true']},
         'identity_observer_sha256':hashes['identity.lua'],'source_files':hashes,
         'embedded_core':False,'embedded_hd2runtime':False,'package':PACKAGE,
         'cadence':{'balanced_ceiling_rpm':380,'profiles':{title:{label:rpm for label,_,_,rpm in profiles}
@@ -163,5 +166,5 @@ def main():
         'artwork':'thumbnail.png','arsenal_option_groups':[{'name':title,'profiles':[{'label':label,'mode':profile,'rpm':rpm}
             for label,_,profile,rpm in profiles]} for _,title,profiles in OPTIONS]}
     (out/'build-report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
-    print('Built Full Auto Assist 1.0.0-RC8-Diagnostic: '+PACKAGE+'; Shared Loader only. Live gameplay validation pending.')
+    print('Built Full Auto Assist 1.0.0: '+PACKAGE+'; Shared Loader v18 / API 1 only.')
 if __name__=='__main__':main()

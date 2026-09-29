@@ -1,4 +1,4 @@
-"""Offline RC8 diagnostic checks, including differential replay of the preserved reference.
+"""Offline RC7 checks, including differential replay of the preserved reference.
 
 Requires Python + lupa.luajit21 and git. Never opens a game process.
 The reference is read from commit a93008f; it is not packaged with the mod.
@@ -183,7 +183,6 @@ def main():
         for name in ('test_policy','test_gate','test_selective','test_validation'):
             check('reference '+name,lambda n=name:controller_test(ref,False,n))
         check('standalone mixed-weapon transitions, guards, toggle and cleanup',lambda:controller_test(ROOT/'src',True,'test_selective'))
-        check('startup diagnostic A-I phases, toggle comparison, guard rejection and read failure isolation',lambda:controller_test(ROOT/'src',True,'test_startup_diagnostic'))
         check('live-order startup reconciliation, delayed avatar, mission persistence and toggles',lambda:controller_test(ROOT/'src',True,'test_live_startup_reconcile'))
         check('all 20 expansion identities repeat normal Fire and stop on release',lambda:controller_test(ROOT/'src',True,'test_expansion_controller'))
         check('standalone validation trace and closed identity gate',lambda:[controller_test(ROOT/'src',True,n) for n in ('test_gate','test_validation')])
@@ -201,5 +200,5 @@ def main():
         'external_dependencies':['Bingus Shared Loader v18 / API 1'],
         'source_sha256':{f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in sorted((ROOT/'src').glob('*.lua'))}}
     (ROOT/'build/standalone-checks.json').write_text(json.dumps(report,indent=2)+'\n')
-    print(f'{len(checks)} groups passed; standalone live validation remains pending.')
+    print(f'{len(checks)} offline check groups passed.')
 if __name__=='__main__':main()

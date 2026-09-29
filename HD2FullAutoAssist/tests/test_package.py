@@ -35,11 +35,18 @@ def main():
     ''')
     report=json.loads((ROOT/'build/build-report.json').read_text())
     assert report['external_dependencies']==['Bingus Shared Loader v18 / API 1']
-    assert report['offline_tested'] and not report['live_standalone_validated']
+    assert report['offline_tested'] and report['live_standalone_validated']
+    assert report['version']=='1.0.0' and report['supported_build']=='25480438'
     with zipfile.ZipFile(package) as z:
         names=z.namelist();manifest=json.loads(z.read('manifest.json'))
+        assert {'README.md','CHANGELOG.md','HD2FullAutoAssist.example.ini'} <= set(names)
+        assert not any('validation.ini' in name.lower() or 'diagnostic' in name.lower() or '/docs/' in name.lower() for name in names)
+        example=z.read('HD2FullAutoAssist.example.ini').decode('utf-8')
+        for setting in ('enabled = true','user_enabled = true','repeat_ms = 0','toggle_hotkey = =',
+                        'debug_logging = false','validation_logging = false','fire_rate_mode = balanced'):
+            assert setting in example,setting
         assert manifest['Name']=='Full Auto Assist'
-        assert manifest['Description']==('An accessibility-focused QoL mod that lets supported semi-auto and burst weapons '
+        assert manifest['Description']==('An accessibility-focused QoL mod that lets supported semi-auto, burst, and game-cycled weapons '
             'continue firing while Fire is held, without altering damage, recoil, ammo, projectiles, or native weapon stats.')
         assert len(manifest['Options'])==8 and manifest['Options'][0]['Include']==['Core']
         assert z.read('thumbnail.png')==(ROOT/'thumbnail.png').read_bytes()
@@ -97,10 +104,13 @@ def main():
     before=hashlib.sha256(package.read_bytes()).hexdigest()
     subprocess.run([sys.executable,str(ROOT/'scripts/build.py')],check=True)
     assert hashlib.sha256(package.read_bytes()).hexdigest()==before,'Nondeterministic package'
-    result={'archive_source_zip_parity':True,'bundle_requires_only_builtin_ffi':True,
+    result={'package_file':package.name,'archive_source_zip_parity':True,'bundle_requires_only_builtin_ffi':True,
         'missing_loader_and_unsupported_process_fail_closed':True,'arsenal_profile_groups_and_empty_companions':True,
         'deterministic_rebuild':True,'actual_loader_discovery_checked':discovery,
-        'package_sha256':before,'live_standalone_validated':False}
+        'package_sha256':before,'archive_entries':sorted(names),
+        'dependency_audit':{'required':['Bingus Shared Loader v18 / API 1'],'embedded_hd2modcore':False,'embedded_hd2runtime':False},
+        'live_standalone_validated':True,
+        'live_validation_source':'user_reported_complete'}
     (ROOT/'build/package-checks.json').write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result,indent=2))
 if __name__=='__main__':main()

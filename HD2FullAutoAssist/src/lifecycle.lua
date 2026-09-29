@@ -126,17 +126,6 @@ function M.new(environment,options)
             scheduler={active=active,failures=self.failures,slow=self.slow},log_errors=self.log_errors}
     end
     function self:write_status()self:log('info','status',self:diagnostics())end
-    function self:activation_status()
-        local r=self.callbacks.toggle or {}
-        return {frame=self.frame or 0,stage=self.stage or 'initialization',
-            identity_calls=self.identity_calls or 0,fire_calls=self.fire_calls or 0,
-            original_update_calls=self.original_update_calls or 0,toggle_polls=self.toggle_polls or 0,
-            toggle_source=r.native_binding and 'mod_bindings_menu' or 'fallback_key',
-            binding_registration=r.registration or 'not_attempted',registration_attempts=r.registration_attempts or 0,
-            native_binding_registered=r.native_binding~=nil,fallback_disabled=r.native_binding~=nil,
-            armed=r.armed==true,down=r.down==true,binding_error=r.registration_error or 'none',
-            native_poll_ok=r.native_poll_ok==true,native_poll_value=r.native_poll_value or 'unavailable'}
-    end
     local previous_update,previous_shutdown=environment.update,environment.shutdown
     local update_wrapper,shutdown_wrapper
     function self:stop()
@@ -154,8 +143,6 @@ function M.new(environment,options)
         local row=self.callbacks[kind];if not row or self.closed then return end
         local started=platform:clock_us()
         if kind=='identity' then if started<row.next_us then return end;row.next_us=started+100000 end
-        self.stage=kind
-        self[kind..'_calls']=(self[kind..'_calls'] or 0)+1
         local good,why=pcall(row.callback)
         local elapsed=math.max(0,platform:clock_us()-started)
         if elapsed>2000 then
@@ -169,7 +156,6 @@ function M.new(environment,options)
         end
     end
     local function toggle_tick()
-        self.stage='toggle_poll';self.toggle_polls=(self.toggle_polls or 0)+1
         local row=self.callbacks.toggle;if not row or self.closed then return end
         if not platform:input_focused()then row.armed=false;row.down=false;return end
         local down
@@ -180,27 +166,20 @@ function M.new(environment,options)
                 local menu=environment.ModBindingsMenu or rawget(_G,'ModBindingsMenu')
                 if type(menu)=='table' and type(menu.register_binding)=='function'
                    and type(menu.is_down)=='function' then
-                    row.registration_attempts=(row.registration_attempts or 0)+1
                     local ok,registered=pcall(menu.register_binding,row.binding.id,row.binding.label,
                         row.binding.slot,row.binding.options)
-                    local previous_registration=row.registration
-                    row.registration=ok and registered==true and 'registered' or 'failed'
-                    row.registration_error=tostring(registered)
-                    if previous_registration~=row.registration then self:log('info','binding_registration',{result=row.registration,detail=row.registration_error,
-                        frame=self.frame,stage=self.stage,attempts=row.registration_attempts}) end
                     if ok and registered==true then
                         row.native_binding=menu
                         row.armed=false;row.down=false
                         return
                     end
-                else row.registration='menu_unavailable' end
+                end
             end
         end
         if row.native_binding then
             -- Once the native action registers, never fall back to the default key.
             -- A nil/unavailable native state fails closed until the binding returns.
             local ok,value=pcall(row.native_binding.is_down,row.binding.id)
-            row.native_poll_ok=ok;row.native_poll_value=tostring(value)
             down=ok and value==true
         else
             down=platform:input_down(row.key);assert(type(down)=='boolean','Keyboard state unavailable')
@@ -214,9 +193,7 @@ function M.new(environment,options)
     function self:attach()
         assert(type(previous_update)=='function','Game update unavailable')
         update_wrapper=function(...)
-            self.frame=(self.frame or 0)+1
             dispatch('identity');dispatch('fire')
-            self.stage='original_update';self.original_update_calls=(self.original_update_calls or 0)+1
             local values=pack(pcall(previous_update,...))
             if not values[1]then self:stop();error(values[2],0)end
             local good,why=pcall(toggle_tick)

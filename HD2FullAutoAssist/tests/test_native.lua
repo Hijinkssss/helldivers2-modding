@@ -53,13 +53,6 @@ row.mapping_index=0
 put(bucket+28,original)
 put(owner+0x1c88,'\0\0\0\0'..fbytes(0)..fbytes(0)..string.rep('\0',12)..packed(0)..packed(0))
 assert(not b:sample().held,'Release observed natively')
--- Diagnostic-only sampling observes idle mission readiness without writes.
-local diagnostic_writes=write_count
-local context=b:diagnostic()
-assert(not context.sample.held and context.sample.game_state==4 and context.sample.unit_ref==123)
-assert(context.mapping_ok and context.mapping.records[1].trigger==0)
-assert(context.original_mapping_records==0 and not context.restoration_pending)
-assert(write_count==diagnostic_writes and b.lease==nil)
 -- Exact build and native code anchors are mandatory.
 fake.Build.Status=function()return {id='unknown'}end;assert(not pcall(native.new,fake,factory))
 fake.Build.Status=function()return {id='steam-25480438-v02-candidate'}end

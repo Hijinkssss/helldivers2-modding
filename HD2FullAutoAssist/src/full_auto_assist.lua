@@ -2,7 +2,6 @@ local M={}
 local Policy=require('weapon_policy')
 local AssistState=require('assist_state')
 local Validation=require('validation_trace')
-local StartupDiagnostic=require('startup_diagnostic')
 -- Enabled only after recorded idle swaps and player invalidation were reviewed.
 -- See docs/identity-validation.json. This is not a selective gameplay pass.
 local IDENTITY_VALIDATED=true
@@ -46,10 +45,6 @@ function M.install(host,backend_factory,read_config,validation_factory)
     local wait_release,unit_ref,inspected=false,nil,false
     local lease_started,lease_repeat_start
     local trace,last_metrics_us
-    local diagnostic,last_row,last_restore_reason
-    local function observe(event,detail,mode)
-        if diagnostic then diagnostic:record(event,detail,mode) end
-    end
 
     local counters={toggles=0,toggle_rejected=0,holds=0,releases=0,blocked=0,errors=0,
         idle_calls=0,held_calls=0,idle_us=0,held_us=0,max_us=0,repeat_frames=0,restore_conflicts=0,
@@ -61,17 +56,10 @@ function M.install(host,backend_factory,read_config,validation_factory)
         if trace then trace:record(event,{level=level,data=fields or {},state=state and state:snapshot()}) end
     end
     local function restore(reason)
-        local logged=reason~=last_restore_reason or (backend and backend.lease~=nil) or reason=='toggle'
-        last_restore_reason=reason
-        if diagnostic then diagnostic.restore_count=diagnostic.restore_count+1;diagnostic.restore_reason=reason end
-        if logged then observe('restore_before',{reason=reason},'change') end
         if state then state:set_repeat(false) end
         leased_entity_id,leased_resource_hash=nil,nil
-        if not backend or not backend.lease then unit_ref=nil
-            if logged then observe('restore_after',{reason=reason,backend_restore_called=false},'change') end
-            return end
+        if not backend or not backend.lease then unit_ref=nil;return end
         local clean,detail=backend:restore();unit_ref=nil
-        observe('restore_after',{reason=reason,backend_restore_called=true,clean=clean,detail=detail},'change')
         local wall=lease_started and math.max(0,backend.clock_us()-lease_started) or 0
         local repeats=counters.repeat_frames-(lease_repeat_start or counters.repeat_frames)
         counters.repeat_wall_us=counters.repeat_wall_us+wall
@@ -87,7 +75,6 @@ function M.install(host,backend_factory,read_config,validation_factory)
         if not failed then
             failed=true;counters.errors=counters.errors+1
             if state then state:invalidate('consumer_failed') end
-            observe('controller_failure',{reason=tostring(why)},'force')
             emit('error','assist_disabled',{reason=tostring(why)})
             if input_token then host:remove(input_token);input_token=nil end
         end
@@ -121,10 +108,6 @@ function M.install(host,backend_factory,read_config,validation_factory)
         policy=Policy.new(settings.fire_rate_mode,settings.talon_mode,settings)
         state=AssistState.new(policy,IDENTITY_VALIDATED)
         state:set_enabled(settings.user_enabled)
-        diagnostic=StartupDiagnostic.new(host,function()return {state=state:snapshot(),backend=backend,
-            row=last_row,wait_release=wait_release,unit_ref=unit_ref,leased_entity_id=leased_entity_id,
-            leased_resource_hash=leased_resource_hash,inspected=inspected,counters=counters}end)
-        observe('A_controller_initialization',nil,'once')
         if not policy.available then
             emit('warning','selective_assist_unavailable',{reason=policy.reason,
                 fallback='vanilla',required='known_current_build_policy'})
@@ -141,9 +124,6 @@ function M.install(host,backend_factory,read_config,validation_factory)
         end
         input_token=host:on_toggle(settings.toggle_hotkey,function()
             local ok,why=pcall(function()
-                local source=host.activation_status and host:activation_status().toggle_source or 'fixture_unknown'
-                if diagnostic.first_toggle_source=='none' then diagnostic.first_toggle_source=source end
-                observe('G_toggle_before',{source=source},'force')
                 local eligibility=host:eligibility()
                 if settings.debug_logging then
                     local fields={active=state:is_enabled(),stage='pressed_after_update',hotkey=settings.toggle_hotkey}
@@ -156,14 +136,12 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     emit('info','toggle_eligibility',fields)
                 end
                 if not eligibility.ok or eligibility.value.allowed~=true then
-                    counters.toggle_rejected=counters.toggle_rejected+1
-                    observe('H_toggle_rejected',{source=source},'force');return
+                    counters.toggle_rejected=counters.toggle_rejected+1;return
                 end
                 local enabled=not state:is_enabled()
                 restore('toggle');state:set_enabled(enabled);wait_release=true
                 if trace then trace:state(state:snapshot(),'toggle')end
                 counters.toggles=counters.toggles+1
-                observe('H_toggle_after',{source=source},'force')
                 emit('info','assist_toggled',{active=enabled})
             end)
             if not ok then fail(why) end
@@ -175,9 +153,6 @@ function M.install(host,backend_factory,read_config,validation_factory)
             local start=backend and backend.clock_us()
             local ok,result=pcall(host.local_avatar,host)
             local current=state:resolve(ok and result or nil,expected_unit)
-            if ok and result and result.ok and result.value and result.value.state=='present' then
-                observe('D_avatar_valid',{unit_ref=result.value.unit_ref,avatar_id=result.value.avatar_id},'once')
-            end
             if start then
                 local elapsed=math.max(0,backend.clock_us()-start)
                 counters.identity_lookup_us=counters.identity_lookup_us+elapsed
@@ -194,7 +169,6 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     identity_valid=current.identity_valid,effective=current.effective}) end
             end
             if trace then trace:state(current,'identity')end
-            if current.effective then observe('E_eligible_weapon',nil,'once') end
             if backend and backend.lease and (not current.effective or
                 current.weapon.unit_ref~=unit_ref or current.weapon.entity_id~=leased_entity_id or
                 current.weapon.resource_hash~=leased_resource_hash) then
@@ -215,10 +189,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
             local started=backend.clock_us();local held=false;local leased_before=backend.lease~=nil
             local ok,why=pcall(function()
                 counters.input_checks=counters.input_checks+1
-                local row=backend:sample();last_row=row
-                if row and (row.held or row.raw_lmb_down) then
-                    observe(counters.toggles==0 and 'F_first_hold_before_toggle' or 'post_toggle_hold',nil,'once')
-                end
+                local row=backend:sample()
                 if trace then trace:input(row,state:snapshot(),backend.lease~=nil)end
                 if not row then restore('input_unavailable');wait_release=true;return end
                 held=row.held
@@ -230,8 +201,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     if backend.lease then counters.releases=counters.releases+1 end
                     restore('release');wait_release=false;return
                 end
-                if row.pressed and row.trigger==8 and backend.lease then counters.repeat_frames=counters.repeat_frames+1
-                    observe(counters.toggles>0 and 'I_repeat_pulse_after_toggle' or 'repeat_pulse_before_toggle',nil,'once') end
+                if row.pressed and row.trigger==8 and backend.lease then counters.repeat_frames=counters.repeat_frames+1 end
                 if not row.gameplay then
                     local release_required=wait_release or backend.lease~=nil
                     state:invalidate('invalid_gameplay_state')
@@ -259,19 +229,11 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 unit_ref=row.unit_ref
                 leased_entity_id,leased_resource_hash=current.weapon.entity_id,current.weapon.resource_hash
                 local seconds=math.max(settings.repeat_ms/1000,60/current.eligibility.max_repeat_rpm)
-                diagnostic.begin_count=diagnostic.begin_count+1
-                diagnostic.begin_result='attempting';diagnostic.begin_reason='none'
-                observe('begin_before',{repeat_seconds=seconds},'change')
-                local began,changed,reason=pcall(backend.begin,backend,row,seconds)
-                diagnostic.begin_result=began and (changed==nil and 'unsupported' or changed) or 'error'
-                diagnostic.begin_reason=began and (reason or 'none') or tostring(changed)
-                observe('begin_after',nil,'change')
-                if not began then error(changed,0) end
+                local changed,reason=backend:begin(row,seconds)
                 if changed==nil then unit_ref=nil;wait_release=true
                     emit('warning','hold_unsupported',{reason=reason});return end
                 counters.holds=counters.holds+1
                 state:set_repeat(true)
-                observe(counters.toggles>0 and 'I_first_assisted_hold_after_toggle' or 'assisted_before_toggle',nil,'once')
                 lease_started=backend.clock_us();lease_repeat_start=counters.repeat_frames
                 if trace then trace:record('lease_acquired',{mappings=changed,repeat_ms=seconds*1000,state=state:snapshot()})end
                 if settings.debug_logging then emit('info','hold_started',{mappings=changed,repeat_ms=backend.repeat_seconds*1000}) end
@@ -294,7 +256,6 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 local callback_started=backend and backend.clock_us()
                 local ok,why=pcall(function()
                     host:read_scope(tick)
-                    if diagnostic then diagnostic:poll() end
                 end)
                 if not ok then fail(why) end
                 if trace and callback_started then
@@ -307,7 +268,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     trace:flush(false)
                 end
             end) end
-        emit('info','initialized',{version='1.0.0-rc8-diagnostic',hotkey=settings.toggle_hotkey,
+        emit('info','initialized',{version='1.0.0',hotkey=settings.toggle_hotkey,
             talon_mode=settings.talon_mode,
             active=state:is_enabled(),mechanism='selective_native_repeat_interval',identity_validated=IDENTITY_VALIDATED})
     end)

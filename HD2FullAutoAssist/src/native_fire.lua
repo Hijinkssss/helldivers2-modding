@@ -70,7 +70,7 @@ function M.new(host,make_adapter)
     for _,r in ipairs(anchors) do assert(read(a.base+r[1],#r[2])==r[2],'Native input code anchor changed') end
     local pm_global=host:symbol('player_manager')
     local self={lease=nil,writes=0,restored=0,conflicts=0,repeat_seconds=REPEAT_SECONDS,clock_us=a.clock_us}
-    function self:sample(diagnostic)
+    function self:sample()
         local owner=maybe_ptr(a.base+CONTROLS);if not owner then return nil end
         local bytes=read(owner+FIRE,32)
         assert(ptr(a.base+CONTROLS)==owner,'Controls owner changed during sample')
@@ -81,7 +81,7 @@ function M.new(host,make_adapter)
         local row={owner=owner,held=math.abs(magnitude)>=0.5,pressed=pressed==1,
             trigger=trigger,held_seconds=seconds,mapping_index=u32(bytes,16),gameplay=false}
         if a.raw_lmb_down then row.raw_lmb_down=a.raw_lmb_down()end
-        if not row.held and not diagnostic then return row end
+        if not row.held then return row end
         local state=maybe_ptr(a.base+STATE);if not state then return row end
         row.game_state=host:u32(state+0xac21c)
         assert(row.game_state<=16,'Invalid game state')
@@ -124,24 +124,16 @@ function M.new(host,make_adapter)
     end
     function self:inspect(row)
         local at,count=bucket(row.owner)
-        local button,axis,triggers,records=0,0,{},{}
+        local button,axis,triggers=0,0,{}
         for i=0,count-1 do
             local bytes=read(at+8+i*20,20);local flags,trigger=u32(bytes,0),u32(bytes,8)
             local kind=math.floor(flags/16)%16
             assert(math.floor(flags/65536)%16==trigger and trigger<=10,'Unsupported Fire mapping layout')
             if kind==4 then button=button+1 elseif kind==8 then axis=axis+1 else error('Unknown Fire input type') end
             triggers[#triggers+1]=tostring(kind)..':'..tostring(trigger)
-            records[#records+1]={index=i,kind=kind,trigger=trigger,repeat_seconds=a.float(bytes,16)}
         end
         return {mappings=count,button_mappings=button,axis_mappings=axis,triggers=table.concat(triggers,','),
-            repeat_ms=self.repeat_seconds*1000,records=records}
-    end
-    function self:diagnostic()
-        local row=self:sample(true)
-        local mapping_ok,mapping=pcall(self.inspect,self,row or {})
-        return {sample=row or false,mapping_ok=mapping_ok,mapping=mapping_ok and mapping or tostring(mapping),
-            original_mapping_records=self.lease and #self.lease.records or 0,
-            restoration_pending=self.lease~=nil,writes=self.writes,restored=self.restored,conflicts=self.conflicts}
+            repeat_ms=self.repeat_seconds*1000}
     end
     function self:restore()
         local l=self.lease;if not l then return true end
