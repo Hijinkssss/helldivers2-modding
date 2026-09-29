@@ -1,10 +1,10 @@
-"""Build the Shared Loader-only Full Auto Assist RC3 candidate. No deployment."""
+"""Build the Shared Loader-only Full Auto Assist V4 Arsenal package. No deployment."""
 from pathlib import Path
 import hashlib,json,struct,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-PACKAGE='HD2FullAutoAssist-v0.1.3-Standalone-RC3-Arsenal.zip'
+PACKAGE='Full-Auto-Assist-V4-RC4-Arsenal.zip'
 LUA_TYPE=0xA14E8DFA2CD117E2
 MIX=0xC6A4A7935BD1E995
 MASK=(1<<64)-1
@@ -26,13 +26,13 @@ def resource_hash(name: str) -> int:
     return value ^ (value >> 47)
 
 
-def archive_resource(source: bytes) -> bytes:
+def archive_resource(source: bytes, module: str = MODULE) -> bytes:
     payload = struct.pack("<II", len(source), 2) + source
     offset = (104 + 80 + 15) & ~15
     header = struct.pack("<III20sQQ24s", 0xF0000011, 1, 1,
                          b"", 0, 0, b"")
     type_row = struct.pack("<IIQIIII", 0, 0, LUA_TYPE, 1, 0, 16, 16)
-    file_row = struct.pack("<7Q6I", resource_hash(MODULE), LUA_TYPE,
+    file_row = struct.pack("<7Q6I", resource_hash(module), LUA_TYPE,
                            offset, 0, 0, 0, 0, len(payload), 0, 0,
                            16, 16, 0)
     body = bytearray(header + type_row + file_row)
@@ -43,12 +43,12 @@ def archive_resource(source: bytes) -> bytes:
     return bytes(body)
 
 
-def verify_archive(data: bytes, source: bytes) -> None:
+def verify_archive(data: bytes, source: bytes, module: str = MODULE) -> None:
     magic, types, count = struct.unpack_from("<III", data, 0)
     if (magic, types, count) != (0xF0000011, 1, 1):
         raise ValueError("archive header mismatch")
     name_hash, kind, offset = struct.unpack_from("<QQQ", data, 104)
-    if name_hash != resource_hash(MODULE) or kind != LUA_TYPE:
+    if name_hash != resource_hash(module) or kind != LUA_TYPE:
         raise ValueError("archive resource identity mismatch")
     size, flag = struct.unpack_from("<II", data, offset)
     if flag != 2 or size != len(source) or data[offset + 8:offset + 8 + size] != source:
@@ -56,8 +56,8 @@ def verify_archive(data: bytes, source: bytes) -> None:
 
 
 
-def bundle():
-    lines=[f'-- HD2-Addon: {MODULE}','local factories,loaded={},{}','local builtin_require=require',
+def bundle(module: str = MODULE):
+    lines=[f'-- HD2-Addon: {module}','local factories,loaded={},{}','local builtin_require=require',
         'local function own_require(name)',
         " if name=='ffi' then return builtin_require(name) end",
         " local factory=assert(factories[name],'Full Auto Assist module unavailable: '..tostring(name))",
@@ -71,22 +71,70 @@ def bundle():
     lines += ["return own_require('lifecycle').start(_G)",'']
     return '\n'.join(lines).encode('utf-8')
 
+def option_bundle(module: str, setting: str, profile: str) -> bytes:
+    source=(f'-- HD2-Addon: {module}\n'
+        "local options=rawget(_G,'FullAutoAssistArsenalOptions')\n"
+        "if type(options)~='table' then options={};rawset(_G,'FullAutoAssistArsenalOptions',options) end\n"
+        f"if options[{setting!r}]~=nil and options[{setting!r}]~={profile!r} then error('Conflicting Full Auto Assist Arsenal profiles: {setting}') end\n"
+        f"options[{setting!r}]={profile!r}\n")
+    return source.encode('utf-8')
+
+OPTIONS=[
+    ('peacemaker_profile','P-2 Peacemaker',[
+        ('Balanced','Fast automatic fire with a more manageable cadence.', 'balanced',380),
+        ('Full Auto',"Uses the Peacemaker's native fire-rate ceiling.",'full_auto',900)]),
+    ('socom_profile','M6C/SOCOM Pistol',[
+        ('Balanced','Fast automatic fire with a more manageable cadence.','balanced',380),
+        ('Full Auto',"Uses the SOCOM's native fire-rate ceiling.",'full_auto',900)]),
+    ('veto_profile','P-69 Veto',[
+        ('Balanced','Fast automatic fire with a controlled default cadence.','balanced',380),
+        ('Full Auto',"Uses the Veto's native fire-rate ceiling.",'full_auto',750)]),
+    ('talon_profile','LAS-58 Talon',[
+        ('Balanced','Tuned for roughly eight shots before overheating.','balanced',210),
+        ('Efficiency','Slow cadence that gives the heatsink substantially more time to cool between shots.','efficiency',60),
+        ('Full Auto','Fast automatic fire with significantly increased heat buildup.','full_auto',380),
+        ('FULLER AUTO',"Uses the Talon's native fire-rate ceiling. Expect extremely rapid heat buildup.",'fuller_auto',750)]),
+    ('amr_profile','APW-1 Anti-Materiel Rifle',[
+        ('Balanced','Current validated assisted cadence with time for recoil recovery.','balanced',120),
+        ('Full Auto',"Uses the AMR's native fire-rate ceiling.",'full_auto',400)]),
+]
+
+def option_module(setting: str, profile: str) -> str:
+    return f'mods/codex/hd2_full_auto_assist_option_{setting}_{profile}'
+
 def main():
     source=bundle();archive=archive_resource(source);verify_archive(archive,source)
+    option_archives={}
+    for setting,_,profiles in OPTIONS:
+        for _,_,profile,_ in profiles:
+            module=option_module(setting,profile)
+            content=option_bundle(module,setting,profile)
+            packed=archive_resource(content,module);verify_archive(packed,content,module)
+            option_archives[(setting,profile)]=packed
     out=ROOT/'build';out.mkdir(exist_ok=True)
     (out/'hd2_full_auto_assist.lua').write_bytes(source);(out/ARCHIVE).write_bytes(archive)
-    manifest={'Version':1,'Guid':'cf368f5c-f686-453f-a566-435b4b7fcf26',
-        'Name':'HD2 Full Auto Assist v0.1.3 Standalone RC3',
-        'Description':'Accessibility/QoL candidate for Steam build 25480438. Requires only Bingus Shared Loader v18/API 1. Balanced default; optional Mod Bindings Menu registration and standalone = fallback; Talon profiles selectable in INI.',
-        'Options':[{'Name':'Full Auto Assist standalone',
-            'Description':'Reviewed weapons only. = toggle by default; Talon profiles in INI. Native auto and charge/hold remain vanilla.',
-            'Include':['Addon']}]}
-    files={'manifest.json':(json.dumps(manifest,indent=2)+'\n').encode(),
-        'Addon/'+ARCHIVE:archive,'Addon/'+ARCHIVE+'.stream':b'','Addon/'+ARCHIVE+'.gpu_resources':b''}
+    description='Automatically repeats Fire while held for supported semi-auto and burst weapons. Native full-auto, charge/hold, and unsupported weapons remain unchanged. Includes configurable fire-rate profiles for select high-rate weapons.'
+    groups=[{'Name':'Full Auto Assist','Description':'Required. The assistance feature and its supported-weapon policy.',
+        'Include':['Core'],'Image':'thumbnail.png'}]
+    files={'thumbnail.png':(ROOT/'thumbnail.png').read_bytes(),
+        'Core/'+ARCHIVE:archive,'Core/'+ARCHIVE+'.stream':b'','Core/'+ARCHIVE+'.gpu_resources':b''}
+    for setting,title,profiles in OPTIONS:
+        children=[]
+        for label,help_text,profile,rpm in profiles:
+            folder=f'Options/{setting.removesuffix("_profile")}/{profile}'
+            children.append({'Name':f'{label} ({rpm} RPM)','Description':help_text,'Include':[folder]})
+            packed=option_archives[(setting,profile)]
+            files[folder+'/'+ARCHIVE]=packed
+            files[folder+'/'+ARCHIVE+'.stream']=b''
+            files[folder+'/'+ARCHIVE+'.gpu_resources']=b''
+        groups.append({'Name':title,'Description':'Select one assisted fire-rate profile. Balanced is the default.',
+            'SubOptions':children})
+    files['manifest.json']=(json.dumps({'Version':1,'Guid':'cf368f5c-f686-453f-a566-435b4b7fcf26',
+        'Name':'Full Auto Assist V4','Description':description,'Options':groups},indent=2)+'\n').encode()
     for name in ('README.md','HD2FullAutoAssist.example.ini','HD2FullAutoAssist.validation.ini',
                  'docs/RC2_NOTES.md','docs/NEXT_TEST.md','docs/VALIDATION.md','docs/DEPENDENCIES.md',
                  'docs/talon-heat-evidence.json','docs/identity-validation.json',
-                 'docs/weapon-candidate-matrix.md'):
+        'docs/weapon-candidate-matrix.md'):
         files[name]=(ROOT/name).read_bytes()
     with zipfile.ZipFile(out/PACKAGE,'w',zipfile.ZIP_DEFLATED) as z:
         for name,raw in sorted(files.items()):
@@ -95,7 +143,8 @@ def main():
     checks=out/'standalone-checks.json'
     hashes={f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in sorted((ROOT/'src').glob('*.lua'))}
     tested=json.loads(checks.read_text()) if checks.exists() else {}
-    report={'version':'0.1.3-standalone-rc3','supported_build':'25480438',
+    report={'version':'v4-rc4','supported_build':'25480438','name':'Full Auto Assist V4',
+        'description':description,'configuration_precedence':'Arsenal selected profile > explicit per-weapon INI profile > legacy INI mode > built-in Balanced policy',
         'external_dependencies':['Bingus Shared Loader v18 / API 1'],
         'source_sha256':hashlib.sha256(source).hexdigest(),'archive_sha256':hashlib.sha256(archive).hexdigest(),
         'package_sha256':hashlib.sha256((out/PACKAGE).read_bytes()).hexdigest(),
@@ -103,9 +152,10 @@ def main():
         'live_standalone_validated':False,'reference_user_reported_live_pass':True,
         'identity_observer_sha256':hashes['identity.lua'],'source_files':hashes,
         'embedded_core':False,'embedded_hd2runtime':False,'package':PACKAGE,
-        'cadence':{'balanced_ceiling_rpm':380,'amr_balanced_rpm':120,'talon_balanced_rpm':210,
-            'talon_profiles_rpm':{'balanced':210,'efficiency':60,'full_auto':380,'fuller_auto':750},
-            'talon_live_followup_required':True,'input_attempts_are_not_shots':True}}
+        'cadence':{'balanced_ceiling_rpm':380,'profiles':{title:{label:rpm for label,_,_,rpm in profiles}
+            for _,title,profiles in OPTIONS},'input_attempts_are_not_shots':True},
+        'artwork':'thumbnail.png','arsenal_option_groups':[{'name':title,'profiles':[{'label':label,'mode':profile,'rpm':rpm}
+            for label,_,profile,rpm in profiles]} for _,title,profiles in OPTIONS]}
     (out/'build-report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
-    print('Built standalone RC3: '+PACKAGE+'; Shared Loader only. Live follow-up pending.')
+    print('Built Full Auto Assist V4 RC4: '+PACKAGE+'; Shared Loader only. Live UI/gameplay follow-up pending.')
 if __name__=='__main__':main()

@@ -1,6 +1,6 @@
 """Verify the standalone ZIP, actual Loader discovery and deterministic rebuilding."""
 from pathlib import Path
-import argparse,hashlib,importlib.util,json,subprocess,sys,zipfile
+import argparse,hashlib,importlib.util,json,subprocess,sys,tempfile,zipfile
 from lupa.luajit21 import LuaRuntime
 ROOT=Path(__file__).resolve().parents[1]
 def main():
@@ -38,14 +38,41 @@ def main():
     assert report['offline_tested'] and not report['live_standalone_validated']
     with zipfile.ZipFile(package) as z:
         names=z.namelist();manifest=json.loads(z.read('manifest.json'))
-        assert len(manifest['Options'])==1 and manifest['Options'][0]['Include']==['Addon']
+        assert manifest['Name']=='Full Auto Assist V4'
+        assert manifest['Description']==('Automatically repeats Fire while held for supported semi-auto and burst weapons. '
+            'Native full-auto, charge/hold, and unsupported weapons remain unchanged. Includes configurable fire-rate profiles for select high-rate weapons.')
+        assert len(manifest['Options'])==6 and manifest['Options'][0]['Include']==['Core']
+        assert z.read('thumbnail.png')==(ROOT/'thumbnail.png').read_bytes()
         assert 'SubOptions' not in manifest['Options'][0]
         assert manifest['Guid']=='cf368f5c-f686-453f-a566-435b4b7fcf26'
-        assert z.read('Addon/'+builder.ARCHIVE)==archive.read_bytes()
-        for ext in ('.stream','.gpu_resources'):assert z.read('Addon/'+builder.ARCHIVE+ext)==b''
+        assert z.read('Core/'+builder.ARCHIVE)==archive.read_bytes()
+        for ext in ('.stream','.gpu_resources'):assert z.read('Core/'+builder.ARCHIVE+ext)==b''
+        expected={
+            'P-2 Peacemaker':[('Balanced',380,'balanced'),('Full Auto',900,'full_auto')],
+            'M6C/SOCOM Pistol':[('Balanced',380,'balanced'),('Full Auto',900,'full_auto')],
+            'P-69 Veto':[('Balanced',380,'balanced'),('Full Auto',750,'full_auto')],
+            'LAS-58 Talon':[('Balanced',210,'balanced'),('Efficiency',60,'efficiency'),
+                ('Full Auto',380,'full_auto'),('FULLER AUTO',750,'fuller_auto')],
+            'APW-1 Anti-Materiel Rifle':[('Balanced',120,'balanced'),('Full Auto',400,'full_auto')],
+        }
+        assert [row['Name'] for row in manifest['Options'][1:]]==list(expected)
+        option_modules=[];option_keys=[]
+        for group,(setting,title,profiles) in zip(manifest['Options'][1:],builder.OPTIONS):
+            assert group['Name']==title and len(group['SubOptions'])==len(expected[title])
+            assert len({child['Name'] for child in group['SubOptions']})==len(group['SubOptions'])
+            for child,(label,rpm,mode),(_,_,profile,expected_rpm) in zip(group['SubOptions'],expected[title],profiles):
+                assert rpm==expected_rpm and child['Name']==f'{label} ({rpm} RPM)'
+                folder=child['Include'][0]
+                module=builder.option_module(setting,mode);option_modules.append(module);option_keys.append((setting,mode))
+                content=builder.option_bundle(module,setting,mode)
+                packed=z.read(folder+'/'+builder.ARCHIVE)
+                builder.verify_archive(packed,content,module)
+                for ext in ('.stream','.gpu_resources'):assert z.read(folder+'/'+builder.ARCHIVE+ext)==b''
+        assert len(option_modules)==len(set(option_modules))
+        assert len(option_keys)==len(set(option_keys))
         assert not any('hd2modcore' in name.lower() or 'hd2runtime' in name.lower() for name in names)
         for name in names:
-            if name not in ('manifest.json',) and not name.startswith('Addon/'):
+            if name not in ('manifest.json',) and not name.startswith(('Core/','Options/')):
                 assert z.read(name)==(ROOT/name).read_bytes(),name
         for f in (ROOT/'src').glob('*.lua'):assert f.read_bytes().replace(b'\r\n',b'\n') in source
     discovery=False
@@ -53,14 +80,23 @@ def main():
         lua=LuaRuntime(unpack_returned_tuples=True)
         api=lua.execute(args.loader_discovery.read_text(encoding='utf-8'))
         hasher=api.hasher(lua.eval("require('ffi')"),lua.eval("require('bit')"))
-        entries,warnings=api.scan(lua.table_from([archive.as_posix()]),hasher,lua.eval('io.open'))
-        assert len(entries)==1 and entries[1]==builder.MODULE and len(warnings)==0
+        with tempfile.TemporaryDirectory() as tmp:
+            archives=[archive.as_posix()]
+            with zipfile.ZipFile(package) as z:
+                for name in z.namelist():
+                    if name.endswith('/'+builder.ARCHIVE) and name!='Core/'+builder.ARCHIVE:
+                        target=Path(tmp)/hashlib.sha256(name.encode()).hexdigest()/builder.ARCHIVE
+                        target.parent.mkdir()
+                        target.write_bytes(z.read(name));archives.append(target.as_posix())
+            entries,warnings=api.scan(lua.table_from(archives),hasher,lua.eval('io.open'))
+            found={entries[i] for i in range(1,len(entries)+1)}
+            assert found=={builder.MODULE,*option_modules} and len(warnings)==0, (found,option_modules,list(warnings.values()))
         discovery=True
     before=hashlib.sha256(package.read_bytes()).hexdigest()
     subprocess.run([sys.executable,str(ROOT/'scripts/build.py')],check=True)
     assert hashlib.sha256(package.read_bytes()).hexdigest()==before,'Nondeterministic package'
     result={'archive_source_zip_parity':True,'bundle_requires_only_builtin_ffi':True,
-        'missing_loader_and_unsupported_process_fail_closed':True,'single_option_and_empty_companions':True,
+        'missing_loader_and_unsupported_process_fail_closed':True,'arsenal_profile_groups_and_empty_companions':True,
         'deterministic_rebuild':True,'actual_loader_discovery_checked':discovery,
         'package_sha256':before,'live_standalone_validated':False}
     (ROOT/'build/package-checks.json').write_text(json.dumps(result,indent=2)+'\n')
