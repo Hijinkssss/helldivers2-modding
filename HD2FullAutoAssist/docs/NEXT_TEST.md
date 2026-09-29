@@ -10,7 +10,7 @@ Use three mission entries so both ON and OFF persistence are observed:
 
 1. With no explicit `user_enabled` override, start the game and enter Mission 1
    without pressing `=`. Confirm ON and firing on one existing known-good gun.
-   In the same mission, test all 20 expansion weapons listed in
+   In the same mission, test all 21 expansion weapons listed in
    [weapon-candidate-matrix.md](weapon-candidate-matrix.md), swapping within
    each slot. Confirm each gets shots from held normal Fire without a reload
    input between shots. Include a charge/hold negative control and leave

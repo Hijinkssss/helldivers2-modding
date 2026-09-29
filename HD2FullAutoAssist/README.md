@@ -1,26 +1,28 @@
 # Full Auto Assist 1.0.0
 
-Full Auto Assist is an accessibility-focused quality-of-life mod that repeats normal Fire input while Fire is held for 29 explicitly supported semi-auto, burst, and game-cycled weapons. The game decides whether each input produces a shot. The mod does not change weapon statistics or automate aim, reload, recoil compensation, or charge behavior.
+Full Auto Assist is an accessibility-focused quality-of-life mod that repeats normal Fire input while Fire is held for 30 explicitly supported semi-auto, burst, and game-cycled weapons. The game decides whether each input produces a shot. The mod does not change weapon statistics or automate aim, reload, recoil compensation, or charge behavior.
 
 **Required dependency:** Bingus Shared Loader v18 / API 1. HD2ModCore and HD2Runtime are not required and are not bundled. Mod Bindings Menu support is optional.
 
 ## Install
 
 1. Install Bingus Shared Loader v18 / API 1 and open Arsenal.
-2. Import `Full-Auto-Assist-1.0.0-Arsenal.zip`, enable Full Auto Assist and deploy it.
+2. For this unpublished test candidate, import `Full-Auto-Assist-1.0.1-WARRANT-RC1-Arsenal.zip`, enable Full Auto Assist and deploy it.
 3. Choose any desired options in Arsenal. All seven weapon profile groups default to Balanced.
 
 The mod starts ON by default. Press `=` (or `+`, depending on keyboard layout) once to toggle it. If Mod Bindings Menu is installed and registers the optional action, that action uses the same toggle path and takes precedence over the fallback key.
 
 ## Supported weapons
 
-P-2 Peacemaker; P-113 Verdict; M6C/SOCOM Pistol; P-69 Veto; R-63 Diligence; R-63CS Diligence Counter Sniper; R-2 Amendment; LAS-58 Talon; APW-1 Anti-Materiel Rifle; R-2124 Constitution; R-6 Deadeye; R-4 Hyena; R-72 Censor; SG-8 Punisher; SG-8S Slugger; SG-20 Halt; SG-451 Cookout; M90A Shotgun; SG-225IE Breaker Incendiary; CB-9 Crossbow; R-36 Eruptor; SG-8P Punisher Plasma; R/40-K Hot Shot Marksman Rifle; JAR-5 Dominator; P-4 Senator; P-11 Stim Pistol; SG-22 Bushwhacker; P-35 Re-Educator; P/40-K Bolt Pistol.
+P-2 Peacemaker; P-113 Verdict; M6C/SOCOM Pistol; P-69 Veto; R-63 Diligence; R-63CS Diligence Counter Sniper; R-2 Amendment; LAS-58 Talon; APW-1 Anti-Materiel Rifle; R-2124 Constitution; R-6 Deadeye; R-4 Hyena; R-72 Censor; SG-8 Punisher; SG-8S Slugger; SG-20 Halt; SG-451 Cookout; M90A Shotgun; SG-225IE Breaker Incendiary; CB-9 Crossbow; R-36 Eruptor; SG-8P Punisher Plasma; R/40-K Hot Shot Marksman Rifle; JAR-5 Dominator; P-4 Senator; P-11 Stim Pistol; SG-22 Bushwhacker; P-35 Re-Educator; P/40-K Bolt Pistol; P-92 Warrant.
 
 ARC-12 Blitzer is excluded because it has native Full Auto. Unknown and unlisted weapons remain vanilla.
 
 ## Arsenal profiles
 
 The seven configurable groups are Peacemaker, SOCOM, Veto, Talon, AMR, Hyena, and Bushwhacker. Existing profile values are preserved: Peacemaker 380/900 RPM; SOCOM 380/900; Veto 380/750; Talon Balanced 210, Efficiency 60, Full Auto 380, FULLER AUTO 750; AMR 120/400; Hyena 120/190; Bushwhacker 90/650. Other supported weapons use Balanced at `min(native cap, 380 RPM)`.
+
+The P-92 Warrant uses Balanced at 380 RPM (authored fire-rate metadata: 450 RPM). In Guided mode, the game retains control of lock acquisition and whether each ordinary Fire input is accepted. FAA does not observe or change guidance, lock, mode, aim, or target selection. Warrant RC1 requires live validation in both modes before any release.
 
 These are input-attempt intervals, not guaranteed shot rates. For Amendment, Breaker Incendiary, and Dominator, Full Auto Assist repeats ordinary legal Fire input; the game controls burst internals, fire-mode selection, and shot acceptance.
 

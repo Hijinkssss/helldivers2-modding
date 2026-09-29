@@ -1,66 +1,75 @@
-# P-92 Warrant support decision
+# P-92 Warrant support and RC1 validation
 
-**Decision: deferred.** The Warrant remains unsupported and fail-closed. The
-available exact-build data resolves its identity and several authored weapon
-fields, but it does not establish the input and mode behavior required by Full
-Auto Assist's eligibility rules. No policy entry, special controller, Arsenal
-option, or development package was added.
+**RC1 policy: supported through the existing held-Fire controller.** The
+previous deferral treated unresolved mode and guidance internals as required
+implementation evidence. That was stricter than FAA's actual contract. FAA
+does not inspect those internals; it repeats ordinary Fire, and the game owns
+whether each input produces a legal shot.
 
-## Evidence inspected
+## Exact-build metadata
 
-The repository's targeted expansion notes point to HD2Runtime audit commit
+The pinned HD2Runtime audit is commit
 `fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595`, using snapshot
 `F5FEE03DCFDB-20260926T222226Z.hd2snap` (Steam build 25480438). The pinned
 Runtime receipt in `validation/HD2Runtime-audit-2026-09-28.json` records the
 same executable and game DLL fingerprints as the FAA exact-build gate.
 
 The authoring catalog resolves **P-92 Warrant** uniquely to resource
-`0xCF8934FF6567A42D`. It reports `fire_rate=450`, `primary_fire_mode=3`, and a
-conventional projectile attack. The composition catalog reports native mode
-vector `[3,0,0]`, an empty `allowedModes` list, and
-`defaultModeSemantics="family_specific_or_unresolved"`. Its reason says that
-the catalog only treats conventional weapons with both native values 1 and 2
-in the vector as writable; the Warrant is not in that set. The vector therefore
-cannot be safely translated into guided/unguided or burst semantics from this
-evidence alone. The 450 RPM value is authored metadata, not a measured or
-confirmed accepted native cap.
+`0xCF8934FF6567A42D`. It records native mode vector `[3,0,0]`, authored
+`fire_rate=450`, magazine capacity 13, and a conventional projectile attack.
+The static catalog does not decode the meaning of mode value 3. RC1 does not
+need that meaning because it neither reads nor changes fire mode. The authored
+rate is treated as the policy cap metadata; Balanced is the existing default
+calculation `min(450, 380) = 380 RPM`. Actual accepted firing remains governed
+by the game and must be checked live.
 
-The composition catalog identifies the attack as `conventional_plain`, reports
-no heat mechanism, and exposes the magazine as the simple API. The separate
-ammo research resolves a capacity of 13 plus magazine supply counts. These
-records describe authored composition; they do not establish whether explicit
-Reload input is required between ordinary accepted shots, or whether a
-repeated Fire input is sufficient to continue legal bursts.
+## External firing contract
 
-The user-reported three-round burst, guided/unguided behavior, held-Fire lock
-acquisition, and absence of a separate cancel-lock input are retained as
-observations only. They are not independently proven by the checked-in FAA
-evidence or the pinned Runtime catalogs.
+The player selects Guided or Unguided mode. Unguided behaves as a burst pistol.
+In Guided mode, the player must aim and acquire a valid target; the game
+controls whether a lock exists and whether a Fire input is accepted. Repeated
+ordinary Fire does not create a lock or bypass the native lock requirement.
+With a valid lock, ordinary Fire inputs can continue to launch legal shots or
+bursts. Continued aiming while Fire remains held can let the game acquire a
+subsequent target and accept later inputs. This behavior is already
+reproducible with an ordinary mouse auto-clicker. These are user-established
+external gameplay observations and are the reason this candidate proceeds;
+they are not claims about the decoded internal mode or guidance implementation.
 
-## Eligibility fields still unresolved
+The implementation only adds the Warrant identity and policy metadata. It
+reuses the existing repeated ordinary-Fire controller, release handling,
+weapon-swap guard, OFF behavior, and unknown-identity fail-closed path. There is
+no Warrant-specific controller and no target, lock, guidance, aim, reload,
+projectile, or fire-mode automation.
 
-- The meaning of native mode value `3`; whether the Warrant has a native Full
-  Auto path; and how the player changes between guided and unguided behavior.
-- Whether ordinary Fire alone initiates the next legal burst in both modes, or
-  whether a separate alt-fire or other input participates.
-- Whether Reload input is needed between accepted shots or bursts in normal
-  operation.
-- Whether holding/repeating Fire can interfere with acquisition, guidance,
-  target selection, or launch permission, and whether the game remains fully
-  authoritative over all of those steps.
-- The accepted native cadence. `fire_rate=450` is recorded as metadata only.
+## RC1 live validation
 
-Without those facts, neither native Full Auto exclusion nor safe
-Amendment-style repeated-Fire eligibility is proven. No Warrant tests can
-truthfully assert either mode path without inventing unverified mechanics.
-If later exact-build evidence establishes eligibility, the default Balanced
-calculation would be `min(450, 380) = 380 RPM`; this is conditional metadata,
-not a Warrant policy setting.
+The candidate is unpublished and requires the following game test:
 
-## Next evidence needed
+### Unguided
 
-Use current-build authoring/composition records or a focused exact-build trace
-to resolve mode meaning and inputs. Then use a controlled live test to establish
-that ordinary Fire can be repeated without Reload, mode changes, or any
-interaction with the game's guidance and lock state. Until both static and
-live evidence are available, Warrant must remain unmapped and unaffected.
+1. Launch with Warrant equipped, select Unguided, and enable FAA.
+2. Hold Fire; confirm native bursts repeat and native burst cadence remains intact.
+3. Release Fire; confirm firing stops immediately.
+
+### Guided without a lock
+
+4. Select Guided and aim somewhere without a valid target lock.
+5. Hold Fire; confirm the Warrant does not fire without a lock and FAA does not create or select a target.
+
+### Guided with a valid lock
+
+6. Acquire a valid target normally by aiming; keep Fire held.
+7. Confirm the game accepts legal launches or bursts only when its native lock requirements are satisfied, with guidance remaining native.
+
+### Successive targets and safety
+
+8. Keep Fire held after the first target is finished; aim so the game can acquire another target and confirm later legal inputs are accepted without releasing the physical trigger. Target acquisition must remain game-controlled.
+9. Release Fire and confirm attempts stop.
+10. Reload normally and confirm FAA does not automate reload.
+11. Swap weapons and confirm assistance resets safely.
+12. Test one known-good existing burst weapon and one unsupported weapon; confirm both retain their expected behavior.
+
+No Guided/Unguided internal-state tests are added because FAA does not observe
+those states. Existing controller tests exercise the same normal Fire path,
+release, swap, OFF, unknown-identity, and fail-closed behavior for the Warrant.
