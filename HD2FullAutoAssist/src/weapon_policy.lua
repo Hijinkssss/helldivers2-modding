@@ -87,6 +87,7 @@ local KNOWN_HASHES={
     ['SG-22 Bushwhacker']='2b28e17ffed05f7c',
     ['P-35 Re-Educator']='0b882808c6f498e8',
     ['P/40-K Bolt Pistol']='dbb6c961c59fadc1',
+    ['P-92 Warrant']='cf8934ff6567a42d',
     ['ARC-12 Blitzer']='076dd5d4f4360204',
 }
 
@@ -132,6 +133,10 @@ local ENTRIES = {
       category = 'ASSIST', native_cap_rpm = 480, native_cap_status = 'VERIFIED',
       notes = 'Semi/burst modes; no native Full Auto. Verified 480 RPM native cap. '..
               'Balanced clamps to 380 RPM (480 > 380 ceiling).' },
+
+    { kind='weapon', name='P-92 Warrant', category='ASSIST', native_cap_rpm=450,
+      native_cap_status='RUNTIME_SNAPSHOT',
+      notes='Guided and unguided behavior remains game-controlled. FAA repeats only ordinary Fire; the game decides whether each input is legal. Authored fire_rate metadata 450 RPM; Balanced 380 RPM. Validate both modes live.' },
 
     -- Targeted 0.24.0 authoring/composition snapshot evidence. These entries
     -- use ordinary legal Fire input; accepted gameplay cadence remains pending.

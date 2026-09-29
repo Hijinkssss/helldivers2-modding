@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1-WARRANT-RC1 (development candidate)
+
+- Added P-92 Warrant to the existing ordinary held-Fire policy at 380 RPM Balanced, using authored fire-rate metadata of 450 RPM.
+- Reused the existing controller. Guided lock, target acquisition, burst behavior, and shot acceptance remain game-controlled; no guidance or targeting automation was added.
+- Requires live validation in Guided and Unguided modes before release.
+
 ## 1.0.0
 
 - Initial public release of Full Auto Assist, an accessibility-focused held-Fire aid for 29 explicitly supported weapons.

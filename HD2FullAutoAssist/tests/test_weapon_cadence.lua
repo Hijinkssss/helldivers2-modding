@@ -6,6 +6,7 @@ local rows={
     {'03e67a19b07c6523',350,350,'ASSIST'},
     {'4c786785c79d44e7',350,350,'ASSIST'},
     {'89c5493e08ca4207',120,400,'SPECIAL'},
+    {'cf8934ff6567a42d',380,450,'ASSIST'},
 }
 a=app.install(core,function()return backend end,function()return cadence_config end)
 for i,row in ipairs(rows) do
@@ -29,7 +30,7 @@ end
 -- Switching between eligible identities also restores and waits for release.
 resource_hash=rows[1][1];entity_id=3001;fire=false;tick(2400);fire=true;tick(2420)
 assert(backend.lease)
-resource_hash=rows[6][1];entity_id=3002;tick(2440)
+resource_hash=rows[#rows][1];entity_id=3002;tick(2440)
 assert(not backend.lease and a:get_state().effective)
 tick(2460);assert(not backend.lease)
 fire=false;tick(2480);fire=true;tick(2500);assert(backend.lease)
