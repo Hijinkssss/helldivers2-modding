@@ -1,3 +1,11 @@
+## Unreleased compatibility scaffold (not a v1.0.1 release candidate)
+
+- Centralized known-build native addresses, code anchors and layout identity in an FAA-owned profile.
+- Added explicit unknown-build capability-evidence diagnostics; unknown builds remain disabled before native access.
+- Preserved build 25480438 checks and existing mapping/identity guards.
+- Added offline regression and evidence-inventory tooling. No discovery signatures are authorized yet.
+- Development artifacts use a separate directory/name and do not inherit v1.0.0 live-validation status.
+
 # Changelog
 
 ## 1.0.0

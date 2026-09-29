@@ -7,8 +7,8 @@ def main():
     parser=argparse.ArgumentParser();parser.add_argument('--loader-discovery',type=Path);args=parser.parse_args()
     spec=importlib.util.spec_from_file_location('faa_builder',ROOT/'scripts/build.py')
     builder=importlib.util.module_from_spec(spec);spec.loader.exec_module(builder)
-    archive=ROOT/'build'/builder.ARCHIVE;package=ROOT/'build'/builder.PACKAGE
-    source=(ROOT/'build/hd2_full_auto_assist.lua').read_bytes()
+    archive=builder.OUT/builder.ARCHIVE;package=builder.OUT/builder.PACKAGE
+    source=(builder.OUT/'hd2_full_auto_assist.lua').read_bytes()
     builder.verify_archive(archive.read_bytes(),source)
     assert source==builder.bundle()
     assert b"mods/codex/hd2_mod_core" not in source and b"mods/skyeshade/hd2runtime" not in source
@@ -33,10 +33,11 @@ def main():
         local good=pcall(assert(loadstring(source)))
         assert(not good and update==stock_update and not HD2FullAutoAssistStandalone)
     ''')
-    report=json.loads((ROOT/'build/build-report.json').read_text())
+    report=json.loads((builder.OUT/'build-report.json').read_text())
     assert report['external_dependencies']==['Bingus Shared Loader v18 / API 1']
-    assert report['offline_tested'] and report['live_standalone_validated']
-    assert report['version']=='1.0.0' and report['supported_build']=='25480438'
+    assert report['offline_tested'] and not report['live_standalone_validated']
+    assert not report['dynamic_compatibility_implemented']
+    assert report['version']=='1.0.1-dev' and report['supported_build']=='25480438'
     with zipfile.ZipFile(package) as z:
         names=z.namelist();manifest=json.loads(z.read('manifest.json'))
         assert {'README.md','CHANGELOG.md','HD2FullAutoAssist.example.ini'} <= set(names)
@@ -109,8 +110,8 @@ def main():
         'deterministic_rebuild':True,'actual_loader_discovery_checked':discovery,
         'package_sha256':before,'archive_entries':sorted(names),
         'dependency_audit':{'required':['Bingus Shared Loader v18 / API 1'],'embedded_hd2modcore':False,'embedded_hd2runtime':False},
-        'live_standalone_validated':True,
-        'live_validation_source':'user_reported_complete'}
-    (ROOT/'build/package-checks.json').write_text(json.dumps(result,indent=2)+'\n')
+        'live_standalone_validated':False,
+        'live_validation_source':None}
+    (builder.OUT/'package-checks.json').write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result,indent=2))
 if __name__=='__main__':main()

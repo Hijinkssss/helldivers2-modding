@@ -1,4 +1,6 @@
-# Full Auto Assist 1.0.0
+# Full Auto Assist compatibility development branch
+
+This unpublished scaffold retains known-build support only. Automatic unknown-build resolution is blocked by missing native evidence. It is not the v1.0.1 compatibility candidate. The repository audit at HD2FullAutoAssist/docs/COMPATIBILITY.md records the exact gaps and validation status. Public v1.0.0 remains unchanged.
 
 Full Auto Assist is an accessibility-focused quality-of-life mod that repeats normal Fire input while Fire is held for 29 explicitly supported semi-auto, burst, and game-cycled weapons. The game decides whether each input produces a shot. The mod does not change weapon statistics or automate aim, reload, recoil compensation, or charge behavior.
 
@@ -7,7 +9,7 @@ Full Auto Assist is an accessibility-focused quality-of-life mod that repeats no
 ## Install
 
 1. Install Bingus Shared Loader v18 / API 1 and open Arsenal.
-2. Import `Full-Auto-Assist-1.0.0-Arsenal.zip`, enable Full Auto Assist and deploy it.
+2. Import `Full-Auto-Assist-compatibility-scaffold-Arsenal.zip`, enable Full Auto Assist and deploy it.
 3. Choose any desired options in Arsenal. All seven weapon profile groups default to Balanced.
 
 The mod starts ON by default. Press `=` (or `+`, depending on keyboard layout) once to toggle it. If Mod Bindings Menu is installed and registers the optional action, that action uses the same toggle path and takes precedence over the fallback key.
@@ -32,7 +34,7 @@ The session toggle persists across missions, but it is not saved across a comple
 
 ## Compatibility and safety
 
-This release supports Steam game build **25480438** and is exact-build gated by executable and game DLL fingerprints. Game updates may temporarily break compatibility; this release does not claim support for other builds. Native Full Auto weapons and unknown weapons stay vanilla. Mission, menu, focus, identity, and weapon guards can temporarily suppress assistance without changing the ON/OFF preference. Fire release, weapon swapping, and shutdown retain restoration safeguards.
+This development branch supports Steam game build **25480438** and is exact-build gated by executable and game DLL fingerprints. Game updates may temporarily break compatibility; this branch does not claim support for other builds. Native Full Auto weapons and unknown weapons stay vanilla. Mission, menu, focus, identity, and weapon guards can temporarily suppress assistance without changing the ON/OFF preference. Fire release, weapon swapping, and shutdown retain restoration safeguards.
 
 ## Troubleshooting
 
