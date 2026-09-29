@@ -254,6 +254,15 @@ reads; do not compare its `ms/s` with an uninstrumented package.
 
 ## Remaining uncertainty
 
+The live B comparison exposed a permanent cadence rejection, diagnosed in
+[B2_REGRESSION_DIAGNOSIS.md](B2_REGRESSION_DIAGNOSIS.md). The native one-second
+upper bound excluded supported Eruptor/Crossbow intervals on all three
+comparison commits. B2 corrects only that bound and retains the three
+optimizations. Its 20 offline groups include real native weapon-transition
+and page-scope coverage. The reported 48.6 ms/s ship value and later Watchdog
+absence cannot establish a valid improvement for a disabled controller.
+Resume performance work only after B2 passes fresh live regression validation.
+
 The diagnostic session establishes sustained cost on this mod stack. It does
 not isolate combat from ship time or quantify how much the opt-in profiler
 itself adds. Unprofiled A/B Watchdog runs on the same build and mod stack are

@@ -89,7 +89,12 @@ def native_test(rpm=None):
             f"assert(b:begin(row,{interval!r})==2);local f=ffi.new('float[1]');ffi.copy(f,read(bucket+24,4),4);assert(math.abs(tonumber(f[0])-{interval!r})<.000001)")
     lua.execute(code)
 def native_intervals():
-    for rpm in (900,750,480,450,400,380,350,120,60):native_test(rpm)
+    for rpm in (900,750,480,450,400,380,350,120,80,60,50,32):native_test(rpm)
+
+def native_transition_checks(name):
+    lua=lua_at(ROOT/'src')
+    lua.globals().package.path=(ROOT/'tests').as_posix()+'/?.lua;'+lua.globals().package.path
+    lua.execute((ROOT/'tests'/name).read_text(encoding='utf-8'))
 def static_checks():
     lua=lua_at(ROOT/'src')
     for f in (ROOT/'src').glob('*.lua'):
@@ -190,6 +195,8 @@ def main():
         check('differential replay: 9 reference weapons, 2 modes, 2 overrides; existing roster preserved',lambda:parity(ref))
     check('native mapping safety, conflicts, axis exclusion and partial rollback',native_test)
     check('actual native mapping bytes and restore at every policy interval',native_intervals)
+    check('real native weapon transitions, all policies/profiles, identity recovery and ship/death lifecycle',lambda:native_transition_checks('test_native_transitions.lua'))
+    check('within-update page cache rejects incorrect/new addresses and expires after failure',lambda:native_transition_checks('test_page_scope.lua'))
     check('Lua syntax, no external imports, strict config and unknown fail-closed',static_checks)
     check('actual standalone lifecycle, native observer and UI/input guards',lifecycle_checks)
     check('Arsenal settings precedence and every selectable profile reaches policy',arsenal_profile_checks)

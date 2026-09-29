@@ -156,8 +156,10 @@ function M.new(host,make_adapter)
     end
     function self:begin(row,repeat_seconds)
         repeat_seconds=repeat_seconds or REPEAT_SECONDS
+        -- The slowest supported policy is Eruptor at 32 RPM (1.875 s).
+        -- A one-second ceiling rejected it and Crossbow before any lease write.
         assert(type(repeat_seconds)=='number' and repeat_seconds==repeat_seconds and
-            repeat_seconds>=60/900 and repeat_seconds<=1,'Invalid consumer repeat cadence')
+            repeat_seconds>=60/900 and repeat_seconds<=60/32,'Invalid consumer repeat cadence')
         assert(not self.lease and row.held and row.gameplay,'Invalid Fire lease request')
         local at,count,header=bucket(row.owner)
         local l={owner=row.owner,bucket=at,count=count,header=header,records={}}
