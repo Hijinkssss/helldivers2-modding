@@ -1,10 +1,10 @@
-"""Build the Shared Loader-only Full Auto Assist 1.0.0-RC7 Arsenal package."""
+"""Build the Shared Loader-only Full Auto Assist 1.0.0-RC8-Diagnostic Arsenal package."""
 from pathlib import Path
 import hashlib,json,struct,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-PACKAGE='Full-Auto-Assist-1.0.0-RC7-Arsenal.zip'
+PACKAGE='Full-Auto-Assist-1.0.0-RC8-Diagnostic-Arsenal.zip'
 LUA_TYPE=0xA14E8DFA2CD117E2
 MIX=0xC6A4A7935BD1E995
 MASK=(1<<64)-1
@@ -138,7 +138,7 @@ def main():
     files['manifest.json']=(json.dumps({'Version':1,'Guid':'cf368f5c-f686-453f-a566-435b4b7fcf26',
         'Name':'Full Auto Assist','Description':description,'Options':groups},indent=2)+'\n').encode()
     for name in ('README.md','HD2FullAutoAssist.example.ini','HD2FullAutoAssist.validation.ini',
-                 'docs/RC2_NOTES.md','docs/NEXT_TEST.md','docs/VALIDATION.md','docs/DEPENDENCIES.md',
+                 'docs/RC8_DIAGNOSTIC.md','docs/RC2_NOTES.md','docs/NEXT_TEST.md','docs/VALIDATION.md','docs/DEPENDENCIES.md',
                  'docs/talon-heat-evidence.json','docs/identity-validation.json',
                  'docs/weapon-candidate-matrix.md','docs/expansion-evidence.md'):
         files[name]=(ROOT/name).read_bytes()
@@ -149,7 +149,7 @@ def main():
     checks=out/'standalone-checks.json'
     hashes={f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in sorted((ROOT/'src').glob('*.lua'))}
     tested=json.loads(checks.read_text()) if checks.exists() else {}
-    report={'version':'1.0.0-rc7','supported_build':'25480438','name':'Full Auto Assist',
+    report={'version':'1.0.0-rc8-diagnostic','supported_build':'25480438','name':'Full Auto Assist',
         'description':description,'configuration_precedence':'Arsenal selected profile > explicit per-weapon INI profile > legacy INI mode > built-in Balanced policy',
         'external_dependencies':['Bingus Shared Loader v18 / API 1'],
         'source_sha256':hashlib.sha256(source).hexdigest(),'archive_sha256':hashlib.sha256(archive).hexdigest(),
@@ -163,5 +163,5 @@ def main():
         'artwork':'thumbnail.png','arsenal_option_groups':[{'name':title,'profiles':[{'label':label,'mode':profile,'rpm':rpm}
             for label,_,profile,rpm in profiles]} for _,title,profiles in OPTIONS]}
     (out/'build-report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
-    print('Built Full Auto Assist 1.0.0-RC7: '+PACKAGE+'; Shared Loader only. Live gameplay validation pending.')
+    print('Built Full Auto Assist 1.0.0-RC8-Diagnostic: '+PACKAGE+'; Shared Loader only. Live gameplay validation pending.')
 if __name__=='__main__':main()

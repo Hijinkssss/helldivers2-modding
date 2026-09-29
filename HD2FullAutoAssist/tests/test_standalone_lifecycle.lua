@@ -36,7 +36,8 @@ local p={clock_us=function()return now end,module_hash=function(_,name)
     end,read=function(_,at,n)return read(at,n)end,prepare_input=function()return true end,
     input_focused=function()return focused end,input_down=function(_,key)assert(key==0xbb,'default must use VK_OEM_PLUS');return down end}
 local log_closed=0
-local loader={api=1,open_log=function()return {write=function(self)return self end,flush=function()return true end,
+local diagnostic_lines={}
+local loader={api=1,open_log=function()return {write=function(self,line)diagnostic_lines[#diagnostic_lines+1]=line;return self end,flush=function()return true end,
     close=function()log_closed=log_closed+1;return true end}end}
 local stock_calls=0
 local stock=function(marker)assert(marker=='fixture');stock_calls=stock_calls+1;return 'stock',nil,7 end
@@ -112,3 +113,9 @@ env.update=function()error('stock failure')end
 held=false;local c=Life.start(env,options);assert(not pcall(env.update,'fixture'));assert(not b.lease and not c:get_state().effective)
 assert(c:get_state().user_enabled,'A lifecycle failure must not rewrite the saved preference')
 print('standalone host and native identity integration passed')
+
+local joined=table.concat(diagnostic_lines)
+assert(joined:find('G_toggle_before',1,true) and joined:find('H_toggle_after',1,true))
+assert(joined:find('fallback_key',1,true) and joined:find('mod_bindings_menu',1,true))
+assert(joined:find('"fallback_disabled":true',1,true) and joined:find('"native_binding_registered":true',1,true))
+assert(joined:find('"stage":"toggle"',1,true) and joined:find('"stage":"fire"',1,true))
