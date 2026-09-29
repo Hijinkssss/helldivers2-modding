@@ -63,3 +63,18 @@ Future patch resilience, automatic discovery and R-menu introspection are deferr
 ## RC6 expansion status
 
 RC6 adds the 20 weapons in [weapon-candidate-matrix.md](weapon-candidate-matrix.md), using pinned Runtime audit metadata at fd0c0d2b5618807a1ff63bedc9ed2f4b807c759. Added identities and policy caps are tested offline. The checks do not establish live accepted cadence or weapon-specific reload behavior. RC6 remains a pre-release candidate pending [NEXT_TEST.md](NEXT_TEST.md).
+
+## RC7 startup reconciliation
+
+RC6 initialized the controller's `wait_release` gate as true and set it again
+whenever mission gameplay or player/weapon identity was temporarily unavailable.
+If Fire was already held during mission/player initialization, that gate remained
+latched after the context became valid, so an otherwise ON controller ignored
+the first held Fire input until it observed a release. Startup now begins with
+no outstanding lease/release obligation. Transient mission or unresolved-player
+guards preserve a release requirement only when an existing lease or earlier
+release requirement must be cleared; a positively observed ineligible weapon
+still requires release before another attempt. User preference remains separate
+from those guards. The new live-order regression keeps Fire held from before
+mission/player readiness through the first eligible weapon and verifies
+assistance without a toggle. RC7 remains pending live confirmation.

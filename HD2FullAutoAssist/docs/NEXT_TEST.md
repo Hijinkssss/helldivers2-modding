@@ -1,6 +1,6 @@
 # Full Auto Assist 1.0 pre-release live validation
 
-RC6 is pre-release. Offline checks establish controller and package behavior;
+RC7 is pre-release. Offline checks establish controller and package behavior;
 they do not prove live shot acceptance, reload independence, cadence feel,
 audio/animation continuity or personal-modpack compatibility.
 

@@ -38,7 +38,11 @@ function M.install(host,backend_factory,read_config,validation_factory)
     if installed[host] then return installed[host] end
     local input_token,hook_token,identity_token,backend,settings,closed,failed,policy,state
     local leased_entity_id,leased_resource_hash
-    local wait_release,unit_ref,inspected=true,nil,false
+    -- A new controller has no outstanding Fire lease to release. Start armed;
+    -- only safety guards after an observed eligible/leased state may require a
+    -- physical release. This lets delayed mission/player initialization settle
+    -- while the user is already holding ordinary Fire.
+    local wait_release,unit_ref,inspected=false,nil,false
     local lease_started,lease_repeat_start
     local trace,last_metrics_us
 
@@ -199,8 +203,9 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 end
                 if row.pressed and row.trigger==8 and backend.lease then counters.repeat_frames=counters.repeat_frames+1 end
                 if not row.gameplay then
+                    local release_required=wait_release or backend.lease~=nil
                     state:invalidate('invalid_gameplay_state')
-                    restore('invalid_gameplay_state');wait_release=true;return
+                    restore('invalid_gameplay_state');wait_release=release_required;return
                 end
                 if wait_release then return end
                 local eligibility=host:eligibility()
@@ -211,7 +216,8 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 end
                 local current=resolve(row.unit_ref)
                 if wait_release or not current.effective then
-                    restore('weapon_not_effective');wait_release=true;return
+                    local release_required=wait_release or current.identity_observed
+                    restore('weapon_not_effective');wait_release=release_required;return
                 end
                 if backend.lease then
                     if unit_ref~=row.unit_ref then restore('local_player_changed');wait_release=true;return end

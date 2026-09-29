@@ -14,8 +14,9 @@ planned, and is not provided by this version.
 ## Current status
 
 The existing runtime, Talon Balanced at 210 RPM, and compatibility with the user's
-personal modpack passed earlier live testing. This 1.0.0-RC6 candidate adds 20
-weapons from pinned build metadata; newly added weapon behavior still requires
+personal modpack passed earlier live testing. This 1.0.0-RC7 candidate fixes
+startup release-gate reconciliation and includes the RC6 20-weapon expansion
+from pinned build metadata. Newly added weapon behavior still requires
 the checks in [NEXT_TEST.md](docs/NEXT_TEST.md).
 
 Full Auto Assist starts ON. `=` toggles assistance by default; the optional Mod
@@ -25,7 +26,7 @@ after successful registration.
 ## Install
 
 1. Close the game. Install one copy of Bingus Shared Loader v18 / API 1.
-2. Import `Full-Auto-Assist-1.0.0-RC6-Arsenal.zip` into Arsenal.
+2. Import `Full-Auto-Assist-1.0.0-RC7-Arsenal.zip` into Arsenal.
    Replace the older Full Auto Assist entry; enable only one copy of this mod.
 3. Enable the standalone option and the loader. Give the loader winning startup
    priority as described in its instructions, then Purge / Deploy.
@@ -148,7 +149,7 @@ python HD2FullAutoAssist/scripts/build.py
 python HD2FullAutoAssist/tests/test_package.py --loader-discovery <BingusSharedLoader-v18/src/discover.lua>
 ```
 
-Output: `HD2FullAutoAssist/build/Full-Auto-Assist-1.0.0-RC6-Arsenal.zip`.
+Output: `HD2FullAutoAssist/build/Full-Auto-Assist-1.0.0-RC7-Arsenal.zip`.
 The builder owns resource encoding, writes the supplied artwork as `thumbnail.png`,
 and creates one required core option plus seven Aggro Counter-style profile groups.
 [Dependency audit](docs/DEPENDENCIES.md) and [validation boundaries](docs/VALIDATION.md)

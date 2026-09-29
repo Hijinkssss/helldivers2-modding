@@ -1,4 +1,4 @@
-"""Offline RC6 checks, including differential replay of the preserved reference.
+"""Offline RC7 checks, including differential replay of the preserved reference.
 
 Requires Python + lupa.luajit21 and git. Never opens a game process.
 The reference is read from commit a93008f; it is not packaged with the mod.
@@ -183,6 +183,7 @@ def main():
         for name in ('test_policy','test_gate','test_selective','test_validation'):
             check('reference '+name,lambda n=name:controller_test(ref,False,n))
         check('standalone mixed-weapon transitions, guards, toggle and cleanup',lambda:controller_test(ROOT/'src',True,'test_selective'))
+        check('live-order startup reconciliation, delayed avatar, mission persistence and toggles',lambda:controller_test(ROOT/'src',True,'test_live_startup_reconcile'))
         check('all 20 expansion identities repeat normal Fire and stop on release',lambda:controller_test(ROOT/'src',True,'test_expansion_controller'))
         check('standalone validation trace and closed identity gate',lambda:[controller_test(ROOT/'src',True,n) for n in ('test_gate','test_validation')])
         check('differential replay: 9 reference weapons, 2 modes, 2 overrides; existing roster preserved',lambda:parity(ref))
