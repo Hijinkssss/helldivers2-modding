@@ -1,36 +1,33 @@
-# V4 RC4 focused live follow-up
+# Full Auto Assist 1.0 pre-release live validation
 
-RC3 runtime behavior passed user-reported live testing, including the Talon
-Balanced profile and the user's personal modpack. RC4 changes Arsenal branding,
-artwork, and profile selection packaging. This is the remaining UI/configuration
-gate; broad weapon regression testing is not required unless a focused check
-shows an unexpected runtime change.
+The 1.0 release remains blocked on reproducing and fixing default-ON mission
+startup, exact-build evidence for the requested roster, and a fresh live pass.
+The current local validation setup is explicitly marked test-only and has
+`enabled=true`, `user_enabled=false`, plus the F8 test binding. Its startup log
+records `active=false`, followed by a manual toggle to ON. This accounts for
+that run starting OFF; it does not reproduce a default-ON mission-entry failure.
+The standard example config and absent-INI defaults both set `user_enabled=true`.
 
-1. Import and deploy `Full-Auto-Assist-V4-RC4-Arsenal.zip`. Confirm Arsenal shows
-   `Full Auto Assist V4`, the concise description, and the supplied square logo.
-2. Open **Change Active Options**. Confirm exactly five expandable profile groups:
-   Peacemaker, SOCOM, Veto, Talon, and AMR. Verify the displayed profiles,
-   descriptions, and Balanced defaults.
-3. Change one profile, confirm, redeploy, and confirm the selection persists.
-   Check actual cadence on that weapon. The selected profile should map to the
-   policy values in this table; RPM values are Fire-input attempts, not promised
-   accepted shot rates.
+## Short live sequence after a corrected package is built
 
-   | Weapon | Balanced | Other selections |
-   |---|---:|---|
-   | P-2 Peacemaker | 380 | Full Auto 900 |
-   | M6C/SOCOM Pistol | 380 | Full Auto 900 |
-   | P-69 Veto | 380 | Full Auto 750 |
-   | LAS-58 Talon | 210 | Efficiency 60; Full Auto 380; FULLER AUTO 750 |
-   | APW-1 Anti-Materiel Rifle | 120 | Full Auto 400 |
+1. With default config and no toggle press, enter a mission; hold Fire with a
+   known eligible weapon and confirm immediate assistance.
+2. Toggle OFF and ON using the registered Mod Bindings Menu binding, if present;
+   otherwise use `=` / `+`. Confirm native binding precedence after registration.
+3. Check one existing known-good weapon, then each newly approved weapon once.
+   Group them by loadout and swap weapons within one mission where practical.
+4. Confirm Double Freedom remains untouched and SG-97 Sweeper remains native
+   Full Auto.
+5. Check one charge/hold negative control; release Fire and confirm assistance
+   stops immediately.
+6. Swap weapons, open a menu, and change focus while holding Fire; confirm the
+   safety guard prevents stuck Fire and requires release before resuming.
+7. Confirm the personal modpack still works.
+8. Check Arsenal branding, the five existing profile groups, one saved profile
+   change, and artwork. Preserve the Peacemaker, SOCOM, Veto, Talon, and AMR
+   profile values listed in the README.
 
-4. Confirm startup is ON and `=` toggles OFF then ON. If Mod Bindings Menu is
-   installed, confirm its action still takes precedence after registration;
-   otherwise verify the standalone `=` fallback.
-5. Briefly hold and release Fire at the changed profile, and confirm assistance
-   stops on release. Check native full-auto, charge/hold, unsupported weapons,
-   and the existing personal modpack remain intact. Do not retune Talon Balanced.
-
-The RC4 package and offline checks do not establish a live UI display or gameplay
-result. Record any visible option, persistence, or cadence discrepancy before
-making a follow-up change.
+The candidate matrix lists requested weapons that are still deferred because
+the checked-in exact-build evidence does not establish their identity, fire
+modes, reload/charge behavior, and accepted cadence. Do not claim or test them
+as supported until those records are added and policy tests cover them.

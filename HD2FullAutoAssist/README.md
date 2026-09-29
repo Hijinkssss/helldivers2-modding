@@ -1,4 +1,4 @@
-# Full Auto Assist V4
+# Full Auto Assist
 
 An accessibility/QoL mod that repeats normal Fire while you hold Fire on a small,
 explicitly reviewed set of weapons. The game decides whether each shot or burst
@@ -13,11 +13,11 @@ planned, and is not provided by this version.
 
 ## Current status
 
-RC3 runtime behavior, Talon Balanced at 210 RPM, and compatibility with the user's
-personal modpack passed live testing. V4 / RC4 packages the same runtime with
-updated Arsenal branding and configurable outlier profiles. The RC4 UI and
-selected-profile path still need the focused live follow-up in
-[NEXT_TEST.md](docs/NEXT_TEST.md).
+The existing runtime, Talon Balanced at 210 RPM, and compatibility with the user's
+personal modpack passed earlier live testing. This 1.0.0-RC5 candidate keeps the
+validated roster and Arsenal profiles while preparing the accessibility-focused
+public name and description. Current mission-entry startup and the requested
+weapon additions still require the checks in [NEXT_TEST.md](docs/NEXT_TEST.md).
 
 Full Auto Assist starts ON. `=` toggles assistance by default; the optional Mod
 Bindings Menu can register a persistent rebindable action and takes precedence
@@ -26,7 +26,7 @@ after successful registration.
 ## Install
 
 1. Close the game. Install one copy of Bingus Shared Loader v18 / API 1.
-2. Import `Full-Auto-Assist-V4-RC4-Arsenal.zip` into Arsenal.
+2. Import `Full-Auto-Assist-1.0.0-RC5-Arsenal.zip` into Arsenal.
    Replace the older Full Auto Assist entry; enable only one copy of this mod.
 3. Enable the standalone option and the loader. Give the loader winning startup
    priority as described in its instructions, then Purge / Deploy.
@@ -127,7 +127,7 @@ python HD2FullAutoAssist/scripts/build.py
 python HD2FullAutoAssist/tests/test_package.py --loader-discovery <BingusSharedLoader-v18/src/discover.lua>
 ```
 
-Output: `HD2FullAutoAssist/build/Full-Auto-Assist-V4-RC4-Arsenal.zip`.
+Output: `HD2FullAutoAssist/build/Full-Auto-Assist-1.0.0-RC5-Arsenal.zip`.
 The builder owns resource encoding, writes the supplied artwork as `thumbnail.png`,
 and creates one required core option plus five Aggro Counter-style profile groups.
 [Dependency audit](docs/DEPENDENCIES.md) and [validation boundaries](docs/VALIDATION.md)

@@ -38,9 +38,9 @@ def main():
     assert report['offline_tested'] and not report['live_standalone_validated']
     with zipfile.ZipFile(package) as z:
         names=z.namelist();manifest=json.loads(z.read('manifest.json'))
-        assert manifest['Name']=='Full Auto Assist V4'
-        assert manifest['Description']==('Automatically repeats Fire while held for supported semi-auto and burst weapons. '
-            'Native full-auto, charge/hold, and unsupported weapons remain unchanged. Includes configurable fire-rate profiles for select high-rate weapons.')
+        assert manifest['Name']=='Full Auto Assist'
+        assert manifest['Description']==('An accessibility-focused QoL mod that lets supported semi-auto and burst weapons '
+            'continue firing while Fire is held, without altering damage, recoil, ammo, projectiles, or native weapon stats.')
         assert len(manifest['Options'])==6 and manifest['Options'][0]['Include']==['Core']
         assert z.read('thumbnail.png')==(ROOT/'thumbnail.png').read_bytes()
         assert 'SubOptions' not in manifest['Options'][0]

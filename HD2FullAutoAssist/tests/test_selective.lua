@@ -1,7 +1,12 @@
 -- Runs only against an isolated in-memory copy with the gate opened by tests.
-a=app.install(core,function()return backend end,function()return 'debug_logging=true'end)
+a=app.install(core,function()return backend end,function()return ''end)
 assert(app.install(core,function()error('duplicate')end)==a)
-tick(0,false);assert(a:get_state().effective)
+assert(a:status().active and a:get_state().user_enabled,
+    'An absent INI must use the default enabled state')
+-- Model ship/loading followed by mission entry. Startup ON must work without
+-- any toggle input once Fire is released and then pressed in valid gameplay.
+gameplay=false;tick(0,false);assert(a:status().active and a:get_state().user_enabled)
+gameplay=true;tick(10,false);assert(a:get_state().effective)
 fire=true;tick(20);assert(backend.lease and a:get_state().repeat_active)
 local starts=backend.starts
 resource_hash='968211c0033dce64';entity_id=1002;tick(40)
@@ -33,6 +38,16 @@ fire=false;tick(1420);fire=true;tick(1440);assert(backend.lease)
 local snapshot=a:get_state();snapshot.weapon.resource_hash='bad';assert(a:get_state().weapon.resource_hash~='bad')
 assert(a:stop().ok and not backend.lease and not a:get_state().effective)
 local lookups=identity_calls;tick(1600,false);assert(identity_calls==lookups,'Cancellation prevents further identity reads')
+-- A persisted explicit OFF preference remains OFF across startup and mission
+-- entry. The normal toggle path is covered above for the default ON state.
+gameplay=false;fire=false
+b=app.install(core,function()return backend end,function()return 'user_enabled=false'end)
+assert(not b:status().active and not b:get_state().user_enabled)
+gameplay=true;fire=true;tick(1620,false)
+assert(not backend.lease and not b:get_state().user_enabled)
+fire=false;tick(1640,false)
+assert(not b:status().active and not b:get_state().user_enabled)
+assert(b:stop().ok)
 shutdown();local s=core.Diagnostics:Status()
 assert(s.input.active==0 and s.scheduler.active==0 and s.events.active==0)
 assert(a:status().counters.errors==0 and s.scheduler.failures==0)
