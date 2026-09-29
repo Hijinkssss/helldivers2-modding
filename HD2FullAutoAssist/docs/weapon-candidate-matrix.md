@@ -36,3 +36,11 @@ reload behavior, cadence, audio and animation still need the checklist in
 ARC-12 Blitzer (`076dd5d4f4360204`) is excluded because its native mode vector
 is `1/0/0` (Full Auto). GL-15 Evictor, Double Freedom and SG-97 Sweeper remain
 unmapped and fail closed.
+
+## P-92 Warrant
+
+P-92 Warrant remains deferred. Its exact-build identity and authored fields
+are documented in [WARRANT_SUPPORT_RESEARCH.md](WARRANT_SUPPORT_RESEARCH.md),
+but the available native mode record leaves its semantics unresolved and does
+not prove ordinary-Fire continuation, reload independence, or safe interaction
+with guided targeting. It remains unsupported and fail-closed.
