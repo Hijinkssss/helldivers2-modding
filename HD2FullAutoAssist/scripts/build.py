@@ -4,7 +4,7 @@ import hashlib,json,struct,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-VERSION='1.0.1-WARRANT-RC1'
+VERSION='1.0.1-FAA-B3'
 PACKAGE=f'Full-Auto-Assist-{VERSION}-Arsenal.zip'
 OUTPUT=ROOT/'build'/VERSION
 LUA_TYPE=0xA14E8DFA2CD117E2
@@ -150,13 +150,19 @@ def main():
     checks=ROOT/'build'/'standalone-checks.json'
     hashes={f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in sorted((ROOT/'src').glob('*.lua'))}
     tested=json.loads(checks.read_text()) if checks.exists() else {}
+    b3_path=ROOT/'build/b3-checks.json'
+    b3=json.loads(b3_path.read_text()) if b3_path.exists() else {}
+    b3_passed=bool(b3.get('passed')) and b3.get('source_sha256')==hashes
     report={'version':VERSION,'supported_build':'25480438','name':'Full Auto Assist',
         'description':description,'configuration_precedence':'Arsenal selected profile > explicit per-weapon INI profile > legacy INI mode > built-in Balanced policy',
         'external_dependencies':['Bingus Shared Loader v18 / API 1'],
         'source_sha256':hashlib.sha256(source).hexdigest(),'archive_sha256':hashlib.sha256(archive).hexdigest(),
         'package_sha256':package_hash,
-        'offline_tested':tested.get('offline_passed') is True and tested.get('source_sha256')==hashes,
-        'live_standalone_validated':True,'live_validation_source':'user_reported_complete',
+        'offline_tested':tested.get('offline_passed') is True and tested.get('source_sha256')==hashes and b3_passed,
+        'b3_regressions_and_work_budgets_passed':b3_passed,
+        'live_standalone_validated':False,'live_validation_source':None,
+        'candidate_status':'unpublished; gameplay and Watchdog retest required',
+        'baseline_commit':'be04ea15359b505bf953ef22d747e8f5e2de013e',
         'rc8_diagnostic_cleanup':{'removed':['startup_diagnostic.lua','RC8_DIAGNOSTIC.md','test_startup_diagnostic.lua',
             'phase/restore/toggle/avatar/hold diagnostic taps','lifecycle activation counters and diagnostic status',
             'native diagnostic sampling and mapping records'],

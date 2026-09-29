@@ -40,7 +40,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
     assert(type(host)=='table' and host.read and host.eligibility,'Full Auto Assist host required')
     if installed[host] then return installed[host] end
     local input_token,hook_token,identity_token,backend,settings,closed,failed,policy,state,profiler
-    local leased_entity_id,leased_resource_hash
+    local leased_entity_id,leased_resource_hash,leased_avatar_id,leased_identity_token
     -- A new controller has no outstanding Fire lease to release. Start armed;
     -- only safety guards after an observed eligible/leased state may require a
     -- physical release. This lets delayed mission/player initialization settle
@@ -59,8 +59,13 @@ function M.install(host,backend_factory,read_config,validation_factory)
         if trace then trace:record(event,{level=level,data=fields or {},state=state and state:snapshot()}) end
     end
     local function restore(reason)
+        if reason~='release' and ((backend and backend.lease) or
+            (reason~='weapon_not_effective' and reason~='invalid_gameplay_state'))then
+            if host.invalidate_identity then host:invalidate_identity()end
+            if backend and backend.invalidate then backend:invalidate()end
+        end
         if state then state:set_repeat(false) end
-        leased_entity_id,leased_resource_hash=nil,nil
+        leased_entity_id,leased_resource_hash,leased_avatar_id,leased_identity_token=nil,nil,nil,nil
         if not backend or not backend.lease then unit_ref=nil;return end
         local restore_started=profiler and profiler:start()
         local clean,detail=backend:restore();unit_ref=nil
@@ -71,7 +76,9 @@ function M.install(host,backend_factory,read_config,validation_factory)
         lease_started,lease_repeat_start=nil,nil
         if trace then trace:record('lease_released',{reason=reason,clean=clean,detail=detail,wall_us=wall,
             observed_repeat_pulses=repeats,active_lease=backend.lease~=nil,state=state:snapshot()}) end
-        if not clean then counters.restore_conflicts=counters.restore_conflicts+1
+        if not clean then
+            if host.invalidate_identity then host:invalidate_identity()end
+            counters.restore_conflicts=counters.restore_conflicts+1
             emit('warning','restore_conflict',{reason=detail}) end
         if settings and settings.debug_logging then emit('info','hold_stopped',
             {reason=reason,clean=clean,wall_us=wall,observed_repeat_pulses=repeats}) end
@@ -81,6 +88,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
             if profiler then profiler:increment('failure_entries')end
             failed=true;counters.errors=counters.errors+1
             if state then state:invalidate('consumer_failed') end
+            if backend and backend.invalidate then backend:invalidate()end
             emit('error','assist_disabled',{reason=tostring(why)})
             if input_token then host:remove(input_token);input_token=nil end
         end
@@ -172,7 +180,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
             if not ok then fail(why) end
         end,{id='codex.full_auto_assist.toggle',label='Toggle Full Auto Assist',slot=2,
             options={category='Full Auto Assist'}})
-        local fingerprint
+        local fingerprint,last_revision
         local function resolve(expected_unit)
             counters.identity_lookups=counters.identity_lookups+1
             local snapshot_started=profiler and profiler:start()
@@ -190,14 +198,16 @@ function M.install(host,backend_factory,read_config,validation_factory)
             end
             if trace and policy_elapsed then trace:cost('identity_resolution',policy_elapsed)end
             local fingerprint_started=profiler and profiler:start()
-            local next_fingerprint=table.concat({tostring(current.weapon.unit_ref),tostring(current.weapon.avatar_id),tostring(current.weapon.entity_id),
-                tostring(current.weapon.resource_hash),current.eligibility.category,tostring(current.identity_observed)},':')
+            local next_fingerprint=current.revision==last_revision and fingerprint or table.concat({tostring(current.weapon.unit_ref),tostring(current.weapon.avatar_id),tostring(current.weapon.entity_id),
+                tostring(current.weapon.resource_hash),current.eligibility.category,tostring(current.identity_observed),
+                tostring(current.weapon.identity_token)},':')
             if profiler then
                 local fingerprint_elapsed=profiler:finish('identity_fingerprint',fingerprint_started) or 0
                 identity_elapsed=identity_elapsed+fingerprint_elapsed
                 counters.identity_lookup_us=counters.identity_lookup_us+identity_elapsed
                 counters.identity_lookup_us_max=math.max(counters.identity_lookup_us_max,identity_elapsed)
             end
+            last_revision=current.revision
             if next_fingerprint~=fingerprint then
                 fingerprint=next_fingerprint;counters.identity_changes=counters.identity_changes+1
                 if settings.debug_logging then emit('info','held_identity_changed',{
@@ -208,7 +218,8 @@ function M.install(host,backend_factory,read_config,validation_factory)
             if trace then trace:state(current,'identity')end
             if backend and backend.lease and (not current.effective or
                 current.weapon.unit_ref~=unit_ref or current.weapon.entity_id~=leased_entity_id or
-                current.weapon.resource_hash~=leased_resource_hash) then
+                current.weapon.resource_hash~=leased_resource_hash or current.weapon.avatar_id~=leased_avatar_id or
+                current.weapon.identity_token~=leased_identity_token) then
                 restore('weapon_identity_changed_or_invalid');wait_release=true
             end
             return current
@@ -216,7 +227,15 @@ function M.install(host,backend_factory,read_config,validation_factory)
         identity_token=host:on_identity(function()
                 if closed or failed then return end
                 if backend and backend.lease then return end -- The firing callback resolves fresh identity every update.
-                local ok,why=pcall(resolve);if not ok then fail(why) end
+                local ok,why=pcall(function()
+                    if IDENTITY_VALIDATED and not backend then backend=backend_factory(host)end
+                    if backend and backend.gameplay_state and not backend:gameplay_state()then
+                        state:invalidate('invalid_gameplay_state')
+                        if host.invalidate_identity then host:invalidate_identity()end
+                        return
+                    end
+                    resolve()
+                end);if not ok then fail(why) end
             end)
         local function tick()
             if closed then return end
@@ -251,6 +270,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 if not row.gameplay then
                     local release_required=wait_release or backend.lease~=nil
                     state:invalidate('invalid_gameplay_state')
+                    if host.invalidate_identity then host:invalidate_identity()end
                     restore('invalid_gameplay_state');wait_release=release_required;return
                 end
                 if wait_release then return end
@@ -278,6 +298,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 end
                 unit_ref=row.unit_ref
                 leased_entity_id,leased_resource_hash=current.weapon.entity_id,current.weapon.resource_hash
+                leased_avatar_id,leased_identity_token=current.weapon.avatar_id,current.weapon.identity_token
                 local cadence_started=profiler and profiler:start()
                 local seconds=math.max(settings.repeat_ms/1000,60/current.eligibility.max_repeat_rpm)
                 if profiler then profiler:finish('cadence_logic',cadence_started)end
@@ -289,7 +310,8 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 counters.holds=counters.holds+1
                 state:set_repeat(true)
                 lease_started=backend.clock_us();lease_repeat_start=counters.repeat_frames
-                if trace then trace:record('lease_acquired',{mappings=changed,repeat_ms=seconds*1000,state=state:snapshot()})end
+                if trace then trace:record('lease_acquired',{mappings=changed,repeat_ms=seconds*1000,
+                    native_retry_ms=(backend.native_repeat_seconds or seconds)*1000,state=state:snapshot()})end
                 if settings.debug_logging then emit('info','hold_started',{mappings=changed,repeat_ms=backend.repeat_seconds*1000}) end
             end)
             local elapsed=started and math.max(0,backend.clock_us()-started)

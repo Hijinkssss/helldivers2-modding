@@ -36,17 +36,19 @@ function M.new(policy,validated)
             self:invalidate('identity_unavailable_or_player_changed');return self:snapshot()
         end
         local resource_hash=Policy.hash(held.resource_hash)
+        local identity_token=avatar.identity_token and (avatar.identity_token..(held.identity_token or ''))
         local decision
         if last_hash==resource_hash then decision=last_decision;self.cache_hits=self.cache_hits+1
         else decision=policy:classify(resource_hash,nil);self.cache_misses=self.cache_misses+1 end
         last_hash,last_decision=resource_hash,decision
         if state.identity_observed and state.weapon.unit_ref==avatar.unit_ref and
             state.weapon.avatar_id==avatar.avatar_id and
-            state.weapon.entity_id==held.entity_id and state.weapon.resource_hash==resource_hash then
+            state.weapon.entity_id==held.entity_id and state.weapon.resource_hash==resource_hash and
+            state.weapon.identity_token==identity_token then
             return self:snapshot() -- Fresh guards passed; resolved policy/state is unchanged.
         end
         state.weapon={unit_ref=avatar.unit_ref,avatar_id=avatar.avatar_id,entity_id=held.entity_id,resource_hash=resource_hash,
-            semantic_id=decision.semantic_id,name=decision.name,selected_mode=nil}
+            identity_token=identity_token,semantic_id=decision.semantic_id,name=decision.name,selected_mode=nil}
         state.eligibility={category=decision.category,max_repeat_rpm=decision.max_repeat_rpm,notes=decision.notes}
         state.identity_observed=true
         state.identity_valid=validated==true and decision.semantic_id~=nil

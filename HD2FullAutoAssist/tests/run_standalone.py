@@ -4,7 +4,7 @@ Requires Python + lupa.luajit21 and git. Never opens a game process.
 The reference is read from commit a93008f; it is not packaged with the mod.
 """
 from pathlib import Path
-import hashlib,json,subprocess,tempfile,zipfile,sys
+import hashlib,json,subprocess,tempfile,zipfile,sys,math
 from lupa.luajit21 import LuaRuntime
 ROOT=Path(__file__).resolve().parents[1]
 REPO=ROOT.parent
@@ -86,7 +86,7 @@ def native_test(rpm=None):
     if rpm:
         interval=60/rpm
         code=code.replace('assert(b:begin(row)==2);assert(read(bucket+8,20)~=original)',
-            f"assert(b:begin(row,{interval!r})==2);local f=ffi.new('float[1]');ffi.copy(f,read(bucket+24,4),4);assert(math.abs(tonumber(f[0])-{interval!r})<.000001)")
+            f"assert(b:begin(row,{interval!r})==2);local f=ffi.new('float[1]');ffi.copy(f,read(bucket+24,4),4);assert(math.abs(tonumber(f[0])-{interval / math.ceil(interval)!r})<.000001)")
     lua.execute(code)
 def native_intervals():
     for rpm in (900,750,480,450,400,380,350,120,80,60,50,32):native_test(rpm)

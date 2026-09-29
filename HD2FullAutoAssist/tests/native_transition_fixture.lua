@@ -9,7 +9,7 @@ local function ptr(n)return u32(n)..u32(0)end
 local function float(n)local v=ffi.new('float[1]',n);return ffi.string(v,4)end
 local function hash_bytes(hash)local out={};for i=16,2,-2 do out[#out+1]=string.char(tonumber(hash:sub(i-1,i),16))end;return table.concat(out)end
 function M.new(config)
-    local f={now=0,logs={},queries={},writes=0,physical_samples=0,stock_calls=0}
+    local f={now=0,logs={},queries={},writes=0,physical_samples=0,stock_calls=0,read_log={},write_log={}}
     local bytes={}
     function f:put(at,s)for i=1,#s do bytes[at+i-1]=s:sub(i,i)end end
     function f:bytes(at,n)local out={};for i=0,n-1 do assert(bytes[at+i],'Unmapped fixture address');out[#out+1]=bytes[at+i]end;return table.concat(out)end
@@ -19,6 +19,8 @@ function M.new(config)
     local UI,CONTROLS,STATE,BINDINGS=0x22000000,0x70000000,0x71000000,0x72000000
     local BUCKET=BINDINGS+9*328
     f.G,f.PM,f.EM,f.ROWS,f.ERECORD,f.BUCKET=G,PM,EM,ROWS,ERECORD,BUCKET
+    f.AVATAR,f.WM,f.AM,f.OWNER,f.BACKS,f.EBACK,f.CONTROLS,f.STATE,f.BINDINGS=AVATAR,WM,AM,OWNER,BACKS,EBACK,CONTROLS,STATE,BINDINGS
+    f.u32,f.ptr,f.float=u32,ptr,float
     local function put(at,s)f:put(at,s)end
     local function map(at,rows,key,index,cap)
         put(at,ptr(rows)..u32(cap or 8)..u32(0xffffffff)..u32(1))
@@ -48,6 +50,9 @@ function M.new(config)
     put(G+0x12fc180,'\x48\x8b\xc4\x48\x89\x58\x08\x48\x89\x68\x10\x48')
     put(G+0x12fc44c,'\x41\x0f\x5a\xc3\x0f\x5a\xcf\xe8\x58\xcb\xe0\x00')
     put(G+0x12fa3b3,'\xe8\xc8\xb7\x28\xff\x44\x8b\x8e\xd8\x7a\x0a\x00')
+    function f:input(magnitude,seconds,pressed,trigger,index)
+        put(CONTROLS+0x1c88,(pressed and '\1' or '\0')..'\0\0\0'..float(magnitude)..float(seconds)..u32(0)..u32(index or 0)..u32(0)..u32(trigger or 0)..u32(0))
+    end
     function f:fire(held)
         put(CONTROLS+0x1c88,'\0\0\0\0'..float(held and 1 or 0)..float(held and .1 or 0)..u32(0)..u32(0)..u32(0)..u32(0)..u32(0))
     end
@@ -61,7 +66,7 @@ function M.new(config)
     end
     function f:relocate_equipment(address)put(G+0x3326dc0,ptr(address));put(address+32,self:bytes(EM+32,20));put(address+56,ptr(EBACK))end
     f:fire(false)
-    local p={clock_us=function()return f.now end,module_hash=function(_,name)
+    local p={safe_cached_reads=true,clock_us=function()return f.now end,module_hash=function(_,name)
         return name and '2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E' or 'F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06'
         end,module_address=function()return G end,query_region=function(_,at)
             f.queries[#f.queries+1]=at
@@ -69,7 +74,12 @@ function M.new(config)
             local base=math.floor(at/4096)*4096
             return {base=base,size=4096,state=0x1000,protect=base==f.bad_page and 0x104 or 4}
         end,read=function(_,at,n)
+            f.read_log[#f.read_log+1]={at=at,n=n}
             if at==f.failed_read then return nil end
+            for page=math.floor(at/4096)*4096,math.floor((at+n-1)/4096)*4096,4096 do
+                if page==f.bad_page then return nil end
+            end
+            if f.on_read then local value,handled=f.on_read(at,n);if handled then return value end end
             return f:bytes(at,n)
         end,prepare_input=function()return true end,input_focused=function()return true end,input_down=function()return false end}
     f.platform=p
@@ -84,13 +94,19 @@ function M.new(config)
     local adapter={base=G,clock_us=function()return f.now end,float_bytes=float,
         float=function(s,at)local v=ffi.new('float[1]');ffi.copy(v,s:sub(at+1,at+4),4);return tonumber(v[0])end,
         raw_lmb_down=function()f.physical_samples=f.physical_samples+1;return true end,
-        write=function(at,s)assert(#s==20);put(at,s);f.writes=f.writes+1 end}
+        write=function(at,s)
+            assert(#s==20);f.write_log[#f.write_log+1]={at=at,bytes=s}
+            local region=p:query_region(at)
+            assert(region and region.state==0x1000 and region.protect==4 and at>=region.base and at+20<=region.base+region.size)
+            if f.write_failure then error('fixture write failure')end
+            put(at,s);f.writes=f.writes+1
+        end}
     f.consumer=require('full_auto_assist').install(f.host,function(host)
         f.backend=Native.new(host,function()return adapter end);return f.backend
     end,function()return config or ''end)
     f.host:attach()
-    function f:tick()
-        self.now=self.now+120000
+    function f:tick(delta)
+        self.now=self.now+(delta or 120000)
         local a,b,c=self.env.update('fixture');assert(a=='stock' and b==nil and c==7)
         assert(self.host.regions==nil,'Page scope leaked after update')
     end

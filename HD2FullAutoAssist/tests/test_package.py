@@ -35,10 +35,10 @@ def main():
     ''')
     report=json.loads((builder.OUTPUT/'build-report.json').read_text())
     assert report['external_dependencies']==['Bingus Shared Loader v18 / API 1']
-    assert report['offline_tested'] and report['live_standalone_validated']
+    assert report['offline_tested'] and report['live_standalone_validated'] is False
     assert report['version']==builder.VERSION and report['supported_build']=='25480438'
-    assert report['live_standalone_validated'] is True
-    assert package.name=='Full-Auto-Assist-1.0.1-WARRANT-RC1-Arsenal.zip'
+    assert report['live_standalone_validated'] is False
+    assert package.name=='Full-Auto-Assist-1.0.1-FAA-B3-Arsenal.zip'
     with zipfile.ZipFile(package) as z:
         names=z.namelist();manifest=json.loads(z.read('manifest.json'))
         assert {'README.md','CHANGELOG.md','HD2FullAutoAssist.example.ini'} <= set(names)
@@ -112,8 +112,8 @@ def main():
         'deterministic_rebuild':True,'actual_loader_discovery_checked':discovery,
         'package_sha256':before,'archive_entries':sorted(names),
         'dependency_audit':{'required':['Bingus Shared Loader v18 / API 1'],'embedded_hd2modcore':False,'embedded_hd2runtime':False},
-        'live_standalone_validated':True,
-        'live_validation_source':'user_reported_complete'}
+        'live_standalone_validated':False,
+        'live_validation_source':None}
     (builder.OUTPUT/'package-checks.json').write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result,indent=2))
 if __name__=='__main__':main()

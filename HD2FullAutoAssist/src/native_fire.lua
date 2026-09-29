@@ -4,6 +4,14 @@ local PROFILE='steam-25480438-v02-candidate'
 local CONTROLS,STATE,FIRE,MAP,CODE=0x347cf18,0x3326340,0x1c88,0xa7ad0,0x20009
 local REPEAT_SECONDS=0.125 -- Provisional default: 8 timed input attempts/second.
 M.repeat_seconds=REPEAT_SECONDS
+function M.native_period(seconds)
+    assert(type(seconds)=='number' and seconds==seconds and
+        seconds>=60/900 and seconds<=60/32,'Invalid consumer repeat cadence')
+    -- This native parameter is ALSO a normalized magnitude threshold. Values
+    -- above one suppress held time. Divide long native cooldowns into legal
+    -- retry ticks; the stock weapon cooldown still governs accepted shots.
+    return seconds/math.ceil(seconds)
+end
 local anchors={
     {0x12fc180,'\x48\x8b\xc4\x48\x89\x58\x08\x48\x89\x68\x10\x48'},
     {0x12fc44c,'\x41\x0f\x5a\xc3\x0f\x5a\xcf\xe8\x58\xcb\xe0\x00'},
@@ -62,14 +70,16 @@ end
 function M.new(host,make_adapter)
     assert(host:build_status().id==PROFILE,'Unsupported HD2 build')
     local a=(make_adapter or adapter)()
-    local function read(at,n)return host:read(at,n)end
-    local function ptr(at)return host:ptr(at)end
+    local function read(at,n)return (host.read_live or host.read)(host,at,n)end
+    local function ptr(at)return pointer(read(at,8))end
+    local function word(at)return u32(read(at,4),0)end
     local function maybe_ptr(at)
         local s=read(at,8);if s==string.rep('\0',8) then return nil end;return pointer(s)
     end
     for _,r in ipairs(anchors) do assert(read(a.base+r[1],#r[2])==r[2],'Native input code anchor changed') end
     local pm_global=host:symbol('player_manager')
-    local self={lease=nil,writes=0,restored=0,conflicts=0,repeat_seconds=REPEAT_SECONDS,clock_us=a.clock_us}
+    local self={lease=nil,writes=0,restored=0,conflicts=0,repeat_seconds=REPEAT_SECONDS,clock_us=a.clock_us,
+        binding_hits=0,binding_searches=0,binding_probes=0}
     function self:sample(capture_physical)
         local owner=maybe_ptr(a.base+CONTROLS);if not owner then return nil end
         local bytes=read(owner+FIRE,32)
@@ -83,25 +93,48 @@ function M.new(host,make_adapter)
         if capture_physical and a.raw_lmb_down then row.raw_lmb_down=a.raw_lmb_down()end
         if not row.held then return row end
         local state=maybe_ptr(a.base+STATE);if not state then return row end
-        row.game_state=host:u32(state+0xac21c)
+        row.game_state=word(state+0xac21c)
         assert(row.game_state<=16,'Invalid game state')
+        if self.last_game_state~=nil and self.last_game_state~=row.game_state then self:invalidate()end
+        self.last_game_state=row.game_state
         if row.game_state~=4 then return row end
         local pm=maybe_ptr(pm_global);if not pm then return row end
-        row.unit_ref=host:u32(pm+0x3a8)
+        row.unit_ref=word(pm+0x3a8)
         row.gameplay=row.unit_ref~=0 and row.unit_ref~=0x7fff and row.unit_ref~=0xffffffff
         assert(ptr(a.base+STATE)==state and ptr(pm_global)==pm,'Player state changed during sample')
         return row
+    end
+    function self:gameplay_state()
+        local state=maybe_ptr(a.base+STATE);if not state then return false end
+        local n=word(state+0xac21c);assert(n<=16,'Invalid game state')
+        if self.last_game_state~=nil and self.last_game_state~=n then self:invalidate()end
+        self.last_game_state=n
+        assert(ptr(a.base+STATE)==state,'Game state changed')
+        return n==4
+    end
+    function self:invalidate()
+        self.binding=nil
+        if host.invalidate_native_cache then host:invalidate_native_cache()end
     end
     local function bucket(owner)
         assert(ptr(a.base+CONTROLS)==owner,'Controls owner changed')
         local header=read(owner+MAP,20);local rows=pointer(header)
         assert(u32(header,8)==256,'Unsupported binding map capacity')
+        local cached=self.binding
+        if cached and cached.revision==host.native_cache_revision and cached.owner==owner and cached.header==header then
+            local h=read(cached.at,8);local count=u32(h,4)
+            if u32(h,0)==CODE and count>0 and count<=16 then
+                self.binding_hits=self.binding_hits+1;return cached.at,count,header
+            end
+        end
+        self.binding=nil;self.binding_searches=self.binding_searches+1
         local seed=(CODE%256)*(u32(header,16)%256)%256
         for probe=0,255 do
             local at=rows+(seed+probe)%256*328
-            local h=read(at,8)
+            local h=read(at,8);self.binding_probes=self.binding_probes+1
             if u32(h,0)==CODE then
                 local count=u32(h,4);assert(count>0 and count<=16,'Unsupported Fire mapping count')
+                self.binding={owner=owner,header=header,at=at,revision=host.native_cache_revision}
                 return at,count,header
             end
             if u32(h,0)==u32(header,12) then break end
@@ -109,11 +142,11 @@ function M.new(host,make_adapter)
         error('Normal Fire binding unavailable')
     end
     local function context(l,restoring)
-        assert(ptr(a.base+CONTROLS)==l.owner,'Controls owner changed')
-        assert(read(l.owner+MAP,20)==l.header,'Binding table changed')
+        if ptr(a.base+CONTROLS)~=l.owner then error('BindingContextChanged:controls_owner',0)end
+        if read(l.owner+MAP,20)~=l.header then error('BindingContextChanged:binding_table',0)end
         local h=read(l.bucket,8);local count=u32(h,4)
-        assert(u32(h,0)==CODE and count>0 and count<=16 and (restoring or count==l.count),
-            'Fire binding header changed')
+        if not (u32(h,0)==CODE and count>0 and count<=16 and (restoring or count==l.count))then
+            error('BindingContextChanged:fire_header',0)end
         return count
     end
     local function replace(l,r,expected,next_bytes)
@@ -133,12 +166,18 @@ function M.new(host,make_adapter)
             triggers[#triggers+1]=tostring(kind)..':'..tostring(trigger)
         end
         return {mappings=count,button_mappings=button,axis_mappings=axis,triggers=table.concat(triggers,','),
-            repeat_ms=self.repeat_seconds*1000}
+            repeat_ms=self.repeat_seconds*1000,native_retry_ms=(self.native_repeat_seconds or self.repeat_seconds)*1000}
     end
     function self:restore()
         local l=self.lease;if not l then return true end
         local same,current_count=pcall(context,l,true)
-        if not same then self.conflicts=self.conflicts+1;self.lease=nil;return false,'binding_context_changed' end
+        if not same then
+            self:invalidate()
+            -- A failed read is not proof of detachment. Keep originals and the
+            -- lease so the controller can retry restoration instead of losing it.
+            if not tostring(current_count):match('^BindingContextChanged:')then error(current_count,0)end
+            self.conflicts=self.conflicts+1;self.lease=nil;return false,'binding_context_changed'
+        end
         local clean=true
         for _,r in ipairs(l.records) do
             if r.index<current_count then
@@ -152,14 +191,14 @@ function M.new(host,make_adapter)
             else clean=false;self.conflicts=self.conflicts+1 end
         end
         self.lease=nil
+        if not clean then self:invalidate()end
         return clean,clean and 'restored' or 'binding_edit_preserved'
     end
     function self:begin(row,repeat_seconds)
         repeat_seconds=repeat_seconds or REPEAT_SECONDS
         -- The slowest supported policy is Eruptor at 32 RPM (1.875 s).
         -- A one-second ceiling rejected it and Crossbow before any lease write.
-        assert(type(repeat_seconds)=='number' and repeat_seconds==repeat_seconds and
-            repeat_seconds>=60/900 and repeat_seconds<=60/32,'Invalid consumer repeat cadence')
+        local native_period=M.native_period(repeat_seconds)
         assert(not self.lease and row.held and row.gameplay,'Invalid Fire lease request')
         local at,count,header=bucket(row.owner)
         local l={owner=row.owner,bucket=at,count=count,header=header,records={}}
@@ -177,10 +216,10 @@ function M.new(host,make_adapter)
             if kind==4 and trigger~=8 then
                 local f=flags-trigger*65536+8*65536
                 l.records[#l.records+1]={at=p,index=i,original=original,
-                    patched=packed(f)..original:sub(5,8)..packed(8)..original:sub(13,16)..a.float_bytes(repeat_seconds)}
+                    patched=packed(f)..original:sub(5,8)..packed(8)..original:sub(13,16)..a.float_bytes(native_period)}
             end
         end
-        self.repeat_seconds=repeat_seconds
+        self.repeat_seconds=repeat_seconds;self.native_repeat_seconds=native_period
         self.lease=l -- Set before writing so all failure paths can restore.
         for _,r in ipairs(l.records) do replace(l,r,r.original,r.patched) end
         return #l.records

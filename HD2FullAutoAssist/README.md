@@ -1,4 +1,6 @@
-# Full Auto Assist 1.0.0
+# Full Auto Assist 1.0.1-FAA-B3
+
+**Unpublished B3 test candidate.** Cache/low-cadence corrections passed offline checks. B3 gameplay, shot cadence, audio/animation and Mod Lag Watchdog performance remain unvalidated. This is not a release.
 
 Full Auto Assist is an accessibility-focused quality-of-life mod that repeats normal Fire input while Fire is held for 30 explicitly supported semi-auto, burst, and game-cycled weapons. The game decides whether each input produces a shot. The mod does not change weapon statistics or automate aim, reload, recoil compensation, or charge behavior.
 
@@ -7,7 +9,7 @@ Full Auto Assist is an accessibility-focused quality-of-life mod that repeats no
 ## Install
 
 1. Install Bingus Shared Loader v18 / API 1 and open Arsenal.
-2. For this unpublished test candidate, import `Full-Auto-Assist-1.0.1-WARRANT-RC1-Arsenal.zip`, enable Full Auto Assist and deploy it.
+2. For this unpublished test candidate, import `Full-Auto-Assist-1.0.1-FAA-B3-Arsenal.zip`, enable Full Auto Assist and deploy it.
 3. Choose any desired options in Arsenal. All seven weapon profile groups default to Balanced.
 
 The mod starts ON by default. Press `=` (or `+`, depending on keyboard layout) once to toggle it. If Mod Bindings Menu is installed and registers the optional action, that action uses the same toggle path and takes precedence over the fallback key.

@@ -39,7 +39,12 @@ end
 function M.new(memory,symbols)
     assert(memory and symbols,'observer dependencies required')
     return setmetatable({memory=memory,symbols=symbols,calls=0,successes=0,
-        unavailable=0,failures=0,reads=0},Observer)
+        unavailable=0,failures=0,reads=0,cache_hits=0,discoveries=0,invalidations=0},Observer)
+end
+
+function Observer:invalidate()
+    if self.certificate then self.invalidations=self.invalidations+1 end
+    self.certificate=nil
 end
 
 function Observer:snapshot()
@@ -75,7 +80,9 @@ function Observer:snapshot()
         if not symbol.ok then
             fail(symbol.error.code,name,symbol.error.detail)
         end
-        return ptr_at(symbol.value.address,name,true)
+        local value=ptr_at(symbol.value.address,name,true)
+        guards[#guards].root=true
+        return value
     end
     local function lookup(at,key,capacity_limit,stage)
         local header=read(at,20,stage,true)
@@ -104,6 +111,24 @@ function Observer:snapshot()
         fail('Unavailable',stage,'probe limit reached')
     end
     local function run()
+        local cached=self.certificate
+        if cached then
+            -- Parents precede children: never follow an old slot after its
+            -- manager, table, key/index, ownership or generation changed.
+            local checked,valid=pcall(function()
+                for _,guard in ipairs(cached.guards) do
+                    if read(guard.address,#guard.bytes,'cache_validate')~=guard.bytes then return false end
+                end
+                for _,guard in ipairs(cached.guards) do
+                    if guard.root and read(guard.address,#guard.bytes,'cache_roots')~=guard.bytes then return false end
+                end
+                return true
+            end)
+            if not checked then valid=false end
+            if valid then self.cache_hits=self.cache_hits+1;return cached.snapshot end
+            self:invalidate()
+        end
+        self.discoveries=self.discoveries+1
         local pm=global('player_manager')
         local counts=read(pm+0x84,8,'local_player',true)
         local count,available=u32(counts,0),u32(counts,4)
@@ -143,10 +168,11 @@ function Observer:snapshot()
             fail('InvalidLayout','avatar_manager','avatar index outside live count')
         end
         local back=ptr_at(am+0x110+ai*8,'avatar_manager',true)
-        if read(back,24,'avatar_manager')~=avatar then
+        if read(back,24,'avatar_manager',true)~=avatar then
             fail('SnapshotChanged','avatar_manager','avatar back-reference changed')
         end
         local snapshot={state='present',avatar_id=avatar_id,unit_ref=unit,
+            identity_token=hash64(avatar:sub(9,16))..hash64(avatar:sub(17,24)),
             held={state='unknown'},evidence='source_candidate'}
         local wm=global('weapon_wielder')
         local wi=lookup(wm+48,avatar_id,4096,'weapon_wielder')
@@ -154,8 +180,8 @@ function Observer:snapshot()
             fail('InvalidLayout','weapon_wielder','wielder index too large')
         end
         local backrefs=ptr_at(wm+72,'weapon_wielder',true)
-        local back_at=ptr_at(backrefs+wi*8,'weapon_wielder')
-        if back_at~=avatar_at or read(back_at,24,'weapon_wielder')~=avatar then
+        local back_at=ptr_at(backrefs+wi*8,'weapon_wielder',true)
+        if back_at~=avatar_at or read(back_at,24,'weapon_wielder',true)~=avatar then
             fail('SnapshotChanged','weapon_wielder','avatar back-reference changed')
         end
         local rows=ptr_at(wm+96,'weapon_wielder',true)
@@ -169,12 +195,13 @@ function Observer:snapshot()
             local ei=lookup(em+32,held_id,8192,'held_entity')
             if ei>=4096 then fail('InvalidLayout','held_entity','equipment index too large') end
             local equipment_back=ptr_at(em+56,'held_entity',true)
-            local record_at=ptr_at(equipment_back+ei*8,'held_entity')
+            local record_at=ptr_at(equipment_back+ei*8,'held_entity',true)
             local record=read(record_at,24,'held_entity',true)
             if u32(record,8)~=held_id then
                 fail('SnapshotChanged','held_entity','equipment identity changed')
             end
             snapshot.held={state='present',entity_id=held_id,
+                identity_token=hash64(record:sub(9,16))..hash64(record:sub(17,24)),
                 resource_hash=hash64(record:sub(1,8))}
         end
         for _,guard in ipairs(guards) do
@@ -182,6 +209,7 @@ function Observer:snapshot()
                 fail('SnapshotChanged','revalidate','identity changed during snapshot')
             end
         end
+        self.certificate={guards=guards,snapshot=snapshot}
         return snapshot
     end
     local ok,value=pcall(function()
@@ -195,6 +223,7 @@ function Observer:snapshot()
         self.successes=self.successes+1
         return Result.ok(value)
     end
+    self:invalidate()
     local problem=type(value)=='table' and value or
         {code='InvalidLayout',stage='observer',detail=tostring(value)}
     if problem.code=='Unavailable' then self.unavailable=self.unavailable+1
@@ -204,7 +233,8 @@ end
 
 function Observer:status()
     return {calls=self.calls,successes=self.successes,
-        unavailable=self.unavailable,failures=self.failures,reads=self.reads}
+        unavailable=self.unavailable,failures=self.failures,reads=self.reads,
+        cache_hits=self.cache_hits,discoveries=self.discoveries,invalidations=self.invalidations}
 end
 
 return M

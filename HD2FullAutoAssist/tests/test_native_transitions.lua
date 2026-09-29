@@ -9,7 +9,7 @@ local function active(f,hash)
     assert(math.abs(f.backend.repeat_seconds-expected)<1e-9)
     local ffi=require('ffi');local v=ffi.new('float[1]')
     ffi.copy(v,f:bytes(f.BUCKET+24,4),4)
-    assert(math.abs(tonumber(v[0])-expected)<1e-6,'Native mapping must receive the selected interval')
+    assert(math.abs(tonumber(v[0])-require('native_fire').native_period(expected))<1e-6,'Native mapping must receive the selected interval')
 end
 local function acquire(f,hash,id,address)
     f:fire(false);f:tick();f:weapon(hash,id,address);f:tick()
