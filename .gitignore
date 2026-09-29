@@ -12,3 +12,6 @@ __pycache__/
 # Temporary files
 *.tmp
 *.log
+
+# Generated local check receipts
+HD2FullAutoAssist/tests/weapon_policy_v2_results.json

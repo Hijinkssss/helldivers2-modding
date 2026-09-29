@@ -1,19 +1,32 @@
-# Next test: selective Peacemaker validation
+# Full Auto Assist 1.0 pre-release live validation
 
-Identity proof is complete for the observed states. The new packages have not been imported or deployed. Exit Helldivers 2 before changing packages.
+RC7 is pre-release. Offline checks establish controller and package behavior;
+they do not prove live shot acceptance, reload independence, cadence feel,
+audio/animation continuity or personal-modpack compatibility.
 
-In the existing Arsenal test profile, import:
+## Short gameplay pass
 
-1. `../../HD2ModCore-runtime-candidate/build/HD2ModCore-v0.3.2-Runtime-Candidate-Arsenal.zip`.
-2. The supplied `C:\Users\Law\Downloads\HD2Runtime-0.24.0-runtime.zip`.
-3. `../build/HD2FullAutoAssist-v0.1-Selective-Peacemaker-Validation-Arsenal.zip`.
+Use three mission entries so both ON and OFF persistence are observed:
 
-Enable one Core (0.3.2), HD2Runtime, the selective Peacemaker validation consumer, and Shared Loader v18. Disable the old Core/universal consumer if they remain as separate entries. Leave state probe, Journal and Armory disabled. Preserve the Loader's correct priority placement; the previous profile placed it last. Deploy after imports and confirm the displayed names before launching.
+1. With no explicit `user_enabled` override, start the game and enter Mission 1
+   without pressing `=`. Confirm ON and firing on one existing known-good gun.
+   In the same mission, test all 20 expansion weapons listed in
+   [weapon-candidate-matrix.md](weapon-candidate-matrix.md), swapping within
+   each slot. Confirm each gets shots from held normal Fire without a reload
+   input between shots. Include a charge/hold negative control and leave
+   Blitzer untouched.
+2. Test Hyena Balanced/Full Auto (120/190), Bushwhacker Balanced/Full Auto
+   (90/650), Breaker Incendiary Semi/Burst and Dominator Semi/Burst. Do not
+   change weapon modes through the mod. Release Fire after every hold and check
+   that repetition stops immediately. Confirm reload never starts by itself.
+   Exercise weapon swap, menu and focus guards while holding Fire.
+3. Enter Mission 2 still ON and confirm startup-to-mission persistence. Toggle
+   OFF with the Mod Bindings action, or `=`/`+` if registration is unavailable;
+   confirm exactly one state change. Enter Mission 3 still OFF and verify no
+   repeated Fire. Toggle back ON once. Confirm menu/focus/swap guards never
+   change the preference, then confirm the existing personal modpack works.
 
-Retain Amendment, Peacemaker and AMR for the first narrow rerun. Peacemaker alone should gain assistance. Amendment and AMR remain vanilla. Do not change weapon stats or use another mod that changes Peacemaker trigger behavior in this validation profile.
-
-After startup/log verification, perform the prompted short checks: hold/release Peacemaker Fire, toggle OFF/ON with F8, and swap from an active Peacemaker hold to Amendment/AMR. The lease must terminate for these unsupported weapons while the global toggle remains ON. Enabling or returning to an eligible weapon while Fire remains held requires a fresh release; this deliberate guard prevents surprise restart. Check chat/menu/focus guards and no stuck input, then exit cleanly so counters are logged.
-
-Default is the retained provisional 125 ms interval. A slower `repeat_ms` of 200 can be selected for conservative testing; the correct cadence is not yet established. These are input attempts, not guaranteed shot rates. `debug_logging=true` in the consumer's existing INI records identity/lease transitions; shutdown always records counters. No config has been overwritten by this preparation.
-
-Do not run a broad matrix yet. After this consumer works and callback cost is measured, add only explicitly validated ASSIST entries and the representative native-auto/mixed/charge tests. HUD follows stable selective behavior and must read `get_state()`.
+For Arsenal, confirm the seven profile groups, saved profile selection,
+mutual exclusivity and artwork. Blitzer must remain vanilla because its native
+mode is Full Auto. Do not publish v1.0.0 until this pass succeeds on the exact
+supported build and current personal modpack.

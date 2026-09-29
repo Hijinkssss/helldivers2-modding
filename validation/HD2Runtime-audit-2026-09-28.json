@@ -33,7 +33,7 @@
     "THIRD_PARTY.md": "a5601b433b878f5c95b60807ef89900c4831a3d4925e061b02e547db0e45afbf"
   },
   "supplied_package": {
-    "path": "C:\\Users\\Law\\Downloads\\HD2Runtime-0.24.0-runtime.zip",
+    "path": "HD2Runtime-0.24.0-runtime.zip",
     "sha256": "2891a000d37ccfa74c10d0001c6b7bc38da74e2ed6ee8b49ce2c0b329c8d8f50",
     "members": [
       "README.md",

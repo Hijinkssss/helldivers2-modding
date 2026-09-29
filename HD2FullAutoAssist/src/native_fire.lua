@@ -1,4 +1,4 @@
--- Build-specific input adapter. Uses Core public reads; never touches weapon data.
+-- Build-specific input adapter. Uses local guarded reads; never touches weapon data.
 local M={}
 local PROFILE='steam-25480438-v02-candidate'
 local CONTROLS,STATE,FIRE,MAP,CODE=0x347cf18,0x3326340,0x1c88,0xa7ad0,0x20009
@@ -9,10 +9,6 @@ local anchors={
     {0x12fc44c,'\x41\x0f\x5a\xc3\x0f\x5a\xcf\xe8\x58\xcb\xe0\x00'},
     {0x12fa3b3,'\xe8\xc8\xb7\x28\xff\x44\x8b\x8e\xd8\x7a\x0a\x00'}
 }
-local function value(r)
-    assert(r and r.ok,r and r.error and r.error.detail or 'Core read unavailable')
-    return r.value
-end
 local function u32(s,at)
     local a,b,c,d=s:byte(at+1,at+4);assert(d,'Short native input record')
     return a+b*256+c*65536+d*16777216
@@ -63,16 +59,16 @@ local function adapter()
                 'Live mapping write failed')
         end}
 end
-function M.new(core,make_adapter)
-    assert(core.Build:Status().id==PROFILE,'Unsupported HD2 build')
+function M.new(host,make_adapter)
+    assert(host:build_status().id==PROFILE,'Unsupported HD2 build')
     local a=(make_adapter or adapter)()
-    local function read(at,n)return value(core.Memory:Read(at,n))end
-    local function ptr(at)return value(core.Memory:ReadPointer(at))end
+    local function read(at,n)return host:read(at,n)end
+    local function ptr(at)return host:ptr(at)end
     local function maybe_ptr(at)
         local s=read(at,8);if s==string.rep('\0',8) then return nil end;return pointer(s)
     end
     for _,r in ipairs(anchors) do assert(read(a.base+r[1],#r[2])==r[2],'Native input code anchor changed') end
-    local pm_global=value(core.Symbols:Resolve('player_manager')).address
+    local pm_global=host:symbol('player_manager')
     local self={lease=nil,writes=0,restored=0,conflicts=0,repeat_seconds=REPEAT_SECONDS,clock_us=a.clock_us}
     function self:sample()
         local owner=maybe_ptr(a.base+CONTROLS);if not owner then return nil end
@@ -87,11 +83,11 @@ function M.new(core,make_adapter)
         if a.raw_lmb_down then row.raw_lmb_down=a.raw_lmb_down()end
         if not row.held then return row end
         local state=maybe_ptr(a.base+STATE);if not state then return row end
-        row.game_state=value(core.Memory:ReadU32(state+0xac21c))
+        row.game_state=host:u32(state+0xac21c)
         assert(row.game_state<=16,'Invalid game state')
         if row.game_state~=4 then return row end
         local pm=maybe_ptr(pm_global);if not pm then return row end
-        row.unit_ref=value(core.Memory:ReadU32(pm+0x3a8))
+        row.unit_ref=host:u32(pm+0x3a8)
         row.gameplay=row.unit_ref~=0 and row.unit_ref~=0x7fff and row.unit_ref~=0xffffffff
         assert(ptr(a.base+STATE)==state and ptr(pm_global)==pm,'Player state changed during sample')
         return row
@@ -161,7 +157,7 @@ function M.new(core,make_adapter)
     function self:begin(row,repeat_seconds)
         repeat_seconds=repeat_seconds or REPEAT_SECONDS
         assert(type(repeat_seconds)=='number' and repeat_seconds==repeat_seconds and
-            repeat_seconds>=0.125 and repeat_seconds<=1,'Invalid consumer repeat cadence')
+            repeat_seconds>=60/900 and repeat_seconds<=1,'Invalid consumer repeat cadence')
         assert(not self.lease and row.held and row.gameplay,'Invalid Fire lease request')
         local at,count,header=bucket(row.owner)
         local l={owner=row.owner,bucket=at,count=count,header=header,records={}}

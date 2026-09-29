@@ -1,7 +1,14 @@
-Release source staging is local and unpublished. User began HD2FullAutoAssist development before final template packaging, audit, tests and Git commits were completed. Publication staging must be finished and verified before review or publication. No remote repositories, pushes, tags or releases created.
+# Historical research material
 
-2026-09-28: HD2Runtime 0.24.0 overlap audit completed; Core README/provenance/architecture and focused roadmap updated. A separate v0.3.1 optional bridge candidate is built and passes targeted offline metadata/cancellation/discovery/package checks. It is not installed, deployed or live-tested. The public v0.3.0 staging implementation and validated Core input candidate remain unchanged.
+This directory contains exact-build reverse-engineering evidence and provenance
+from earlier development. Historical offsets and source hashes apply only to the
+build recorded in each file. They are not current-build or standalone gameplay
+validation. Complete extracted Lua resources and a machine-specific staging
+script have been removed from the current branch; source digests remain recorded.
 
-The user reprioritized integration before further firing tests and reports testing the slower FullAuto candidate after usage ran out. Actual outcomes/logs have not been supplied in this chat. Its RC readiness remains unconfirmed; preserve the older recorded cadence/audio failures until newer evidence establishes a result. Journal and Armory are unchanged.
+See `../HD2FullAutoAssist/docs/VALIDATION.md` for current RC2 evidence boundaries.
+The separate Core/Runtime candidate is retained for development and comparison,
+not required by end users. No third-party Runtime implementation is bundled.
 
-Publication still requires the previously outstanding release checks and clean packaging. The staged interoperability documentation is self-contained and uses actual upstream links. Do not label the bridge live-validated or bundle HD2Runtime without an applicable license/permission.
+Publication is gated by the historical-data and redistribution findings in
+`PUBLIC_AUDIT.md`. Removing current files does not remove earlier Git objects.

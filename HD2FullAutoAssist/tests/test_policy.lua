@@ -1,13 +1,13 @@
 local Policy=require('weapon_policy')
 local function verify(bridge,hash,expected)
     local policy=Policy.new(bridge);local result=policy:classify(hash)
-    assert(result.category==expected and result.allowed==(expected=='ASSIST'))
+    assert(result.category==expected and result.allowed==(expected=='ASSIST' or expected=='SPECIAL'))
     return policy,result
 end
 local bridge,metadata,modes=policy_fixture()
 local p,r=verify(bridge,'0x05E4E5C2DB6E44A2','ASSIST')
-assert(r.semantic_id=='weapon:P-2 Peacemaker' and r.max_repeat_rpm==480)
-verify(bridge,'968211c0033dce64','REVIEW');verify(bridge,'35a61296619cc47e','IGNORE')
+assert(r.semantic_id=='weapon:P-2 Peacemaker' and r.max_repeat_rpm==380)
+verify(bridge,'968211c0033dce64','IGNORE_NATIVE_AUTO');verify(bridge,'35a61296619cc47e','EXCLUDE_CHARGE_HOLD')
 for _,hash in ipairs({'1111111111111111','unknown','0000000000000000',1234})do
     assert(not p:classify(hash).allowed)
 end

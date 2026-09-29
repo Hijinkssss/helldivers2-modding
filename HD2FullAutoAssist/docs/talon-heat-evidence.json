@@ -1,0 +1,21 @@
+{
+  "supported_build": "25480438",
+  "runtime_commit": "fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595",
+  "source": "https://github.com/SkyeShade/HD2Runtime/blob/fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595/schemas/player_weapon_authoring_catalog.json",
+  "catalog_sha256": "1a991f887f4c10c5fb34ef48f54b98c03138f3218fdcaebb28c80bf8704600d2",
+  "resource_hash": "416d053372c4e433",
+  "fields": {
+    "fire_rate": 750,
+    "heat_capacity": 100,
+    "heat_cool_per_second": 10,
+    "heat_per_second": 0,
+    "heat_per_shot": 15
+  },
+  "balanced_rpm": 210,
+  "profiles_rpm": {"balanced": 210, "efficiency": 60, "full_auto": 380, "fuller_auto": 750},
+  "balanced_model": "8*15 - 7*(60/210)*10 = 100 heat at shot eight, assuming linear cooling between shots",
+  "native_cap_rpm": 750,
+  "nominal_continuous_cooling_neutral_rpm": 40,
+  "heat_neutral_proven": false,
+  "live_followup_required": true
+}

@@ -1,34 +1,80 @@
-# Selective v0.1.1 live validation scope
+# Historical reference validation and RC6 scope
 
-The local automated collector and stage analyzer are in `../HD2FullAutoAssist/validation/selective-live-2026-09-28` relative to the candidate root's parent. Startup gates require a running process, matching exact file fingerprints, four deployed archives matching the prepared artifacts, one loaded instance per dependency/consumer, fresh logs, Runtime 0.24.0, expected policy, no Core/consumer failures and contiguous trace records. Expected source-known Core degradation is recorded separately from startup errors. Held Peacemaker identity and an inactive lease are checked before the first firing request.
+Reference commit: `a93008f5c0a69bf5bcf4be8bddb468dc5607bcf3`.
+Supported Steam build: `25480438`. EXE and game.dll SHA-256 fingerprints are
+unchanged, as are native input anchors and mapping checks.
 
-Offline checks cover trace collection while OFF, cleanup, Runtime disconnect, escaped JSON, stage evidence boundaries, forbidden leases, repeat-after-release, loss of trace records and cadence arithmetic. These are fixtures, not live results. A stage may pass objective input checks while native shots, animation/audio and mechanical limits remain unverified. The system does not automatically label gameplay or release validation complete.
+The user reports successful Balanced gameplay on Peacemaker, Verdict, SOCOM,
+Veto, Diligence, Diligence CS and AMR, plus unaffected Liberator, Quasar and Laser
+Cannon. Amendment works and continuously chains bursts. Talon at 380 heats too
+quickly. These are user-reported reference results; no new logs or measured
+accepted-shot traces were supplied for that pass.
 
-2026-09-28. Exact guarded layout: Steam build 25480438, game.dll SHA256 `2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E`, EXE SHA256 `F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06`.
+RC3 preserves those intervals except Talon, which now exposes four profiles.
+Balanced is 210 RPM by a discrete heat/cooling estimate; Efficiency is 60,
+Full Auto is 380 and FULLER AUTO is 750. AMR stays 120.
+The standalone version replaces Core/Runtime plumbing, so reference gameplay
+evidence does not establish gameplay success for the rebuilt package.
 
-Reviewed Runtime: 0.24.0, commit `fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595`. Public metadata only; no Runtime implementation is embedded.
+## Offline checks
 
-## Offline scope
+`tests/run_standalone.py` reads the reference from Git into a temporary directory
+and checks its original controller tests, then replays the standalone controller:
 
-The runner exercises the enabled selective controller against synthetic state/mapping fixtures and an in-memory closed-gate copy as a regression check. It never writes game memory. The source gate was enabled only after the identity evidence below was recorded and reviewed; this does not demonstrate selective gameplay.
+- Nine assisted resources, both rate modes, zero and positive cadence overrides.
+- Identical names/categories/eligibility and rates except Talon's deliberate change.
+- Unknown, native-auto, charge/hold and ambiguous resources remain vanilla.
+- Held swaps, same-name new entities, player/identity failure, release, `=`, chat,
+  menus, focus, startup settings and unload.
+- Native layout validation before writes; readback, axis exclusion, binding edit
+  preservation, exact restoration and partial-write rollback.
+- Actual standalone lifecycle integration with the native observer and UI reader,
+  VK_OEM_PLUS parsing, optional native binding registration, exclusive input
+  selection after registration, and local fallback behavior.
+- Exact fingerprint mismatch, guarded pages, invalid PE/symbol/read/config paths,
+  original callback arguments/return values and update error cleanup.
+- Original observer and UI fixtures, including malformed maps and changing snapshots.
+- Syntax of every bundled Lua module and no Core/Runtime import or generic writer.
 
-Checks cover whitelist/mixed-mode/unknown/ambiguous/malformed metadata, hash collisions, dependency absence, metadata caching, held entity/hash/player invalidation, toggle persistence, guarded lease restoration, chat/menu/focus guards, failure rollback, cancellation/unload, cadence bounds, actual Runtime public metadata, Loader v18 discovery, and source/archive/package parity. Passing results and hashes are written only after the runner completes successfully.
+`tests/test_package.py` checks bundle execution without Core/Runtime, actual Loader
+v18 discovery when its source is supplied, source/archive/ZIP parity, empty
+companions, one manager option, and deterministic rebuild output.
 
-## Live status
+Synthetic fixtures verify controller and guard behavior. They are not live shot,
+audio, heat or performance evidence. The optional trace still counts input attempts,
+not successful shots. Source/package digests and test receipts are generated locally
+in `build/`; the public tree does not include personal logs or raw game captures.
 
-- Held identity: passed for idle Amendment, Peacemaker and AMR in the observed mission.
-- Controlled primary/secondary/support/back cycle: 866 samples, all guards passed, no observed nulls.
-- Player invalidation: observed no-local-unit interval, new unit/avatar, then no held weapon during requested return to ship. Old mission identity was not retained.
-- Animation-relative timing, actual input-to-identity latency and sub-poll null windows: not measured/excluded.
-- Selective semi-auto, native auto, mixed/burst, charge/hold preservation: pending.
-- Per-weapon cadence: pending; 125 ms retains the previous provisional setting.
-- Actual lookup, state-change, idle and repeat callback costs: pending.
-- HUD insertion and synchronization: pending; no safe insertion route established.
-- Arsenal UI/import/deployment: not performed.
-- Release readiness: blocked by missing live evidence.
+## Historical evidence
 
-`identity-validation.json` compiles seven captures / 3217 samples with their hashes, raw identities, guard outcomes and transition observation intervals. External lookup averaged 1628.634 us with maximum 5012.2 us; those include Python/Lua/remote-read overhead and are not deployed callback measurements. The temporary unknown item `16f397ca5f51f271` remains REVIEW, consistent in timing with the user's AMR call-down but semantically unidentified.
+`identity-validation.json` and `IDENTITY_RESULTS.md` preserve original observed
+idle identity transitions and source hashes. Their Core/Runtime references describe
+that historical capture. `weapon-policy-evidence.json` preserves three reviewed
+snapshot caps. These records have not been relabeled as standalone observations.
+The extracted observer retains its original ownership/back-reference checks and
+96-read budget. No original capture is manufactured or required to install this standalone consumer.
 
-Core 0.3.2 adds a generic synchronous read scope. Tests confirm contents are reread, nil-containing results are preserved, nested scopes work, errors invalidate the cache, coroutine calls are rejected, and each new scope requeries regions. Selective state/policy caching preserves fresh ownership checks and avoids duplicate identity polling during active leases. Performance benefit must still be measured in game.
+The native binding API exposes registration and key-state reading, but does not
+accept a custom first-use key. That means the API cannot guarantee `=` as the
+initial native binding; the local fallback uses `=` when registration is absent.
+Follow [NEXT_TEST.md](NEXT_TEST.md) once before a standalone gameplay-release claim.
+Future patch resilience, automatic discovery and R-menu introspection are deferred.
 
-Existing universal-candidate observations do not validate the selective candidate. No 125 ms gameplay result has been supplied.
+## RC6 expansion status
+
+RC6 adds the 20 weapons in [weapon-candidate-matrix.md](weapon-candidate-matrix.md), using pinned Runtime audit metadata at fd0c0d2b5618807a1ff63bedc9ed2f4b807c759. Added identities and policy caps are tested offline. The checks do not establish live accepted cadence or weapon-specific reload behavior. RC6 remains a pre-release candidate pending [NEXT_TEST.md](NEXT_TEST.md).
+
+## RC7 startup reconciliation
+
+RC6 initialized the controller's `wait_release` gate as true and set it again
+whenever mission gameplay or player/weapon identity was temporarily unavailable.
+If Fire was already held during mission/player initialization, that gate remained
+latched after the context became valid, so an otherwise ON controller ignored
+the first held Fire input until it observed a release. Startup now begins with
+no outstanding lease/release obligation. Transient mission or unresolved-player
+guards preserve a release requirement only when an existing lease or earlier
+release requirement must be cleared; a positively observed ineligible weapon
+still requires release before another attempt. User preference remains separate
+from those guards. The new live-order regression keeps Fire held from before
+mission/player readiness through the first eligible weapon and verifies
+assistance without a toggle. RC7 remains pending live confirmation.

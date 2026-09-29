@@ -1,0 +1,308 @@
+{
+  "runtime_commit": "fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595",
+  "source": "https://github.com/SkyeShade/HD2Runtime/tree/fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595",
+  "supported_build": "25480438",
+  "current_selected_mode_observed": false,
+  "entries": [
+    {
+      "name": "P-2 Peacemaker",
+      "resources": [
+        "0x05E4E5C2DB6E44A2"
+      ],
+      "identity_resolution": null,
+      "canonical_resource_hash": null,
+      "native_fire_modes": {
+        "nativeValue": 2,
+        "defaultModeSemantics": "semi_auto",
+        "nativeModeVector": [
+          2,
+          0,
+          0
+        ],
+        "writable": false,
+        "reason": "Only conventional, uniquely resolved weapons with both native 1 and 2 in their three-slot vector are writable.",
+        "allowedModes": [
+          2
+        ],
+        "backing": {
+          "indexRow": 150,
+          "recordIndex": 190,
+          "storage": "u32",
+          "width": 4,
+          "component": "WeaponDataComponentData",
+          "offset": 144
+        }
+      }
+    },
+    {
+      "name": "P-113 Verdict",
+      "resources": [
+        "0x1A437158E1B8D2A1"
+      ],
+      "identity_resolution": null,
+      "canonical_resource_hash": null,
+      "native_fire_modes": {
+        "nativeValue": 2,
+        "defaultModeSemantics": "semi_auto",
+        "nativeModeVector": [
+          2,
+          0,
+          0
+        ],
+        "writable": false,
+        "reason": "Only conventional, uniquely resolved weapons with both native 1 and 2 in their three-slot vector are writable.",
+        "allowedModes": [
+          2
+        ],
+        "backing": {
+          "indexRow": 340,
+          "recordIndex": 318,
+          "storage": "u32",
+          "width": 4,
+          "component": "WeaponDataComponentData",
+          "offset": 144
+        }
+      }
+    },
+    {
+      "name": "P-69 Veto",
+      "resources": [
+        "0xC780BCD79547DA0F"
+      ],
+      "identity_resolution": null,
+      "canonical_resource_hash": null,
+      "native_fire_modes": {
+        "nativeValue": 2,
+        "defaultModeSemantics": "semi_auto",
+        "nativeModeVector": [
+          2,
+          0,
+          0
+        ],
+        "writable": false,
+        "reason": "Only conventional, uniquely resolved weapons with both native 1 and 2 in their three-slot vector are writable.",
+        "allowedModes": [
+          2
+        ],
+        "backing": {
+          "indexRow": 453,
+          "recordIndex": 319,
+          "storage": "u32",
+          "width": 4,
+          "component": "WeaponDataComponentData",
+          "offset": 144
+        }
+      }
+    },
+    {
+      "name": "M6C/SOCOM Pistol",
+      "resources": [
+        "0x4D58C77087B774C5"
+      ],
+      "identity_resolution": null,
+      "canonical_resource_hash": null,
+      "native_fire_modes": {
+        "nativeValue": 2,
+        "defaultModeSemantics": "semi_auto",
+        "nativeModeVector": [
+          2,
+          0,
+          0
+        ],
+        "writable": false,
+        "reason": "Only conventional, uniquely resolved weapons with both native 1 and 2 in their three-slot vector are writable.",
+        "allowedModes": [
+          2
+        ],
+        "backing": {
+          "indexRow": 389,
+          "recordIndex": 321,
+          "storage": "u32",
+          "width": 4,
+          "component": "WeaponDataComponentData",
+          "offset": 144
+        }
+      }
+    },
+    {
+      "name": "LAS-58 Talon",
+      "resources": [
+        "0x416D053372C4E433"
+      ],
+      "identity_resolution": null,
+      "canonical_resource_hash": null,
+      "native_fire_modes": {
+        "nativeValue": 2,
+        "defaultModeSemantics": "semi_auto",
+        "nativeModeVector": [
+          2,
+          0,
+          0
+        ],
+        "writable": false,
+        "reason": "Only conventional, uniquely resolved weapons with both native 1 and 2 in their three-slot vector are writable.",
+        "allowedModes": [
+          2
+        ],
+        "backing": {
+          "indexRow": 500,
+          "recordIndex": 313,
+          "storage": "u32",
+          "width": 4,
+          "component": "WeaponDataComponentData",
+          "offset": 144
+        }
+      }
+    },
+    {
+      "name": "R-63 Diligence",
+      "resources": [
+        "0x03E67A19B07C6523"
+      ],
+      "identity_resolution": null,
+      "canonical_resource_hash": null,
+      "native_fire_modes": {
+        "nativeValue": 2,
+        "defaultModeSemantics": "semi_auto",
+        "nativeModeVector": [
+          2,
+          0,
+          0
+        ],
+        "writable": false,
+        "reason": "Only conventional, uniquely resolved weapons with both native 1 and 2 in their three-slot vector are writable.",
+        "allowedModes": [
+          2
+        ],
+        "backing": {
+          "indexRow": 691,
+          "recordIndex": 303,
+          "storage": "u32",
+          "width": 4,
+          "component": "WeaponDataComponentData",
+          "offset": 144
+        }
+      }
+    },
+    {
+      "name": "R-63CS Diligence Counter Sniper",
+      "resources": [
+        "0x4C786785C79D44E7"
+      ],
+      "identity_resolution": null,
+      "canonical_resource_hash": null,
+      "native_fire_modes": {
+        "nativeValue": 2,
+        "defaultModeSemantics": "semi_auto",
+        "nativeModeVector": [
+          2,
+          0,
+          0
+        ],
+        "writable": false,
+        "reason": "Only conventional, uniquely resolved weapons with both native 1 and 2 in their three-slot vector are writable.",
+        "allowedModes": [
+          2
+        ],
+        "backing": {
+          "indexRow": 408,
+          "recordIndex": 304,
+          "storage": "u32",
+          "width": 4,
+          "component": "WeaponDataComponentData",
+          "offset": 144
+        }
+      }
+    },
+    {
+      "name": "APW-1 Anti-Materiel Rifle",
+      "resources": [
+        "0x89C5493E08CA4207"
+      ],
+      "identity_resolution": "UNIQUE",
+      "canonical_resource_hash": "0x89C5493E08CA4207",
+      "native_fire_modes": null
+    },
+    {
+      "name": "AR-23 Liberator",
+      "resources": [
+        "0x968211C0033DCE64"
+      ],
+      "identity_resolution": null,
+      "canonical_resource_hash": null,
+      "native_fire_modes": {
+        "nativeValue": 1,
+        "defaultModeSemantics": "full_auto",
+        "nativeModeVector": [
+          1,
+          2,
+          3
+        ],
+        "backing": {
+          "indexRow": 564,
+          "recordIndex": 270,
+          "storage": "u32",
+          "width": 4,
+          "component": "WeaponDataComponentData",
+          "offset": 144
+        },
+        "writeKind": "reorder_native_mode_vector",
+        "allowedModes": [
+          1,
+          2
+        ],
+        "writable": true
+      }
+    },
+    {
+      "name": "LAS-99 Quasar Cannon",
+      "resources": [
+        "0x35A61296619CC47E"
+      ],
+      "identity_resolution": "UNIQUE",
+      "canonical_resource_hash": "0x35A61296619CC47E",
+      "native_fire_modes": null
+    },
+    {
+      "name": "LAS-98 Laser Cannon",
+      "resources": [
+        "0x1980D92B619FF5FE",
+        "0x56070F36CFFFA8A8",
+        "0xD54B9505C0F72873"
+      ],
+      "identity_resolution": "DUPLICATE",
+      "canonical_resource_hash": null,
+      "native_fire_modes": null
+    },
+    {
+      "name": "R-2 Amendment",
+      "resources": [
+        "0x0F83639AB8C86165"
+      ],
+      "identity_resolution": null,
+      "canonical_resource_hash": null,
+      "native_fire_modes": {
+        "nativeValue": 2,
+        "defaultModeSemantics": "semi_auto",
+        "nativeModeVector": [
+          2,
+          3,
+          0
+        ],
+        "writable": false,
+        "reason": "Only conventional, uniquely resolved weapons with both native 1 and 2 in their three-slot vector are writable.",
+        "allowedModes": [
+          2
+        ],
+        "backing": {
+          "indexRow": 141,
+          "recordIndex": 286,
+          "storage": "u32",
+          "width": 4,
+          "component": "WeaponDataComponentData",
+          "offset": 144
+        }
+      }
+    }
+  ]
+}
