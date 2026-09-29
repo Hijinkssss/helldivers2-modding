@@ -1,4 +1,4 @@
-# RC2 validation boundaries
+# RC3 validation boundaries
 
 Reference commit: `a93008f5c0a69bf5bcf4be8bddb468dc5607bcf3`.
 Supported Steam build: `25480438`. EXE and game.dll SHA-256 fingerprints are
@@ -10,7 +10,9 @@ Cannon. Amendment works and continuously chains bursts. Talon at 380 heats too
 quickly. These are user-reported reference results; no new logs or measured
 accepted-shot traces were supplied for that pass.
 
-RC2 preserves those intervals except Talon Balanced at 60. AMR stays 120.
+RC3 preserves those intervals except Talon, which now exposes four profiles.
+Balanced is 210 RPM by a discrete heat/cooling estimate; Efficiency is 60,
+Full Auto is 380 and FULLER AUTO is 750. AMR stays 120.
 The standalone version replaces Core/Runtime plumbing, so reference gameplay
 evidence does not establish gameplay success for the rebuilt package.
 
@@ -22,11 +24,13 @@ and checks its original controller tests, then replays the standalone controller
 - Nine assisted resources, both rate modes, zero and positive cadence overrides.
 - Identical names/categories/eligibility and rates except Talon's deliberate change.
 - Unknown, native-auto, charge/hold and ambiguous resources remain vanilla.
-- Held swaps, same-name new entities, player/identity failure, release, F8, chat,
+- Held swaps, same-name new entities, player/identity failure, release, `=`, chat,
   menus, focus, startup settings and unload.
 - Native layout validation before writes; readback, axis exclusion, binding edit
   preservation, exact restoration and partial-write rollback.
-- Actual standalone lifecycle integration with the native observer and UI reader.
+- Actual standalone lifecycle integration with the native observer and UI reader,
+  VK_OEM_PLUS parsing, optional native binding registration, exclusive input
+  selection after registration, and local fallback behavior.
 - Exact fingerprint mismatch, guarded pages, invalid PE/symbol/read/config paths,
   original callback arguments/return values and update error cleanup.
 - Original observer and UI fixtures, including malformed maps and changing snapshots.
@@ -48,7 +52,10 @@ idle identity transitions and source hashes. Their Core/Runtime references descr
 that historical capture. `weapon-policy-evidence.json` preserves three reviewed
 snapshot caps. These records have not been relabeled as standalone observations.
 The extracted observer retains its original ownership/back-reference checks and
-96-read budget. No original capture is manufactured or required to install RC2.
+96-read budget. No original capture is manufactured or required to install RC3.
 
+The native binding API exposes registration and key-state reading, but does not
+accept a custom first-use key. That means the API cannot guarantee `=` as the
+initial native binding; the local fallback uses `=` when registration is absent.
 Follow [NEXT_TEST.md](NEXT_TEST.md) once before a standalone gameplay-release claim.
 Future patch resilience, automatic discovery and R-menu introspection are deferred.

@@ -19,6 +19,8 @@ function M.load(schema,text)
         end
     end
     assert(values.fire_rate_mode=='balanced' or values.fire_rate_mode=='native_cap','Invalid fire_rate_mode')
+    assert(values.talon_mode=='balanced' or values.talon_mode=='efficiency' or
+        values.talon_mode=='full_auto' or values.talon_mode=='fuller_auto','Invalid talon_mode')
     return values
 end
 return M

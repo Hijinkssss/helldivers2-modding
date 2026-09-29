@@ -1,4 +1,4 @@
-"""Offline RC2 checks, including differential replay of the preserved reference.
+"""Offline RC3 checks, including differential replay of the preserved reference.
 
 Requires Python + lupa.luajit21 and git. Never opens a game process.
 The reference is read from commit a93008f; it is not packaged with the mod.
@@ -38,11 +38,19 @@ def host(path,standalone):
             function standalone_host:config(schema,text)
                 return require('config').load(schema,text)
             end
-            function standalone_host:parse_key(key)return assert(core.Input:ParseKey(key).ok)end
+            function standalone_host:parse_key(key)
+                if key=='=' or key=='+' then return 0xbb end
+                return assert(core.Input:ParseKey(key).ok)
+            end
             function standalone_host:build_status()return core.Build:Status()end
             function standalone_host:eligibility()return core.Input:ShortcutEligibility()end
             function standalone_host:local_avatar()return core.Diagnostic:LocalAvatar()end
-            function standalone_host:on_toggle(key,fn)return assert(core.Input:SubscribePressed('hd2_full_auto_assist',key,{debounce_ms=150},fn)).value end
+            function standalone_host:on_toggle(key,fn)
+                -- Core-backed reference fixture only emits F8 key events; the
+                -- standalone VK_OEM_PLUS path is covered by lifecycle fixtures.
+                if key=='=' then key='F8' end
+                return assert(core.Input:SubscribePressed('hd2_full_auto_assist',key,{debounce_ms=150},fn)).value
+            end
             function standalone_host:on_identity(fn)return assert(core.Hooks:Subscribe('hd2_full_auto_assist','before_update',{every_ms=100},fn)).value end
             function standalone_host:on_fire(fn)return assert(core.Hooks:Subscribe('hd2_full_auto_assist','before_update',{every_ms=0},fn)).value end
             function standalone_host:diagnostics()return core.Diagnostics:Status()end
@@ -90,21 +98,27 @@ def static_checks():
         assert 'SendInput' not in s and 'VirtualProtect' not in s
     config=lua.eval("require('config')")
     schema=lua.table_from({'enabled':lua.table_from({'type':'boolean','default':True}),
-        'fire_rate_mode':lua.table_from({'type':'string','default':'balanced','max_length':16})})
+        'fire_rate_mode':lua.table_from({'type':'string','default':'balanced','max_length':16}),
+        'talon_mode':lua.table_from({'type':'string','default':'balanced','max_length':16})})
     assert config.load(schema,'enabled=false').enabled is False
-    for text in ('enabled=no','enabled=true\nenabled=false','unknown=1','bad line','fire_rate_mode=fast','x'*8193):
+    for text in ('enabled=no','enabled=true\nenabled=false','unknown=1','bad line','fire_rate_mode=fast','talon_mode=fast','x'*8193):
         try:config.load(schema,text)
         except Exception:pass
         else:raise AssertionError('Invalid config accepted: '+text[:40])
     p=lua.eval("require('weapon_policy').new('balanced')")
     assert p.available and p.status(p).mapped_resources==11
+    policy_for_talon=lua.eval("function(profile)return require('weapon_policy').new('native_cap',profile)end")
+    for profile,rpm in (('balanced',210),('efficiency',60),('full_auto',380),('fuller_auto',750)):
+        profile_policy=policy_for_talon(profile)
+        talon=profile_policy.classify(profile_policy,'416d053372c4e433')
+        assert talon.allowed and talon.max_repeat_rpm==rpm,(profile,talon.max_repeat_rpm)
     for bad in ('0000000000000001','1980d92b619ff5fe','bad',None):assert not p.classify(p,bad).allowed
 def parity(ref):
     rows=[('05e4e5c2db6e44a2',380,900),('4d58c77087b774c5',380,900),
           ('c780bcd79547da0f',380,750),('1a437158e1b8d2a1',380,450),
           ('03e67a19b07c6523',350,350),('4c786785c79d44e7',350,350),
           ('0f83639ab8c86165',380,480),('89c5493e08ca4207',120,400),
-          ('416d053372c4e433',60,750)]
+          ('416d053372c4e433',210,750)]
     for mode in ('balanced','native_cap'):
       for override in (0,800):
         results=[]
@@ -118,7 +132,7 @@ def parity(ref):
             assert lua.globals().backend.lease is not None
             state=plain(lua.eval('a:get_state()'))
             seconds=lua.globals().backend.repeat_seconds
-            expected=max(override/1000,60/(native if mode=='native_cap' else balanced))
+            expected=max(override/1000,60/(balanced if hash=='416d053372c4e433' or mode=='balanced' else native))
             if standalone:assert abs(seconds-expected)<1e-7,(hash,mode,seconds,expected)
             record.append((state['weapon'],state['eligibility']['category'],state['effective'],seconds))
             lua.execute(f'fire=false;tick({i*200+40});assert(not backend.lease)')
@@ -128,7 +142,7 @@ def parity(ref):
           results.append(record)
         for i,(a,b) in enumerate(zip(*results)):
           assert a[:3]==b[:3],(rows[i][0],a,b)
-          if rows[i][0]!='416d053372c4e433' or mode=='native_cap':assert abs(a[3]-b[3])<1e-7
+          if rows[i][0]!='416d053372c4e433':assert abs(a[3]-b[3])<1e-7
 def lifecycle_checks():
     lua=lua_at(ROOT/'src')
     lua.execute((ROOT/'tests/test_standalone_lifecycle.lua').read_text(encoding='utf-8'))
@@ -163,7 +177,7 @@ def main():
                 (ref/f.name).write_text(reference_file(f.name),encoding='utf-8')
         for name in ('test_policy','test_gate','test_selective','test_validation'):
             check('reference '+name,lambda n=name:controller_test(ref,False,n))
-        check('standalone mixed-weapon transitions, guards, F8 and cleanup',lambda:controller_test(ROOT/'src',True,'test_selective'))
+        check('standalone mixed-weapon transitions, guards, toggle and cleanup',lambda:controller_test(ROOT/'src',True,'test_selective'))
         check('standalone validation trace and closed identity gate',lambda:[controller_test(ROOT/'src',True,n) for n in ('test_gate','test_validation')])
         check('differential replay: 9 weapons, 2 modes, 2 overrides; Talon-only change',lambda:parity(ref))
     check('native mapping safety, conflicts, axis exclusion and partial rollback',native_test)

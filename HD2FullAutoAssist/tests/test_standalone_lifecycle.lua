@@ -34,7 +34,7 @@ local p={clock_us=function()return now end,module_hash=function(_,name)
     end,module_address=function()return G end,query_region=function()
         return {base=G,size=0x60000000,state=0x1000,protect=bad_page and 0x104 or 4}
     end,read=function(_,at,n)return read(at,n)end,prepare_input=function()return true end,
-    input_focused=function()return focused end,input_down=function()return down end}
+    input_focused=function()return focused end,input_down=function(_,key)assert(key==0xbb,'default must use VK_OEM_PLUS');return down end}
 local log_closed=0
 local loader={api=1,open_log=function()return {write=function(self)return self end,flush=function()return true end,
     close=function()log_closed=log_closed+1;return true end}end}
@@ -53,6 +53,7 @@ bad_page=true;assert(not pcall(Life.start,env,options) and env.update==stock);ba
 local h=Life.new(env,options)
 assert(h:local_avatar().value.held.resource_hash=='05e4e5c2db6e44a2')
 assert(h:eligibility().value.allowed)
+assert(h:parse_key('=')==0xbb and h:parse_key('+')==0xbb)
 assert(not pcall(h.read,h,0,4) and not pcall(h.read,h,G,32769))
 assert(not pcall(h.symbol,h,'unknown'))
 assert(not pcall(h.read_scope,h,function()error('scope failure')end) and h.regions==nil)
@@ -77,10 +78,21 @@ down=false;tick(620);down=true;tick(800);assert(a:get_state().user_enabled)
 held=false;tick(820);held=true;tick(840);assert(b.lease)
 put(BACKS,ptr(PLAYER));tick(860);assert(not b.lease and not a:get_state().identity_valid)
 put(BACKS,ptr(AVATAR));held=false;tick(880);held=true;tick(900);assert(b.lease)
+local native_down,registrations=false,0
+env.ModBindingsMenu={register_binding=function(id,label,slot,options)
+    assert(id=='codex.full_auto_assist.toggle' and label=='Toggle Full Auto Assist' and slot==2)
+    assert(options.category=='Full Auto Assist');registrations=registrations+1;return true
+end,is_down=function(id)assert(id=='codex.full_auto_assist.toggle');return native_down end}
+down=false;tick(1010);assert(registrations==1,'registration count '..registrations)
+down=true;tick(1020);assert(a:get_state().user_enabled,'fallback key disabled after native registration')
+down=false;tick(1030);native_down=true;tick(1040);assert(not a:get_state().user_enabled,'native binding toggles OFF')
+native_down=false;tick(1210);native_down=true;tick(1240);assert(a:get_state().user_enabled,'native binding toggles ON')
+held=false;tick(1260);held=true;tick(1280);assert(b.lease)
+env.ModBindingsMenu=nil
 local original_restore=b.restore;local transient=true
 b.restore=function(self)if transient then error('transient restoration failure')end;return original_restore(self)end
 assert(not a:stop().ok and b.lease,'Failed cleanup must retain restoration state')
-transient=false;tick(920);assert(a:stop().ok and not b.lease)
+transient=false;tick(1300);assert(a:stop().ok and not b.lease)
 assert(env.update==stock and env.shutdown==stock_stop)
 assert(stock_calls>0 and log_closed>0)
 local x,y,z=env.shutdown('fixture');assert(x=='stopped' and y==nil and z==9)

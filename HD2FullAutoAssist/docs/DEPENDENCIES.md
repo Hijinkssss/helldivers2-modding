@@ -11,7 +11,7 @@ or Runtime calls and remains unchanged.
 | `core.api`, Input/Config/Hooks/Diagnostic presence | Runtime service contract | Private mod-specific host; no public service API |
 | `OnLoad`, `OnUnload`, `Unregister` | Initialization, stop, rollback, unload | `lifecycle.lua` startup and cleanup for one controller |
 | `Config:Register`, `Config:Load` | Strict bounded INI parsing | `config.lua`; same settings/defaults, unknown/duplicate/invalid entries rejected before firing |
-| `Input:ParseKey`, `SubscribePressed`, `Remove` | F8 rising edge and 150 ms debounce | Local toggle poll after stock update; focus return requires key release |
+| `Input:ParseKey`, `SubscribePressed`, `Remove` | `=` rising edge and 150 ms debounce | Local `VK_OEM_PLUS` poll after stock update; optional Mod Bindings Menu registration takes precedence when available |
 | `Input:ShortcutEligibility` | Chat, UI, cursor and focus isolation | `input.lua`: preserved native UI layout, text anchor, bounds and transition revalidation |
 | `Memory:Read`, `ReadPointer`, `ReadU32`, `WithReadScope` | Bounded reads and per-callback region cache | Mod-local guarded `ReadProcessMemory` and `VirtualQuery` via LuaJIT FFI |
 | `Build:Status` and Core EXE/DLL profile selection | Exact build gate | Both original SHA-256 fingerprints checked through Windows BCrypt; PE image bounds and native input anchors also checked |
@@ -32,8 +32,15 @@ suite's `ReadLegacy` cancellation exercise tested the bridge, not a consumer
 dependency. No Runtime schema/catalog/API files are shipped.
 
 [Shared Loader's public interface](https://github.com/CowboyBingus/BingusSharedLoader/blob/main/docs/TECHNICAL.md)
-provides startup/discovery and API 1 logging. It does not provide a public memory,
-keyboard or scheduler service, so these narrowly scoped local helpers are needed.
+provides startup/discovery and API 1 logging. Its optional ecosystem peer,
+[Mod Bindings Menu](https://github.com/CowboyBingus/ModBindingsMenu), exposes
+`register_binding` and `is_down`. Full Auto Assist registers a third-party slot
+only when both functions exist, then stops polling the local `=` key. Missing or
+failed registration leaves the standalone fallback active. The menu API has no
+argument for choosing a new binding's default key, so its initial default is
+controlled by the reserved third-party action. Rebinding and persistence belong
+to that menu. Vanilla Plus and Mod Bindings Menu are optional and are not
+package/runtime dependencies.
 Only native operations use FFI; configuration, policy, state and lifecycle use Lua.
 
 ## Files and safety boundary

@@ -10,12 +10,13 @@ local OWNER='hd2_full_auto_assist'
 local schema={enabled={type='boolean',default=true},user_enabled={type='boolean',default=true},
     -- Zero selects the policy interval; positive values can only slow it down.
     repeat_ms={type='integer',default=0,min=0,max=1000},
-    toggle_hotkey={type='string',default='F8',max_length=16},debug_logging={type='boolean',default=false},
+    toggle_hotkey={type='string',default='=',max_length=16},debug_logging={type='boolean',default=false},
     validation_logging={type='boolean',default=false},
     -- Fire-rate mode:
-    --   balanced     (default) clamp to 380 RPM ceiling; AMR uses 120 RPM; Talon uses 60 RPM
+    --   balanced     (default) clamp to 380 RPM ceiling; AMR uses 120 RPM; Talon uses talon_mode
     --   native_cap   allow up to each weapon's actual accepted native cap
-    fire_rate_mode={type='string',default='balanced',max_length=16}}
+    fire_rate_mode={type='string',default='balanced',max_length=16},
+    talon_mode={type='string',default='balanced',max_length=16}}
 local function config_text()
     local root=assert(os.getenv('LOCALAPPDATA'),'LOCALAPPDATA unavailable')
     local f,why,number=io.open(root..'/CowboyBingus/Helldivers2/HD2FullAutoAssist.ini','rb')
@@ -88,9 +89,11 @@ function M.install(host,backend_factory,read_config,validation_factory)
         settings=host:config(schema,(read_config or config_text)())
         assert(settings.fire_rate_mode=='balanced' or settings.fire_rate_mode=='native_cap',
             'fire_rate_mode must be balanced or native_cap')
+        assert(settings.talon_mode=='balanced' or settings.talon_mode=='efficiency' or
+            settings.talon_mode=='full_auto' or settings.talon_mode=='fuller_auto','Invalid talon_mode')
         host:parse_key(settings.toggle_hotkey)
         if not settings.enabled then emit('info','disabled');return end
-        policy=Policy.new(settings.fire_rate_mode)
+        policy=Policy.new(settings.fire_rate_mode,settings.talon_mode)
         state=AssistState.new(policy,IDENTITY_VALIDATED)
         state:set_enabled(settings.user_enabled)
         if not policy.available then
@@ -131,7 +134,8 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 emit('info','assist_toggled',{active=active})
             end)
             if not ok then fail(why) end
-        end)
+        end,{id='codex.full_auto_assist.toggle',label='Toggle Full Auto Assist',slot=2,
+            options={category='Full Auto Assist'}})
         local fingerprint
         local function resolve(expected_unit)
             counters.identity_lookups=counters.identity_lookups+1
@@ -251,7 +255,8 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     trace:flush(false)
                 end
             end) end
-        emit('info','initialized',{version='0.1.3-standalone-rc2',hotkey=settings.toggle_hotkey,
+        emit('info','initialized',{version='0.1.3-standalone-rc3',hotkey=settings.toggle_hotkey,
+            talon_mode=settings.talon_mode,
             active=active,mechanism='selective_native_repeat_interval',identity_validated=IDENTITY_VALIDATED})
     end)
     if not loaded then fail(load_error);host:stop();error(load_error,0) end

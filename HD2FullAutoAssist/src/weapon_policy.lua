@@ -11,8 +11,9 @@
 --
 -- Fire-rate modes (fire_rate_mode setting):
 --   "balanced"   (default) – clamp repeat interval to at most BALANCED_CEILING_RPM.
---                             AMR uses AMR_BALANCED_RPM instead of the generic ceiling.
---   "native_cap" – allow repeat up to each weapon's actual accepted native rate.
+--                             AMR uses AMR_BALANCED_RPM; Talon uses its profile.
+--   "native_cap" – allow repeat up to each weapon's actual accepted native rate;
+--                  Talon still uses its separately selected profile.
 --
 -- RPM -> seconds: interval_s = 60 / rpm
 --
@@ -35,8 +36,14 @@ local BALANCED_CEILING_RPM = 380
 -- and the precision support role. Preserve the user-reported live-tested value.
 local AMR_BALANCED_RPM = 120
 
--- Battery-efficiency candidate; heat-neutral operation is not established.
-local TALON_BALANCED_RPM = 60
+-- Discrete-shot estimate from the pinned heat/cooling snapshot; live behavior
+-- remains authoritative because the heat system may be nonlinear.
+-- With 15 heat per shot and 10 heat cooled per second, eight shots over
+-- seven intervals reach 100 heat at about 210 RPM: 8*15 - 7*(60/210)*10 = 100.
+local TALON_BALANCED_RPM = 210
+local TALON_EFFICIENCY_RPM = 60
+local TALON_FULL_AUTO_RPM = 380
+local TALON_FULLER_AUTO_RPM = 750
 
 -- Classification table.
 -- All fields:
@@ -111,7 +118,7 @@ local ENTRIES = {
       category = 'ASSIST', native_cap_rpm = 750, native_cap_status = 'VERIFIED',
       balanced_rpm = TALON_BALANCED_RPM,
       notes = 'Semi-auto energy pistol with no native Full Auto. '..
-              'Verified 750 RPM native cap. Balanced 60 RPM battery-efficiency candidate; live follow-up required.' },
+              'Verified 750 RPM native cap. Talon profiles: Balanced 210, Efficiency 60, Full Auto 380, FULLER AUTO 750 RPM.' },
 
     -- ─── WEAPONS WITH NATIVE FULL AUTO (always ignored) ──────────────────
 
@@ -170,9 +177,10 @@ local function is_assisted(category)
     return category == 'ASSIST' or category == 'SPECIAL'
 end
 
-function M.new(fire_rate_mode)
+function M.new(fire_rate_mode,talon_mode)
     -- fire_rate_mode: 'balanced' (default) | 'native_cap'
     local mode = (fire_rate_mode == 'native_cap') and 'native_cap' or 'balanced'
+    local talon_profile=({balanced=true,efficiency=true,full_auto=true,fuller_auto=true})[talon_mode] and talon_mode or 'balanced'
     local by_hash, notes = {}, {}
     local self = { available = false, reason = 'known_policy_unavailable', fire_rate_mode = mode }
 
@@ -186,7 +194,11 @@ function M.new(fire_rate_mode)
         local result = copy(entry)
         if is_assisted(result.category) and result._base then
             local base = result._base
-            if mode == 'native_cap' then
+            if base.name=='LAS-58 Talon' then
+                local rpm=({balanced=TALON_BALANCED_RPM,efficiency=TALON_EFFICIENCY_RPM,
+                    full_auto=TALON_FULL_AUTO_RPM,fuller_auto=TALON_FULLER_AUTO_RPM})[talon_profile]
+                result.repeat_seconds=60/rpm
+            elseif mode == 'native_cap' then
                 result.repeat_seconds = native_interval(base)
             else
                 result.repeat_seconds = balanced_interval(base)
@@ -207,6 +219,7 @@ function M.new(fire_rate_mode)
         return {
             available = self.available, reason = self.reason,
             fire_rate_mode = mode,
+            talon_mode=talon_profile,
             balanced_ceiling_rpm = BALANCED_CEILING_RPM,
             amr_balanced_rpm = AMR_BALANCED_RPM,
             mapped_resources = count, notes = detached
@@ -237,5 +250,8 @@ end
 M.BALANCED_CEILING_RPM = BALANCED_CEILING_RPM
 M.AMR_BALANCED_RPM     = AMR_BALANCED_RPM
 M.TALON_BALANCED_RPM   = TALON_BALANCED_RPM
+M.TALON_EFFICIENCY_RPM = TALON_EFFICIENCY_RPM
+M.TALON_FULL_AUTO_RPM = TALON_FULL_AUTO_RPM
+M.TALON_FULLER_AUTO_RPM = TALON_FULLER_AUTO_RPM
 
 return M

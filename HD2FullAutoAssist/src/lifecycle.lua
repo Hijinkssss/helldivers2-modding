@@ -100,14 +100,16 @@ function M.new(environment,options)
             PAGEUP=33,PAGEDOWN=34,LEFT=37,UP=38,RIGHT=39,DOWN=40}
         assert(type(key)=='string','Key name required');local name=key:match('^%s*(.-)%s*$'):upper()
         local code=named[name];if name:match('^[A-Z0-9]$')then code=name:byte()end
+        if name=='=' or name=='+' then code=0xbb end -- VK_OEM_PLUS, with or without Shift.
         local f=name:match('^F(%d+)$')
         if f and tonumber(f)>=1 and tonumber(f)<=24 and name=='F'..tonumber(f)then code=111+tonumber(f)end
         local hex=name:match('^VK_(%x%x)$');if hex and tonumber(hex,16)>=8 and tonumber(hex,16)<=254 then code=tonumber(hex,16)end
         return assert(code,'Invalid toggle key')
     end
-    function self:on_toggle(key,callback)
+    function self:on_toggle(key,callback,binding)
         assert(platform:prepare_input(),'Keyboard unavailable')
-        local row={kind='toggle',key=self:parse_key(key),callback=callback,armed=false,down=false,last=-math.huge}
+        local row={kind='toggle',key=self:parse_key(key),callback=callback,armed=false,down=false,last=-math.huge,
+            binding=binding,native_binding=nil,next_binding_attempt=0}
         self.callbacks.toggle=row;return row
     end
     function self:on_identity(callback)
@@ -156,7 +158,32 @@ function M.new(environment,options)
     local function toggle_tick()
         local row=self.callbacks.toggle;if not row or self.closed then return end
         if not platform:input_focused()then row.armed=false;row.down=false;return end
-        local down=platform:input_down(row.key);assert(type(down)=='boolean','Keyboard state unavailable')
+        local down
+        if row.binding and not row.native_binding then
+            local now=platform:clock_us()
+            if now>=row.next_binding_attempt then
+                row.next_binding_attempt=now+1000000
+                local menu=environment.ModBindingsMenu or rawget(_G,'ModBindingsMenu')
+                if type(menu)=='table' and type(menu.register_binding)=='function'
+                   and type(menu.is_down)=='function' then
+                    local ok,registered=pcall(menu.register_binding,row.binding.id,row.binding.label,
+                        row.binding.slot,row.binding.options)
+                    if ok and registered==true then
+                        row.native_binding=menu
+                        row.armed=false;row.down=false
+                        return
+                    end
+                end
+            end
+        end
+        if row.native_binding then
+            -- Once the native action registers, never fall back to the default key.
+            -- A nil/unavailable native state fails closed until the binding returns.
+            local ok,value=pcall(row.native_binding.is_down,row.binding.id)
+            down=ok and value==true
+        else
+            down=platform:input_down(row.key);assert(type(down)=='boolean','Keyboard state unavailable')
+        end
         if not down then row.armed=true end
         local pressed=down and not row.down and row.armed;row.down=down
         if pressed then local now=platform:clock_us();local due=now-row.last>=150000;row.last=now

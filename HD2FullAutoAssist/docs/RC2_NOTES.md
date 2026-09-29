@@ -5,7 +5,7 @@ M6C/SOCOM, P-69 Veto, R-63 Diligence, R-63CS Diligence Counter Sniper and
 APW-1 AMR. Liberator, Quasar and Laser Cannon negative controls passed.
 This report applies to reference commit a93008f, not the standalone refactor.
 
-## Talon: 60 RPM Balanced candidate
+## Talon: previous 60 RPM candidate
 
 The reviewed build-25480438 Runtime catalog records heat capacity 100,
 15 heat per shot, 10 cooling per second and a 750 RPM native cap. See
@@ -16,11 +16,11 @@ If cooling runs continuously at the recorded rate, net heat falls from
 Nominal neutral cadence would be 40 RPM. Cooling delays, planet conditions,
 held-Fire behavior and actual accepted shots have not been established here.
 
-60 RPM (one attempt per second) is a conservative battery-efficiency default
-for one short follow-up test, not a promise of unlimited sustained fire.
-It sacrifices burst DPS to allow more cooling between shots. Native Cap
-remains 750 RPM for users who want full-speed input and accept faster heating.
-Only Talon's per-weapon override changes.
+RC3 promotes 210 RPM to Balanced from the discrete-shot model documented in
+`talon-heat-evidence.json`; 60 RPM remains the Efficiency profile. The model
+predicts shot eight reaches 100 heat if cooling is linear during intervals.
+Live play is authoritative. Talon's additional profiles are 380 RPM and the
+750 RPM native cap.
 
 ## Amendment v0.1 limitation
 

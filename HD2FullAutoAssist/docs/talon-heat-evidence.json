@@ -11,7 +11,9 @@
     "heat_per_second": 0,
     "heat_per_shot": 15
   },
-  "balanced_rpm": 60,
+  "balanced_rpm": 210,
+  "profiles_rpm": {"balanced": 210, "efficiency": 60, "full_auto": 380, "fuller_auto": 750},
+  "balanced_model": "8*15 - 7*(60/210)*10 = 100 heat at shot eight, assuming linear cooling between shots",
   "native_cap_rpm": 750,
   "nominal_continuous_cooling_neutral_rpm": 40,
   "heat_neutral_proven": false,

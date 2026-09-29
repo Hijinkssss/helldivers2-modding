@@ -1,10 +1,10 @@
-"""Build the Shared Loader-only Full Auto Assist RC2 candidate. No deployment."""
+"""Build the Shared Loader-only Full Auto Assist RC3 candidate. No deployment."""
 from pathlib import Path
 import hashlib,json,struct,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-PACKAGE='HD2FullAutoAssist-v0.1.3-Standalone-RC2-Arsenal.zip'
+PACKAGE='HD2FullAutoAssist-v0.1.3-Standalone-RC3-Arsenal.zip'
 LUA_TYPE=0xA14E8DFA2CD117E2
 MIX=0xC6A4A7935BD1E995
 MASK=(1<<64)-1
@@ -76,16 +76,17 @@ def main():
     out=ROOT/'build';out.mkdir(exist_ok=True)
     (out/'hd2_full_auto_assist.lua').write_bytes(source);(out/ARCHIVE).write_bytes(archive)
     manifest={'Version':1,'Guid':'cf368f5c-f686-453f-a566-435b4b7fcf26',
-        'Name':'HD2 Full Auto Assist v0.1.3 Standalone RC2',
-        'Description':'Accessibility/QoL candidate for Steam build 25480438. Requires only Bingus Shared Loader v18/API 1. Balanced default; Native Cap selectable in INI. Standalone live follow-up pending.',
+        'Name':'HD2 Full Auto Assist v0.1.3 Standalone RC3',
+        'Description':'Accessibility/QoL candidate for Steam build 25480438. Requires only Bingus Shared Loader v18/API 1. Balanced default; optional Mod Bindings Menu registration and standalone = fallback; Talon profiles selectable in INI.',
         'Options':[{'Name':'Full Auto Assist standalone',
-            'Description':'Reviewed weapons only. F8 toggle; Talon Balanced 60 RPM candidate, AMR 120 RPM. Native auto and charge/hold remain vanilla.',
+            'Description':'Reviewed weapons only. = toggle by default; Talon profiles in INI. Native auto and charge/hold remain vanilla.',
             'Include':['Addon']}]}
     files={'manifest.json':(json.dumps(manifest,indent=2)+'\n').encode(),
         'Addon/'+ARCHIVE:archive,'Addon/'+ARCHIVE+'.stream':b'','Addon/'+ARCHIVE+'.gpu_resources':b''}
     for name in ('README.md','HD2FullAutoAssist.example.ini','HD2FullAutoAssist.validation.ini',
                  'docs/RC2_NOTES.md','docs/NEXT_TEST.md','docs/VALIDATION.md','docs/DEPENDENCIES.md',
-                 'docs/talon-heat-evidence.json','docs/identity-validation.json'):
+                 'docs/talon-heat-evidence.json','docs/identity-validation.json',
+                 'docs/weapon-candidate-matrix.md'):
         files[name]=(ROOT/name).read_bytes()
     with zipfile.ZipFile(out/PACKAGE,'w',zipfile.ZIP_DEFLATED) as z:
         for name,raw in sorted(files.items()):
@@ -94,7 +95,7 @@ def main():
     checks=out/'standalone-checks.json'
     hashes={f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in sorted((ROOT/'src').glob('*.lua'))}
     tested=json.loads(checks.read_text()) if checks.exists() else {}
-    report={'version':'0.1.3-standalone-rc2','supported_build':'25480438',
+    report={'version':'0.1.3-standalone-rc3','supported_build':'25480438',
         'external_dependencies':['Bingus Shared Loader v18 / API 1'],
         'source_sha256':hashlib.sha256(source).hexdigest(),'archive_sha256':hashlib.sha256(archive).hexdigest(),
         'package_sha256':hashlib.sha256((out/PACKAGE).read_bytes()).hexdigest(),
@@ -102,8 +103,9 @@ def main():
         'live_standalone_validated':False,'reference_user_reported_live_pass':True,
         'identity_observer_sha256':hashes['identity.lua'],'source_files':hashes,
         'embedded_core':False,'embedded_hd2runtime':False,'package':PACKAGE,
-        'cadence':{'balanced_ceiling_rpm':380,'amr_balanced_rpm':120,'talon_balanced_rpm':60,
+        'cadence':{'balanced_ceiling_rpm':380,'amr_balanced_rpm':120,'talon_balanced_rpm':210,
+            'talon_profiles_rpm':{'balanced':210,'efficiency':60,'full_auto':380,'fuller_auto':750},
             'talon_live_followup_required':True,'input_attempts_are_not_shots':True}}
     (out/'build-report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
-    print('Built standalone RC2: '+PACKAGE+'; Shared Loader only. Live follow-up pending.')
+    print('Built standalone RC3: '+PACKAGE+'; Shared Loader only. Live follow-up pending.')
 if __name__=='__main__':main()
