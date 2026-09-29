@@ -1,52 +1,115 @@
-# HD2 Full Auto Assist v0.1.2 current-patch validation candidate
+# HD2 Full Auto Assist v0.1.3 Standalone RC2
 
-Full Auto Assist repeats normal Fire while the player holds Fire on explicitly approved weapons. The game decides whether each shot or burst is accepted. It changes no damage, recoil, ammunition or projectile data and automates no reloads, aiming, recoil compensation or combos.
+An accessibility/QoL mod that repeats normal Fire while you hold Fire on a small,
+explicitly reviewed set of weapons. The game decides whether each shot or burst
+is accepted. It changes no damage, recoil, ammo or projectiles and automates no
+reloads, aiming or recoil compensation.
 
-This package is prepared for controlled validation on Steam build **25480438**. Earlier Peacemaker-only selective behavior was observed working; this expanded policy and its current cadence values have not passed live validation. Do not publish v0.1 yet.
+**Only external dependency: [Bingus Shared Loader v18 / API 1](https://github.com/CowboyBingus/BingusSharedLoader/releases).**
+End users do not need HD2ModCore, HD2Runtime, Python or Lua tools. Neither framework
+is bundled. This candidate supports **Steam build 25480438** with exact EXE and
+game.dll fingerprints. Other builds refuse startup. Future patch support is
+planned, and is not provided by this version.
 
-Required, separately installed dependencies: **Bingus Shared Loader v18 / API 1**, **HD2ModCore 0.3.2-runtime-candidate / API 1** from `integrations/HD2ModCore-runtime-candidate`, and **HD2Runtime exactly 0.24.0 / API 1**, reviewed at commit `fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595`. The consumer checks Runtime 0.24.0 during identity resolution. A missing, disconnected or replaced Runtime leaves assistance unavailable and restores an active lease. No dependency is embedded. The Core build fingerprints and native input anchors remain mandatory.
+## Current status
 
-## Weapon policy and cadence
+- Standalone current-patch RC2; offline checks pass.
+- Reference implementation passed user-reported Balanced gameplay on the weapons
+  below, except the new Talon cadence. Native-auto/charge negative controls passed.
+- The standalone refactor still needs the focused live follow-up in
+  [NEXT_TEST.md](docs/NEXT_TEST.md). It has not been deployed or played in this task.
+- No HUD or per-weapon options UI is included. F8 toggles assistance during play.
 
-| Weapon | Category | Balanced RPM | Native Cap RPM | Value source |
-|---|---|---:|---:|---|
-| P-2 Peacemaker | ASSIST | 380 | 900 | Existing user-confirmed policy |
-| M6C/SOCOM Pistol | ASSIST | 380 | 900 | Existing user-confirmed policy |
-| P-69 Veto | ASSIST | 380 | 750 | Existing user-confirmed policy |
-| LAS-58 Talon | ASSIST | 380 | 750 | Existing user-confirmed policy |
-| R-2 Amendment | ASSIST | 380 | 480 | Existing user-confirmed policy; semi/burst vector |
-| P-113 Verdict | ASSIST | 380 | 450 | Reviewed current-build Runtime snapshot |
-| R-63 Diligence | ASSIST | 350 | 350 | Reviewed current-build Runtime snapshot |
-| R-63CS Diligence Counter Sniper | ASSIST | 350 | 350 | Reviewed current-build Runtime snapshot |
-| APW-1 Anti-Materiel Rifle | SPECIAL | 120 | 400 | Existing user-confirmed policy; Balanced override provisional |
-| AR-23 Liberator | IGNORE_NATIVE_AUTO | — | — | Native Full Auto; always vanilla |
-| LAS-99 Quasar Cannon | EXCLUDE_CHARGE_HOLD | — | — | Charge/hold; always vanilla |
-| LAS-98 Laser Cannon | REVIEW in practice | — | — | Multiple resource identities prevent mapping; always vanilla |
+## Install
 
-Balanced is the default: `min(native_cap_rpm, 380)`, except AMR at 120. Native Cap uses the per-weapon value in the table. These values select input intervals, not guaranteed measured shot rates. The three new caps are marked `RUNTIME_SNAPSHOT`, because metadata confirmation is distinct from accepted live shots. Their evidence is in `docs/weapon-policy-evidence.json`.
+1. Close the game. Install one copy of Bingus Shared Loader v18 / API 1.
+2. Import `HD2FullAutoAssist-v0.1.3-Standalone-RC2-Arsenal.zip` into Arsenal.
+   Replace the older Full Auto Assist entry; enable only one copy of this mod.
+3. Enable the standalone option and the loader. Give the loader winning startup
+   priority as described in its instructions, then Purge / Deploy.
+4. If Full Auto Assist was your only reason to install Core or Runtime, disable
+   those entries for the standalone follow-up. Other mods may still need them.
+5. To configure the mod, copy `HD2FullAutoAssist.example.ini` to
+   `%LOCALAPPDATA%/CowboyBingus/Helldivers2/HD2FullAutoAssist.ini`. Restart the game
+   after editing. No INI selects the normal defaults: ON, F8, Balanced.
+   The validation INI starts OFF and enables local diagnostic records.
 
-Use `fire_rate_mode=balanced` or `fire_rate_mode=native_cap` in the INI. `repeat_ms=0` selects the policy interval. A positive integer through 1000 can only slow it down: actual interval is `max(repeat_ms/1000, 60/policy_rpm)`. Existing positive values remain respected, so an old `repeat_ms=125` caps 900-RPM Native Cap input to 480 attempts/minute. Use zero for the requested Native Cap values. Invalid mode names fail configuration loading.
+Build output is a candidate, not a claimed completed gameplay release. Importing
+and deploying remain separate actions; this task did neither.
 
-All unlisted, ambiguous, unknown or malformed identities stay REVIEW/vanilla. Metadata can veto explicit approval and cannot add weapons. Any native Full Auto option vetoes assistance on an approved weapon. The only approved semi/burst combination is Amendment's reviewed native vector `[2,3,0]`; Runtime's filtered `allowedModes` alone does not describe that vector. No automatic R-menu discovery is attempted. Laser Cannon's static category is IGNORE_NATIVE_AUTO, but its ambiguous identity fails closed before mapping.
+## Supported weapons
 
-## Controls and limitations
+| Weapon | Balanced RPM | Native Cap RPM |
+|---|---:|---:|
+| P-2 Peacemaker | 380 | 900 |
+| P-113 Verdict | 380 | 450 |
+| M6C/SOCOM Pistol | 380 | 900 |
+| P-69 Veto | 380 | 750 |
+| R-63 Diligence | 350 | 350 |
+| R-63CS Diligence Counter Sniper | 350 | 350 |
+| R-2 Amendment | 380 | 480 |
+| LAS-58 Talon | **60, follow-up pending** | 750 |
+| APW-1 Anti-Materiel Rifle | **120** | 400 |
 
-`enabled=false` disables the consumer. F8 changes the global user toggle; it persists across weapon swaps within the session, but is not saved to disk. `user_enabled` selects the startup preference. The validation INI starts OFF, selects Balanced at policy cadence, and enables debug and validation records. The normal example starts ON with validation logging disabled.
+These values set input-attempt intervals, not guaranteed measured shot rates.
+Verdict/Diligence caps come from reviewed current-build Runtime snapshot data;
+reference Balanced play passed, but this does not establish every Native Cap rate.
+Liberator is ignored, Quasar's charge/hold stays vanilla, and Laser Cannon's
+ambiguous resources remain unmapped/vanilla. All unlisted or invalid resources
+fail closed. The supported weapon set is unchanged from the reference.
 
-Release restores the input mapping on the next observed update. Weapon/entity/player changes, toggle changes, menu/chat/focus guards and identity or Runtime failure restore a lease and require Fire release before restarting. The guarded held-weapon observer and selective cache remain intact. Axis mappings remain vanilla. No HUD is included.
+## Cadence and limitations
 
-Known limits: exact current build only; 0.24.0 Runtime only; accepted shot cadence and audio/animation remain unverified for this package; AMR 120 is provisional; held identities beyond the earlier Peacemaker/Amendment/AMR observations need live confirmation; brief identity windows between polls are unmeasured. Veto, SOCOM and Talon remain existing candidates and are outside this pass's requested live matrix, so this matrix alone cannot establish their release compatibility. Scheduler budgets are advisory; review aggregate slow counts as well as warning lines. Core logs the first and every hundredth over-budget callback.
+`fire_rate_mode=balanced` uses a 380 RPM ceiling, AMR's 120 RPM override and
+Talon's 60 RPM override. `fire_rate_mode=native_cap` uses each listed native cap,
+including Talon 750 and AMR 400. `repeat_ms=0` selects that policy interval.
+A positive integer up to 1000 only slows input: `max(repeat_ms/1000, 60/policy_rpm)`.
+For example, an old `repeat_ms=125` limits Native Cap to 480 input attempts/minute.
+Unknown, duplicate or malformed configuration entries disable startup.
 
-## Build and validation
+Talon's old 380 RPM default overheated too quickly in the user's live test.
+RC2 uses one attempt per second to favor battery efficiency over burst DPS.
+The reviewed snapshot records 100 heat capacity, 15 heat per shot and 10 cooling
+per second. That supports a lower cadence but does not prove continuous cooling
+while firing, environmental modifiers or heat-neutral operation. This candidate
+can still overheat. See [RC2 notes](docs/RC2_NOTES.md) for the conditional model
+and one short live test. Native Cap retains the full-speed option.
 
-From the repository root, using Python with Lupa/LuaJIT 2.1 installed:
+**Amendment v0.1 limitation:** held Fire continuously chains legal bursts into
+full-auto-like output. The game still controls burst internals. No special burst
+gap or burst-mode logic was added.
+
+AMR Balanced remains the user-tested 120 RPM. Future optional per-weapon modes:
+Recenter (recoil recovery friendly), Balanced (120), FULLER AUTO (native 400).
+Native Cap already selects 400 through the INI; a per-weapon UI is deferred.
+
+F8 changes the session toggle, which survives weapon swaps but is not written
+back to the INI. Toggle, weapon/entity/player changes, chat, menus, lost focus,
+invalid identities and read failures restore assistance and require Fire release
+before restarting. Release restores the original button mappings on the next
+observed update. Axis mappings remain vanilla. User binding edits are preserved.
+Partially written mappings retain rollback state; failed cleanup keeps a retry
+path while updates remain available. Brief windows between updates are unmeasured.
+
+This is an explicit current-build table. It does not discover weapons or inspect
+the current R-menu fire mode. Using other mods that change these weapons' fire
+semantics is outside the tested scope. Native mapping anchors and exact build
+fingerprints remain mandatory.
+
+## Build and verify
+
+For developers, Python with `lupa.luajit21` and Git is needed for offline checks.
+The full clone includes Core solely for reference comparison tests; the package
+and its builder have no Core/Runtime dependency.
 
 ```text
-python HD2FullAutoAssist/scripts/build.py --identity-records <preserved-original-identity-directory>
-python HD2FullAutoAssist/tests/run_weapon_policy_v2.py
-python HD2FullAutoAssist/tests/run.py --runtime-path <lupa-parent-directory> --loader-source <Loader-v18-src/discover.lua> --hd2runtime-source <reviewed-Runtime-root> --identity-records <preserved-original-identity-directory>
+python HD2FullAutoAssist/tests/run_standalone.py
+python HD2FullAutoAssist/scripts/build.py
+python HD2FullAutoAssist/tests/test_package.py --loader-discovery <BingusSharedLoader-v18/src/discover.lua>
 ```
 
-The original identity captures must match their recorded hashes. The preserved repository contains CRLF source, while the observed source receipt uses LF; the builder normalizes only line endings for the observer comparison and Lua bundle. It does not replace the observer or manufacture identity proof. The runner checks real reviewed Runtime metadata offline without accessing a game process.
-
-Output: `build/HD2FullAutoAssist-v0.1.2-Current-Patch-Validation-Arsenal.zip`. One Arsenal option, same existing addon GUID; do not enable another Full Auto Assist instance. Building does not install, deploy or launch anything. Follow `docs/NEXT_TEST.md` for one controlled session and `docs/VALIDATION.md` for evidence boundaries.
+Output: `HD2FullAutoAssist/build/HD2FullAutoAssist-v0.1.3-Standalone-RC2-Arsenal.zip`.
+The builder owns the resource encoding and bundles only mod-specific helpers.
+It creates one Arsenal option with the retained addon GUID.
+[Dependency audit](docs/DEPENDENCIES.md) and [validation boundaries](docs/VALIDATION.md)
+describe exactly what was extracted, preserved and verified.

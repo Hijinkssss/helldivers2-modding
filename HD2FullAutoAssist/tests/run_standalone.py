@@ -55,8 +55,13 @@ def controller_test(path,standalone,name):
     lua=host(path,standalone)
     code=(ROOT/f'tests/{name}.lua').read_text(encoding='utf-8')
     if standalone:code=code.replace('app.install(core,','app.install(standalone_host,')
+    if name=='test_gate':lua.globals().app=lua.execute((path/'full_auto_assist.lua').read_text(encoding='utf-8').replace('local IDENTITY_VALIDATED=true','local IDENTITY_VALIDATED=false'))
+    if standalone and name=='test_validation':
+        code=code.replace("bridge.Status=function()return {state='unavailable'}end",
+            "core.Diagnostic.LocalAvatar=function()return {ok=false}end")
+        code=code.replace('runtime_connection_invalid','identity_unavailable_or_player_changed')
     lua.execute(code)
-def native_test():
+def native_test(rpm=None):
     lua=lua_at(ROOT/'src')
     lua.execute('''
         local actual=require('native_fire')
@@ -69,7 +74,14 @@ def native_test():
             return actual.new(h,factory)
         end}
     ''')
-    lua.execute((ROOT/'tests/test_native.lua').read_text(encoding='utf-8'))
+    code=(ROOT/'tests/test_native.lua').read_text(encoding='utf-8')
+    if rpm:
+        interval=60/rpm
+        code=code.replace('assert(b:begin(row)==2);assert(read(bucket+8,20)~=original)',
+            f"assert(b:begin(row,{interval!r})==2);local f=ffi.new('float[1]');ffi.copy(f,read(bucket+24,4),4);assert(math.abs(tonumber(f[0])-{interval!r})<.000001)")
+    lua.execute(code)
+def native_intervals():
+    for rpm in (900,750,480,450,400,380,350,120,60):native_test(rpm)
 def static_checks():
     lua=lua_at(ROOT/'src')
     for f in (ROOT/'src').glob('*.lua'):
@@ -126,6 +138,22 @@ def preserved_guard_checks():
                          ('test_input_eligibility.lua','hd2modcore.input_eligibility','input')]:
         code=(REPO/'integrations/HD2ModCore-runtime-candidate/tests'/name).read_text(encoding='utf-8')
         lua.execute(code.replace(old,new))
+def known_data_checks():
+    evidence=json.loads((ROOT/'docs/known-weapon-evidence.json').read_text(encoding='utf-8'))
+    assert evidence['runtime_commit']=='fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595'
+    lua=lua_at(ROOT/'src');policy=lua.eval("require('weapon_policy').new('balanced')")
+    count=0
+    for row in evidence['entries']:
+        hashes=row['resources']
+        if len(hashes)==1:
+            entry=policy.classify(policy,hashes[0]);assert entry.name==row['name'],row
+            count+=1
+            if entry.allowed and row['name']!='APW-1 Anti-Materiel Rifle':
+                modes=row['native_fire_modes'];vector=modes['nativeModeVector']
+                assert vector==([2,3,0] if row['name']=='R-2 Amendment' else [2,0,0])
+        else:
+            for resource in hashes:assert not policy.classify(policy,resource).allowed
+    assert count==11
 def main():
     (ROOT/'build').mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(dir=ROOT/'build') as tmp:
@@ -133,14 +161,17 @@ def main():
         for f in (ROOT/'src').glob('*.lua'):
             if f.name in ('full_auto_assist.lua','weapon_policy.lua','assist_state.lua','native_fire.lua','validation_trace.lua'):
                 (ref/f.name).write_text(reference_file(f.name),encoding='utf-8')
-        for name in ('test_policy','test_selective','test_validation'):
+        for name in ('test_policy','test_gate','test_selective','test_validation'):
             check('reference '+name,lambda n=name:controller_test(ref,False,n))
         check('standalone mixed-weapon transitions, guards, F8 and cleanup',lambda:controller_test(ROOT/'src',True,'test_selective'))
+        check('standalone validation trace and closed identity gate',lambda:[controller_test(ROOT/'src',True,n) for n in ('test_gate','test_validation')])
         check('differential replay: 9 weapons, 2 modes, 2 overrides; Talon-only change',lambda:parity(ref))
     check('native mapping safety, conflicts, axis exclusion and partial rollback',native_test)
+    check('actual native mapping bytes and restore at every policy interval',native_intervals)
     check('Lua syntax, no external imports, strict config and unknown fail-closed',static_checks)
     check('actual standalone lifecycle, native observer and UI/input guards',lifecycle_checks)
     check('preserved observer layout/race/bounds and complete native UI guard fixtures',preserved_guard_checks)
+    check('known resource table matches pinned real Runtime metadata; no discovery',known_data_checks)
     report={'reference_commit':REFERENCE,'checks':checks,'offline_passed':True,
         'core_behavior_parity':'preserved for known identities, guards and input intervals except intentional Talon Balanced change',
         'live_standalone_validated':False,'game_process_accessed':False,

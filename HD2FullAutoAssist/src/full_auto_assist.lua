@@ -31,7 +31,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
     local active,wait_release,unit_ref,inspected=false,true,nil,false
     local lease_started,lease_repeat_start
     local trace,last_metrics_us
-    
+
     local counters={toggles=0,toggle_rejected=0,holds=0,releases=0,blocked=0,errors=0,
         idle_calls=0,held_calls=0,idle_us=0,held_us=0,max_us=0,repeat_frames=0,restore_conflicts=0,
         input_checks=0,repeat_calls=0,repeat_us=0,repeat_us_max=0,repeat_wall_us=0,

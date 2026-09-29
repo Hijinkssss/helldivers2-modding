@@ -30,8 +30,6 @@ function M.new(environment,options)
     local self={platform=platform,base=base,callbacks={},closed=false,reads=0,queries=0,
         failures=0,slow=0,slow_by_kind={},log_errors=0}
     local file
-    local opened,value=pcall(loader.open_log,'HD2FullAutoAssist.log')
-    if opened then file=value end
     function self:log(level,event,fields)
         if file then
             local good=pcall(function()
@@ -182,6 +180,8 @@ function M.new(environment,options)
         assert(environment.update==previous_update and environment.shutdown==previous_shutdown,'Callbacks changed during startup')
         environment.update=update_wrapper;environment.shutdown=shutdown_wrapper
     end
+    local opened,value=pcall(loader.open_log,'HD2FullAutoAssist.log')
+    if opened then file=value end
     return self
 end
 function M.start(environment,options)
