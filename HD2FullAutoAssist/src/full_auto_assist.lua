@@ -36,7 +36,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
     if installed[host] then return installed[host] end
     local input_token,hook_token,identity_token,backend,settings,closed,failed,policy,state
     local leased_entity_id,leased_resource_hash
-    local active,wait_release,unit_ref,inspected=false,true,nil,false
+    local wait_release,unit_ref,inspected=true,nil,false
     local lease_started,lease_repeat_start
     local trace,last_metrics_us
 
@@ -67,8 +67,8 @@ function M.install(host,backend_factory,read_config,validation_factory)
     end
     local function fail(why)
         if not failed then
-            failed=true;active=false;counters.errors=counters.errors+1
-            if state then state:set_enabled(false);state:invalidate('consumer_failed') end
+            failed=true;counters.errors=counters.errors+1
+            if state then state:invalidate('consumer_failed') end
             emit('error','assist_disabled',{reason=tostring(why)})
             if input_token then host:remove(input_token);input_token=nil end
         end
@@ -80,9 +80,8 @@ function M.install(host,backend_factory,read_config,validation_factory)
     end
     host:on_stop(function()
         if closed then return end
-        active=false
         restore('unload');closed=true
-        if state then state:set_enabled(false);state:invalidate('unloaded') end
+        if state then state:invalidate('unloaded') end
         if input_token then host:remove(input_token);input_token=nil end
         if hook_token then host:remove(hook_token);hook_token=nil end
         if identity_token then host:remove(identity_token);identity_token=nil end
@@ -108,7 +107,6 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 fallback='vanilla',required='known_current_build_policy'})
             return
         end
-        active=settings.user_enabled
         if settings.validation_logging then
             backend=backend_factory(host)
             trace=(validation_factory or Validation.new)({clock=backend.clock_us})
@@ -122,7 +120,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
             local ok,why=pcall(function()
                 local eligibility=host:eligibility()
                 if settings.debug_logging then
-                    local fields={active=active,stage='pressed_after_update',hotkey=settings.toggle_hotkey}
+                    local fields={active=state:is_enabled(),stage='pressed_after_update',hotkey=settings.toggle_hotkey}
                     if eligibility.ok then
                         for key,value in pairs(eligibility.value) do fields[key]=value end
                     else
@@ -134,11 +132,11 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 if not eligibility.ok or eligibility.value.allowed~=true then
                     counters.toggle_rejected=counters.toggle_rejected+1;return
                 end
-                restore('toggle');active=not active;wait_release=true
-                state:set_enabled(active)
+                local enabled=not state:is_enabled()
+                restore('toggle');state:set_enabled(enabled);wait_release=true
                 if trace then trace:state(state:snapshot(),'toggle')end
                 counters.toggles=counters.toggles+1
-                emit('info','assist_toggled',{active=active})
+                emit('info','assist_toggled',{active=enabled})
             end)
             if not ok then fail(why) end
         end,{id='codex.full_auto_assist.toggle',label='Toggle Full Auto Assist',slot=2,
@@ -180,7 +178,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
         local function tick()
             if closed then return end
             if failed then fail('restoration_retry');return end
-            if not active and not trace then return end
+            if not state:is_enabled() and not trace then return end
             if not backend then backend=backend_factory(host) end
             local started=backend.clock_us();local held=false;local leased_before=backend.lease~=nil
             local ok,why=pcall(function()
@@ -192,7 +190,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 if not inspected and type(backend.inspect)=='function' then
                     emit('info','native_input_ready',backend:inspect(row));inspected=true
                 end
-                if not active then return end
+                if not state:is_enabled() and not trace then return end
                 if not row.held then
                     if backend.lease then counters.releases=counters.releases+1 end
                     restore('release');wait_release=false;return
@@ -264,19 +262,20 @@ function M.install(host,backend_factory,read_config,validation_factory)
             end) end
         emit('info','initialized',{version='0.1.4-standalone-rc4',hotkey=settings.toggle_hotkey,
             talon_mode=settings.talon_mode,
-            active=active,mechanism='selective_native_repeat_interval',identity_validated=IDENTITY_VALIDATED})
+            active=state:is_enabled(),mechanism='selective_native_repeat_interval',identity_validated=IDENTITY_VALIDATED})
     end)
     if not loaded then fail(load_error);host:stop();error(load_error,0) end
     function consumer:stop()
         local result=host:stop()
         if not result.ok then fail(result.error.detail)end
+        if result.ok and installed[host]==self then installed[host]=nil end
         return result
     end
     function consumer:get_state()
         return state and state:snapshot() or {user_enabled=false,weapon={},eligibility={category='REVIEW'},
             identity_valid=false,effective=false,repeat_active=false,reason='consumer_unavailable'}
     end
-    function consumer:status()return {active=active,closed=closed,failed=failed,wait_release=wait_release,
+    function consumer:status()return {active=state and state:is_enabled() or false,closed=closed,failed=failed,wait_release=wait_release,
         identity_validated=IDENTITY_VALIDATED,policy_available=policy and policy.available or false,
         assist_state=self:get_state(),counters=counters}end
     installed[host]=consumer

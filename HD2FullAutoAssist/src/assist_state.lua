@@ -20,6 +20,7 @@ function M.new(policy,validated)
     function self:set_enabled(enabled)
         state.user_enabled=enabled==true;derive();state.revision=state.revision+1
     end
+    function self:is_enabled()return state.user_enabled end
     function self:invalidate(reason)
         last_decision,last_hash=nil,nil
         state.weapon={};state.eligibility={category='REVIEW'};state.identity_valid=false

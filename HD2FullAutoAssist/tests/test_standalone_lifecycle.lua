@@ -82,7 +82,7 @@ cursor=true;tick(160);assert(not b.lease);cursor=false
 held=false;tick(180);held=true;tick(200);focused=false;tick(220);assert(not b.lease)
 focused=true;down=true;tick(400);assert(a:get_state().user_enabled,'Held key after focus return must not toggle')
 down=false;held=false;tick(420);held=true;tick(440);down=true;tick(600)
-assert(not a:get_state().user_enabled and not b.lease)
+assert(not a:get_state().user_enabled and not b.lease and a:status().counters.toggles==1)
 down=false;tick(620);down=true;tick(800);assert(a:get_state().user_enabled)
 held=false;tick(820);held=true;tick(840);assert(b.lease)
 put(BACKS,ptr(PLAYER));tick(860);assert(not b.lease and not a:get_state().identity_valid)
@@ -96,6 +96,7 @@ down=false;tick(1010);assert(registrations==1,'registration count '..registratio
 down=true;tick(1020);assert(a:get_state().user_enabled,'fallback key disabled after native registration')
 down=false;tick(1030);native_down=true;tick(1040);assert(not a:get_state().user_enabled,'native binding toggles OFF')
 native_down=false;tick(1210);native_down=true;tick(1240);assert(a:get_state().user_enabled,'native binding toggles ON')
+assert(a:status().counters.toggles==4,'Fallback and registered bindings update the same preference exactly once')
 held=false;tick(1260);held=true;tick(1280);assert(b.lease)
 env.ModBindingsMenu=nil
 local original_restore=b.restore;local transient=true
@@ -109,4 +110,5 @@ local x,y,z=env.shutdown('fixture');assert(x=='stopped' and y==nil and z==9)
 env.HD2FullAutoAssistStandalone=nil
 env.update=function()error('stock failure')end
 held=false;local c=Life.start(env,options);assert(not pcall(env.update,'fixture'));assert(not b.lease and not c:get_state().effective)
+assert(c:get_state().user_enabled,'A lifecycle failure must not rewrite the saved preference')
 print('standalone host and native identity integration passed')
