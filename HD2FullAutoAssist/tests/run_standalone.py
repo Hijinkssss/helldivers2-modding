@@ -151,6 +151,9 @@ def lifecycle_checks():
 def arsenal_profile_checks():
     lua=lua_at(ROOT/'src')
     lua.execute((ROOT/'tests/test_arsenal_profiles.lua').read_text(encoding='utf-8'))
+def hud_indicator_checks():
+    lua=lua_at(ROOT/'src')
+    lua.execute((ROOT/'tests/test_hud_indicator.lua').read_text(encoding='utf-8'))
 def preserved_guard_checks():
     lua=lua_at(ROOT/'src')
     for name,old,new in [('test_game_state.lua','hd2modcore.game_state','identity'),
@@ -192,6 +195,7 @@ def main():
     check('Lua syntax, no external imports, strict config and unknown fail-closed',static_checks)
     check('actual standalone lifecycle, native observer and UI/input guards',lifecycle_checks)
     check('Arsenal settings precedence and every selectable profile reaches policy',arsenal_profile_checks)
+    check('read-only HUD state projection, visibility, slash and fade semantics',hud_indicator_checks)
     check('preserved observer layout/race/bounds and complete native UI guard fixtures',preserved_guard_checks)
     check('known resource table matches pinned real Runtime metadata; no discovery',known_data_checks)
     report={'reference_commit':REFERENCE,'checks':checks,'offline_passed':True,
