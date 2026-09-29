@@ -4,10 +4,7 @@
 local Result={ok=function(v)return {ok=true,value=v}end,
     err=function(code,stage,detail)return {ok=false,error={code=code,stage=stage,detail=detail}}end}
 local M={}
-local PROFILE='steam-25480438-v02-candidate'
-local UI_RVA,STATE_OFFSET,STATE_SIZE=0x347ce28,0x4294,0x90
-local TEXT_REGISTER_RVA=0x14aeb30
-local TEXT_REGISTER_PREFIX='\x48\x89\x74\x24\x10\x57\x48\x83\xec\x30'
+local Compatibility=require('compatibility')
 local NO_TEXT_RECEIVER=string.rep('\0',8)
 local function boolean(value)
     if value==true or value==1 then return true end
@@ -23,8 +20,8 @@ local function require_value(result)
     return result.value
 end
 function M.sample(platform,memory,profile,engine)
-    if not profile or profile.id~=PROFILE then
-        return Result.err('UnsupportedBuild','input_eligibility','exact supported build required')
+    if not Compatibility.supported(profile) then
+        return Result.err('UnsupportedBuild','input_eligibility','resolved UI capabilities required')
     end
     local ok,row=pcall(function()
         local window=assert(type(engine)=='table' and engine.Window,'engine Window unavailable')
@@ -33,9 +30,13 @@ function M.sample(platform,memory,profile,engine)
         local focused,cursor=boolean(window.has_focus()),boolean(window.show_cursor())
         assert(type(platform.module_address)=='function','module address unavailable')
         local base=assert(platform:module_address('game.dll'),'game module unavailable')
-        assert(require_value(memory:read(base+TEXT_REGISTER_RVA,#TEXT_REGISTER_PREFIX))==
+        assert(base==profile.base,'UI module base changed')
+        local UI=profile.globals.ui_manager
+        local STATE_OFFSET,STATE_SIZE=profile.ui.state_offset,profile.ui.state_size
+        local TEXT_REGISTER,TEXT_REGISTER_PREFIX=unpack(profile.text_anchor)
+        assert(require_value(memory:read(TEXT_REGISTER,#TEXT_REGISTER_PREFIX))==
             TEXT_REGISTER_PREFIX,'native text-input layout anchor changed')
-        local ui=require_value(memory:read_pointer(base+UI_RVA))
+        local ui=require_value(memory:read_pointer(UI))
         assert(ui,'UI manager unavailable')
         -- Null receiver means no text target. Never dereference it or read typed text.
         local receiver=require_value(memory:read(ui,8))
@@ -48,7 +49,7 @@ function M.sample(platform,memory,profile,engine)
         assert(count<=5 and secondary<=25,'UI state bounds changed')
         local busy=primary~=0 or modal~=0 or secondary~=0 or pending~=0
         for i=1,count do busy=busy or u32(bytes,8+(i-1)*4)~=0 end
-        assert(require_value(memory:read_pointer(base+UI_RVA))==ui and
+        assert(require_value(memory:read_pointer(UI))==ui and
             require_value(memory:read(ui,8))==receiver and
             require_value(memory:read(ui+STATE_OFFSET,STATE_SIZE))==bytes,'UI state changed during read')
         -- Re-read engine window flags too; a transition is an unavailable state.

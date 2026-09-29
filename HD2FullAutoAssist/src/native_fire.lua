@@ -1,14 +1,8 @@
 -- Build-specific input adapter. Uses local guarded reads; never touches weapon data.
 local M={}
-local PROFILE='steam-25480438-v02-candidate'
-local CONTROLS,STATE,FIRE,MAP,CODE=0x347cf18,0x3326340,0x1c88,0xa7ad0,0x20009
-local REPEAT_SECONDS=0.125 -- Provisional default: 8 timed input attempts/second.
+local Compatibility=require('compatibility')
+local REPEAT_SECONDS=0.125 -- Existing default: 8 timed input attempts/second.
 M.repeat_seconds=REPEAT_SECONDS
-local anchors={
-    {0x12fc180,'\x48\x8b\xc4\x48\x89\x58\x08\x48\x89\x68\x10\x48'},
-    {0x12fc44c,'\x41\x0f\x5a\xc3\x0f\x5a\xcf\xe8\x58\xcb\xe0\x00'},
-    {0x12fa3b3,'\xe8\xc8\xb7\x28\xff\x44\x8b\x8e\xd8\x7a\x0a\x00'}
-}
 local function u32(s,at)
     local a,b,c,d=s:byte(at+1,at+4);assert(d,'Short native input record')
     return a+b*256+c*65536+d*16777216
@@ -60,20 +54,24 @@ local function adapter()
         end}
 end
 function M.new(host,make_adapter)
-    assert(host:build_status().id==PROFILE,'Unsupported HD2 build')
+    local profile=host:compatibility_profile()
+    assert(Compatibility.supported(profile),'Unresolved native Fire capabilities')
     local a=(make_adapter or adapter)()
+    assert(a.base==profile.base,'Native module base changed')
+    local CONTROLS,STATE=profile.globals.controls,profile.globals.game_state
+    local FIRE,MAP,CODE=profile.fire.state_offset,profile.fire.map_offset,profile.fire.action
     local function read(at,n)return host:read(at,n)end
     local function ptr(at)return host:ptr(at)end
     local function maybe_ptr(at)
         local s=read(at,8);if s==string.rep('\0',8) then return nil end;return pointer(s)
     end
-    for _,r in ipairs(anchors) do assert(read(a.base+r[1],#r[2])==r[2],'Native input code anchor changed') end
+    for _,r in ipairs(profile.fire_anchors) do assert(read(r[1],#r[2])==r[2],'Native input code anchor changed') end
     local pm_global=host:symbol('player_manager')
     local self={lease=nil,writes=0,restored=0,conflicts=0,repeat_seconds=REPEAT_SECONDS,clock_us=a.clock_us}
     function self:sample()
-        local owner=maybe_ptr(a.base+CONTROLS);if not owner then return nil end
+        local owner=maybe_ptr(CONTROLS);if not owner then return nil end
         local bytes=read(owner+FIRE,32)
-        assert(ptr(a.base+CONTROLS)==owner,'Controls owner changed during sample')
+        assert(ptr(CONTROLS)==owner,'Controls owner changed during sample')
         local magnitude,seconds=a.float(bytes,4),a.float(bytes,8)
         local trigger=u32(bytes,24);local pressed=bytes:byte(1)
         assert(magnitude==magnitude and math.abs(magnitude)<=1.01 and seconds==seconds and
@@ -82,18 +80,18 @@ function M.new(host,make_adapter)
             trigger=trigger,held_seconds=seconds,mapping_index=u32(bytes,16),gameplay=false}
         if a.raw_lmb_down then row.raw_lmb_down=a.raw_lmb_down()end
         if not row.held then return row end
-        local state=maybe_ptr(a.base+STATE);if not state then return row end
-        row.game_state=host:u32(state+0xac21c)
+        local state=maybe_ptr(STATE);if not state then return row end
+        row.game_state=host:u32(state+profile.fire.game_state_offset)
         assert(row.game_state<=16,'Invalid game state')
         if row.game_state~=4 then return row end
         local pm=maybe_ptr(pm_global);if not pm then return row end
-        row.unit_ref=host:u32(pm+0x3a8)
+        row.unit_ref=host:u32(pm+profile.fire.unit_offset)
         row.gameplay=row.unit_ref~=0 and row.unit_ref~=0x7fff and row.unit_ref~=0xffffffff
-        assert(ptr(a.base+STATE)==state and ptr(pm_global)==pm,'Player state changed during sample')
+        assert(ptr(STATE)==state and ptr(pm_global)==pm,'Player state changed during sample')
         return row
     end
     local function bucket(owner)
-        assert(ptr(a.base+CONTROLS)==owner,'Controls owner changed')
+        assert(ptr(CONTROLS)==owner,'Controls owner changed')
         local header=read(owner+MAP,20);local rows=pointer(header)
         assert(u32(header,8)==256,'Unsupported binding map capacity')
         local seed=(CODE%256)*(u32(header,16)%256)%256
@@ -109,7 +107,7 @@ function M.new(host,make_adapter)
         error('Normal Fire binding unavailable')
     end
     local function context(l,restoring)
-        assert(ptr(a.base+CONTROLS)==l.owner,'Controls owner changed')
+        assert(ptr(CONTROLS)==l.owner,'Controls owner changed')
         assert(read(l.owner+MAP,20)==l.header,'Binding table changed')
         local h=read(l.bucket,8);local count=u32(h,4)
         assert(u32(h,0)==CODE and count>0 and count<=16 and (restoring or count==l.count),

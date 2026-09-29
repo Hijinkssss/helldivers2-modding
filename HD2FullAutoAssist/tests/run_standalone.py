@@ -18,7 +18,8 @@ def plain(v):
 def lua_at(path):
     lua=LuaRuntime(unpack_returned_tuples=True)
     lua.globals().package.path=';'.join([path.as_posix()+'/?.lua',
-        (REPO/'integrations/HD2ModCore-runtime-candidate/src/?.lua').as_posix(),lua.globals().package.path])
+        (REPO/'integrations/HD2ModCore-runtime-candidate/src/?.lua').as_posix(),
+        (ROOT/'tests/?.lua').as_posix(),lua.globals().package.path])
     return lua
 def reference_file(name):
     return subprocess.check_output(['git','show',REFERENCE+':HD2FullAutoAssist/src/'+name],cwd=REPO).decode()
@@ -75,6 +76,10 @@ def native_test(rpm=None):
         local actual=require('native_fire')
         native={new=function(fake,factory)
             local h={build_status=function()return fake.Build:Status()end,
+                compatibility_profile=function()
+                    if fake.Build:Status().id~='steam-25480438-v02-candidate' then return nil end
+                    return require('profile_fixture')(0x10000000)
+                end,
                 read=function(_,at,n)return assert(fake.Memory:Read(at,n)).value end,
                 ptr=function(_,at)return assert(fake.Memory:ReadPointer(at)).value end,
                 u32=function(_,at)return assert(fake.Memory:ReadU32(at)).value end,
@@ -156,7 +161,10 @@ def preserved_guard_checks():
     for name,old,new in [('test_game_state.lua','hd2modcore.game_state','identity'),
                          ('test_input_eligibility.lua','hd2modcore.input_eligibility','input')]:
         code=(REPO/'integrations/HD2ModCore-runtime-candidate/tests'/name).read_text(encoding='utf-8')
-        lua.execute(code.replace(old,new))
+        code=code.replace(old,new)
+        if new=='input':
+            code=code.replace("local profile={id='steam-25480438-v02-candidate'}", "local profile=require('profile_fixture')(base)")
+        lua.execute(code)
 def known_data_checks():
     evidence=json.loads((ROOT/'docs/known-weapon-evidence.json').read_text(encoding='utf-8'))
     assert evidence['runtime_commit']=='fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595'

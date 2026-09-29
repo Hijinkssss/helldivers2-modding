@@ -6,11 +6,7 @@ local Input=require('input')
 local Config=require('config')
 local Json=require('validation_trace')
 local M={}
-local PROFILE='steam-25480438-v02-candidate'
-local EXE='F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06'
-local DLL='2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E'
-local RVAS={player_manager=0x3326468,entity_owner=0x346bf98,
-    avatar_manager=0x3326d20,weapon_wielder=0x3326420,equipment_manager=0x3326dc0}
+local Compatibility=require('compatibility')
 local READABLE={[2]=true,[4]=true,[8]=true,[32]=true,[64]=true,[128]=true}
 local function integer(v,lo,hi)return type(v)=='number' and v==v and v%1==0 and v>=lo and v<=hi end
 local function ok(v)return {ok=true,value=v}end
@@ -24,8 +20,15 @@ function M.new(environment,options)
     local loader=assert(options.loader or environment.CowboyBingusModLoader,'Bingus Shared Loader required')
     assert(loader.api==1 and type(loader.open_log)=='function','Shared Loader API 1 required')
     local platform=options.platform or Platform.new()
-    assert(platform:module_hash(nil)==EXE and platform:module_hash('game.dll')==DLL,
-        'Unsupported build: exact EXE and game.dll fingerprints required')
+    local selection,diagnostic=Compatibility.select(platform)
+    if not selection then
+        local opened,log=pcall(loader.open_log,'HD2FullAutoAssist.log')
+        if opened and log then
+            pcall(function()log:write(Json.json({level='error',event='compatibility',fields=diagnostic})..'\n');log:flush()end)
+            pcall(function()log:close()end)
+        end
+        error('compatibility=unsupported reason='..diagnostic.reason,0)
+    end
     local base=assert(platform:module_address('game.dll'))
     local self={platform=platform,base=base,callbacks={},closed=false,reads=0,queries=0,
         failures=0,slow=0,slow_by_kind={},log_errors=0}
@@ -82,11 +85,13 @@ function M.new(environment,options)
     assert(self:read(base+pe,4)=='PE\0\0','Invalid PE signature')
     assert(self:read(base+pe+24,2)=='\x0b\x02','Expected PE32+ image')
     local size=self:u32(base+pe+24+56);assert(integer(size,4096,0x80000000),'Invalid module image size')
+    local profile=Compatibility.resolve(selection,base,size)
+    function self:compatibility_profile()return profile end
     function self:symbol(name)
-        local rva=assert(RVAS[name],'Unknown assist symbol')
-        assert(rva<=size-8,'Symbol outside module image');self:read(base+rva,8);return base+rva
+        local address=assert(profile.globals[name],'Unknown assist symbol')
+        self:read(address,8);return address
     end
-    function self:build_status()return {id=PROFILE,state='exact_fingerprints_matched'}end
+    function self:build_status()return Compatibility.status(profile)end
     function self:config(schema,text,arsenal_options)return Config.load(schema,text,arsenal_options)end
     local memory={read=function(_,at,n)return attempt(function()return self:read(at,n)end)end,
         read_pointer=function(_,at)return attempt(function()return self:ptr(at)end)end,
@@ -94,7 +99,7 @@ function M.new(environment,options)
     local symbols={resolve=function(_,name)return attempt(function()return {address=self:symbol(name)}end)end}
     local observer=Identity.new(memory,symbols)
     function self:local_avatar()return observer:snapshot()end
-    function self:eligibility()return Input.sample(platform,memory,{id=PROFILE},environment.stingray)end
+    function self:eligibility()return Input.sample(platform,memory,profile,environment.stingray)end
     function self:parse_key(key)
         local named={SPACE=32,TAB=9,ENTER=13,ESCAPE=27,INSERT=45,DELETE=46,HOME=36,END=35,
             PAGEUP=33,PAGEDOWN=34,LEFT=37,UP=38,RIGHT=39,DOWN=40}
@@ -209,6 +214,7 @@ function M.new(environment,options)
     end
     local opened,value=pcall(loader.open_log,'HD2FullAutoAssist.log')
     if opened then file=value end
+    self:log('info','compatibility',diagnostic)
     return self
 end
 function M.start(environment,options)
