@@ -327,6 +327,7 @@ function M.start(environment,options)
         amr_profile={'balanced','full_auto'},
         hyena_profile={'balanced','full_auto'},
         bushwhacker_profile={'balanced','full_auto'},
+        eruptor_profile={'balanced','full_auto'},
     }
     local application=environment.stingray and environment.stingray.Application
     local global_require=rawget(_G,'require')

@@ -28,7 +28,8 @@ local schema={enabled={type='boolean',default=true},user_enabled={type='boolean'
         values={['']=true,balanced=true,efficiency=true,full_auto=true,fuller_auto=true}},
     amr_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
     hyena_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
-    bushwhacker_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}}}
+    bushwhacker_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
+    eruptor_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}}}
 local function config_text()
     local root=assert(os.getenv('LOCALAPPDATA'),'LOCALAPPDATA unavailable')
     local f,why,number=io.open(root..'/CowboyBingus/Helldivers2/HD2FullAutoAssist.ini','rb')
@@ -356,7 +357,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     trace:flush(false)
                 end
             end) end
-        local initialized={version='1.0.0',hotkey=settings.toggle_hotkey,
+        local initialized={version='1.0.1',hotkey=settings.toggle_hotkey,
             talon_mode=settings.talon_mode,
             active=state:is_enabled(),mechanism='selective_native_repeat_interval',identity_validated=IDENTITY_VALIDATED}
         if profiler then

@@ -1,3 +1,5 @@
+> Historical development record. Current release status and validation are in [RELEASE_1.0.1.md](RELEASE_1.0.1.md).
+
 # Full Auto Assist B3 results
 
 Unpublished candidate based on `feature/full-auto-assist-performance` at `be04ea15359b505bf953ef22d747e8f5e2de013e`. No merge, push, release/Nexus change, protected-branch change, deployed-file change, or game-process access. B3 gameplay and Mod Lag Watchdog performance remain unvalidated.

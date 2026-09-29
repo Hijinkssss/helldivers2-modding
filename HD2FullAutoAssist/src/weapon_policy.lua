@@ -163,8 +163,8 @@ local ENTRIES = {
       native_cap_status='RUNTIME_SNAPSHOT', notes='Burst/semi [3,2,0], conventional projectile. Repeated legal Fire chains native bursts like Amendment; Balanced 300 RPM.' },
     { kind='weapon', name='CB-9 Exploding Crossbow', category='ASSIST', native_cap_rpm=50,
       native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 50 RPM.' },
-    { kind='weapon', name='R-36 Eruptor', category='ASSIST', native_cap_rpm=32,
-      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 32 RPM; game controls recovery.' },
+    { kind='weapon', name='R-36 Eruptor', category='ASSIST', native_cap_rpm=32, balanced_rpm=26,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Controlled default 26 RPM gives the long bolt animation additional settling time. Optional Full Auto profile retains the 32 RPM native cap; game controls recovery.' },
     { kind='weapon', name='SG-8P Punisher Plasma', category='ASSIST', native_cap_rpm=80,
       native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 80 RPM.' },
     { kind='weapon', name='R/40-K Hot-Shot Marksman Rifle', category='ASSIST', native_cap_rpm=210,
@@ -258,6 +258,7 @@ local PROFILE_KEYS={
     ['APW-1 Anti-Materiel Rifle']='amr_profile',
     ['R-4 Hyena']='hyena_profile',
     ['SG-22 Bushwhacker']='bushwhacker_profile',
+    ['R-36 Eruptor']='eruptor_profile',
 }
 local PROFILE_RPMS={
     ['P-2 Peacemaker']={balanced=380,full_auto=900},
@@ -268,6 +269,7 @@ local PROFILE_RPMS={
     ['APW-1 Anti-Materiel Rifle']={balanced=AMR_BALANCED_RPM,full_auto=400},
     ['R-4 Hyena']={balanced=120,full_auto=190},
     ['SG-22 Bushwhacker']={balanced=90,full_auto=650},
+    ['R-36 Eruptor']={balanced=26,full_auto=32},
 }
 
 function M.new(fire_rate_mode,talon_mode,profile_settings)
@@ -278,6 +280,8 @@ function M.new(fire_rate_mode,talon_mode,profile_settings)
     local selected_profiles={}
     for name,key in pairs(PROFILE_KEYS)do
         local selected=profile_settings[key]
+        -- Eruptor always defaults to controlled cadence, including legacy mode INIs.
+        if name=='R-36 Eruptor' and (selected==nil or selected=='') then selected='balanced' end
         if PROFILE_RPMS[name][selected] then selected_profiles[name]=selected end
     end
     local by_hash, notes = {}, {}

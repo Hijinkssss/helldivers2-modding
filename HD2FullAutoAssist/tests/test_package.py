@@ -35,10 +35,10 @@ def main():
     ''')
     report=json.loads((builder.OUTPUT/'build-report.json').read_text())
     assert report['external_dependencies']==['Bingus Shared Loader v18 / API 1']
-    assert report['offline_tested'] and report['live_standalone_validated'] is False
+    assert report['offline_tested'] and report['live_standalone_validated'] is True
     assert report['version']==builder.VERSION and report['supported_build']=='25480438'
-    assert report['live_standalone_validated'] is False
-    assert package.name=='Full-Auto-Assist-1.0.1-FAA-B3-Arsenal.zip'
+    assert report['live_standalone_validated'] is True
+    assert package.name=='Full-Auto-Assist-1.0.1-Arsenal.zip'
     with zipfile.ZipFile(package) as z:
         names=z.namelist();manifest=json.loads(z.read('manifest.json'))
         assert {'README.md','CHANGELOG.md','HD2FullAutoAssist.example.ini'} <= set(names)
@@ -51,7 +51,7 @@ def main():
         assert manifest['Name']=='Full Auto Assist'
         assert manifest['Description']==('An accessibility-focused QoL mod that lets supported semi-auto, burst, and game-cycled weapons '
             'continue firing while Fire is held, without altering damage, recoil, ammo, projectiles, or native weapon stats.')
-        assert len(manifest['Options'])==8 and manifest['Options'][0]['Include']==['Core']
+        assert len(manifest['Options'])==9 and manifest['Options'][0]['Include']==['Core']
         assert z.read('thumbnail.png')==(ROOT/'thumbnail.png').read_bytes()
         assert 'SubOptions' not in manifest['Options'][0]
         assert manifest['Guid']=='cf368f5c-f686-453f-a566-435b4b7fcf26'
@@ -66,6 +66,7 @@ def main():
             'APW-1 Anti-Materiel Rifle':[('Balanced',120,'balanced'),('Full Auto',400,'full_auto')],
             'R-4 Hyena':[('Balanced',120,'balanced'),('Full Auto',190,'full_auto')],
             'SG-22 Bushwhacker':[('Balanced',90,'balanced'),('Full Auto',650,'full_auto')],
+            'R-36 Eruptor':[('Balanced',26,'balanced'),('Full Auto',32,'full_auto')],
         }
         assert [row['Name'] for row in manifest['Options'][1:]]==list(expected)
         option_modules=[];option_keys=[]

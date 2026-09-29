@@ -6,7 +6,7 @@ local REPEAT_SECONDS=0.125 -- Provisional default: 8 timed input attempts/second
 M.repeat_seconds=REPEAT_SECONDS
 function M.native_period(seconds)
     assert(type(seconds)=='number' and seconds==seconds and
-        seconds>=60/900 and seconds<=60/32,'Invalid consumer repeat cadence')
+        seconds>=60/900 and seconds<=60/26,'Invalid consumer repeat cadence')
     -- This native parameter is ALSO a normalized magnitude threshold. Values
     -- above one suppress held time. Divide long native cooldowns into legal
     -- retry ticks; the stock weapon cooldown still governs accepted shots.
@@ -196,7 +196,7 @@ function M.new(host,make_adapter)
     end
     function self:begin(row,repeat_seconds)
         repeat_seconds=repeat_seconds or REPEAT_SECONDS
-        -- The slowest supported policy is Eruptor at 32 RPM (1.875 s).
+        -- The slowest default policy is Eruptor at 26 RPM (60/26 s).
         -- A one-second ceiling rejected it and Crossbow before any lease write.
         local native_period=M.native_period(repeat_seconds)
         assert(not self.lease and row.held and row.gameplay,'Invalid Fire lease request')

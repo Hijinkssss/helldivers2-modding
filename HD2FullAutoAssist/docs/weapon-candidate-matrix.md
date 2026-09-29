@@ -23,7 +23,7 @@ reload behavior, cadence, audio and animation still need the checklist in
 | M90A Shotgun | `90ddc374f4e3d756` | 2/0/0 | 80 | 80 | Supported |
 | SG-225IE Breaker Incendiary | `c12a34f375bd5a87` | 3/2/0 | 300 | 300 | Supported, native burst chaining |
 | CB-9 Crossbow | `f49227a0630a3f7f` | 2/0/0 | 50 | 50 | Supported |
-| R-36 Eruptor | `b6aff2195568767f` | 2/0/0 | 32 | 32 | Supported |
+| R-36 Eruptor | `b6aff2195568767f` | 2/0/0 | 32 | 26 | Supported; optional max 32 |
 | SG-8P Punisher Plasma | `05d8d8c073b9d502` | 2/0/0 | 80 | 80 | Supported |
 | R/40-K Hot Shot Marksman Rifle | `1abbff60d26ba391` | 2/0/0 | 210 | 210 | Supported |
 | JAR-5 Dominator | `80f1a156d9fa1e36` | 2/3/0 | 250 | 250 | Supported, native burst chaining |

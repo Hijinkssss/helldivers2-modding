@@ -1,10 +1,10 @@
-"""Build the Shared Loader-only Full Auto Assist 1.0.0 Arsenal package."""
+"""Build the Shared Loader-only Full Auto Assist 1.0.1 Arsenal package."""
 from pathlib import Path
 import hashlib,json,struct,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-VERSION='1.0.1-FAA-B3'
+VERSION='1.0.1'
 PACKAGE=f'Full-Auto-Assist-{VERSION}-Arsenal.zip'
 OUTPUT=ROOT/'build'/VERSION
 LUA_TYPE=0xA14E8DFA2CD117E2
@@ -105,6 +105,9 @@ OPTIONS=[
     ('bushwhacker_profile','SG-22 Bushwhacker',[
         ('Balanced','Deliberate slow cadence that avoids dumping the entire load immediately while Fire is held.','balanced',90),
         ('Full Auto',"Uses the Bushwhacker's native fire-rate ceiling.",'full_auto',650)]),
+    ('eruptor_profile','R-36 Eruptor',[
+        ('Balanced','Controlled cadence gives the long bolt animation additional time to settle.','balanced',26),
+        ('Full Auto',"Retains the Eruptor's maximum native cadence; less settling time.",'full_auto',32)]),
 ]
 
 def option_module(setting: str, profile: str) -> str:
@@ -160,8 +163,10 @@ def main():
         'package_sha256':package_hash,
         'offline_tested':tested.get('offline_passed') is True and tested.get('source_sha256')==hashes and b3_passed,
         'b3_regressions_and_work_budgets_passed':b3_passed,
-        'live_standalone_validated':False,'live_validation_source':None,
-        'candidate_status':'unpublished; gameplay and Watchdog retest required',
+        'live_standalone_validated':True,'live_validation_source':'Mod author reported successful B3 gameplay on 2026-09-29',
+        'release_status':'public release build',
+        'validated_base_commit':'9010c978a66b72e13a67c47a0c4802f9256fe3e7',
+        'live_validation_scope':'User-reported B3 gameplay and Watchdog performance; final 26 RPM Eruptor profile checked offline',
         'baseline_commit':'be04ea15359b505bf953ef22d747e8f5e2de013e',
         'rc8_diagnostic_cleanup':{'removed':['startup_diagnostic.lua','RC8_DIAGNOSTIC.md','test_startup_diagnostic.lua',
             'phase/restore/toggle/avatar/hold diagnostic taps','lifecycle activation counters and diagnostic status',
@@ -174,5 +179,5 @@ def main():
         'artwork':'thumbnail.png','arsenal_option_groups':[{'name':title,'profiles':[{'label':label,'mode':profile,'rpm':rpm}
             for label,_,profile,rpm in profiles]} for _,title,profiles in OPTIONS]}
     (out/'build-report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
-    print('Built unpublished Full Auto Assist '+VERSION+': '+PACKAGE+'; Shared Loader v18 / API 1 only.')
+    print('Built Full Auto Assist '+VERSION+': '+PACKAGE+'; Shared Loader v18 / API 1 only.')
 if __name__=='__main__':main()

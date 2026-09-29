@@ -1,3 +1,5 @@
+> Historical development record. Current release status and validation are in [RELEASE_1.0.1.md](RELEASE_1.0.1.md).
+
 # B2 regression diagnosis, 2026-09-29
 
 ## Confirmed failure before the fix

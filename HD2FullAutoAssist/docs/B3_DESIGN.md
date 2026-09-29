@@ -1,3 +1,5 @@
+> Historical development record. Current release status and validation are in [RELEASE_1.0.1.md](RELEASE_1.0.1.md).
+
 # FAA B3 design, before implementation
 
 Baseline: feature/full-auto-assist-performance, be04ea15359b505bf953ef22d747e8f5e2de013e. No other branch/ref changes, live deployment, merges, pushes, or releases.

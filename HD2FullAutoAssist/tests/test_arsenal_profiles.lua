@@ -59,7 +59,7 @@ local expansion={
     {'M90A Shotgun','90ddc374f4e3d756',80},
     {'SG-225IE Breaker Incendiary','c12a34f375bd5a87',300},
     {'CB-9 Exploding Crossbow','f49227a0630a3f7f',50},
-    {'R-36 Eruptor','b6aff2195568767f',32},
+    {'R-36 Eruptor','b6aff2195568767f',32,26},
     {'SG-8P Punisher Plasma','05d8d8c073b9d502',80},
     {'R/40-K Hot-Shot Marksman Rifle','1abbff60d26ba391',210},
     {'JAR-5 Dominator','80f1a156d9fa1e36',250},

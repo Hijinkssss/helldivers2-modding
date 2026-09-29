@@ -111,7 +111,7 @@ assert(row.raw_lmb_down and f.physical_samples==before+1 and row.held and row.ga
 f:fire(false);f:tick()
 f:fire(true);row=f.backend:sample(false)
 local writes=f.writes
-for _,seconds in ipairs({0,-1,60/900-0.00001,60/32+0.00001,math.huge,0/0,'1'})do
+for _,seconds in ipairs({0,-1,60/900-0.00001,60/26+0.00001,math.huge,0/0,'1'})do
     assert(not pcall(f.backend.begin,f.backend,row,seconds))
     assert(f.writes==writes and not f.backend.lease)
 end

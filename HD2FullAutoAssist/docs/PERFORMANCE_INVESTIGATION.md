@@ -1,3 +1,5 @@
+> Historical development record. Current release status and validation are in [RELEASE_1.0.1.md](RELEASE_1.0.1.md).
+
 # Full Auto Assist performance investigation
 
 Status: **measured baseline; narrow optimization passed offline tests; live
