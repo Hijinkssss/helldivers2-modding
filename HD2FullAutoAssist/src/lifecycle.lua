@@ -222,6 +222,8 @@ function M.start(environment,options)
         veto_profile={'balanced','full_auto'},
         talon_profile={'balanced','efficiency','full_auto','fuller_auto'},
         amr_profile={'balanced','full_auto'},
+        hyena_profile={'balanced','full_auto'},
+        bushwhacker_profile={'balanced','full_auto'},
     }
     local application=environment.stingray and environment.stingray.Application
     local global_require=rawget(_G,'require')

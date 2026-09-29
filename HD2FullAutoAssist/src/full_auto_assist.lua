@@ -23,7 +23,9 @@ local schema={enabled={type='boolean',default=true},user_enabled={type='boolean'
     veto_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
     talon_profile={type='string',default='',max_length=16,
         values={['']=true,balanced=true,efficiency=true,full_auto=true,fuller_auto=true}},
-    amr_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}}}
+    amr_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
+    hyena_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
+    bushwhacker_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}}}
 local function config_text()
     local root=assert(os.getenv('LOCALAPPDATA'),'LOCALAPPDATA unavailable')
     local f,why,number=io.open(root..'/CowboyBingus/Helldivers2/HD2FullAutoAssist.ini','rb')

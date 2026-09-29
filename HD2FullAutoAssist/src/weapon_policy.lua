@@ -67,6 +67,27 @@ local KNOWN_HASHES={
     ['AR-23 Liberator']='968211c0033dce64',
     ['APW-1 Anti-Materiel Rifle']='89c5493e08ca4207',
     ['LAS-99 Quasar Cannon']='35a61296619cc47e',
+    ['R-2124 Constitution']='7b75e5132ffd4ca6',
+    ['R-6 Deadeye']='e6d932be83729076',
+    ['R-4 Hyena']='e5796355a8fd67e0',
+    ['R-72 Censor']='f0338468dcdb6a6c',
+    ['SG-8 Punisher']='41eac4a03987faa0',
+    ['SG-8S Slugger']='4f749e2ee26f532d',
+    ['SG-20 Halt']='4e310b1fe4c52b52',
+    ['SG-451 Cookout']='d323de60855898ac',
+    ['M90A Shotgun']='90ddc374f4e3d756',
+    ['SG-225IE Breaker Incendiary']='c12a34f375bd5a87',
+    ['CB-9 Exploding Crossbow']='f49227a0630a3f7f',
+    ['R-36 Eruptor']='b6aff2195568767f',
+    ['SG-8P Punisher Plasma']='05d8d8c073b9d502',
+    ['R/40-K Hot-Shot Marksman Rifle']='1abbff60d26ba391',
+    ['JAR-5 Dominator']='80f1a156d9fa1e36',
+    ['P-4 Senator']='8d3d52a3b2f19402',
+    ['P-11 Stim Pistol']='d6b1fb05b9109353',
+    ['SG-22 Bushwhacker']='2b28e17ffed05f7c',
+    ['P-35 Re-Educator']='0b882808c6f498e8',
+    ['P/40-K Bolt Pistol']='dbb6c961c59fadc1',
+    ['ARC-12 Blitzer']='076dd5d4f4360204',
 }
 
 local ENTRIES = {
@@ -112,6 +133,51 @@ local ENTRIES = {
       notes = 'Semi/burst modes; no native Full Auto. Verified 480 RPM native cap. '..
               'Balanced clamps to 380 RPM (480 > 380 ceiling).' },
 
+    -- Targeted 0.24.0 authoring/composition snapshot evidence. These entries
+    -- use ordinary legal Fire input; accepted gameplay cadence remains pending.
+    { kind='weapon', name='R-2124 Constitution', category='ASSIST', native_cap_rpm=60,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile, rounds-feed family; repeat Fire only. Balanced 60 RPM.' },
+    { kind='weapon', name='R-6 Deadeye', category='ASSIST', native_cap_rpm=100,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile, rounds-feed family; repeat Fire only. Balanced 100 RPM.' },
+    { kind='weapon', name='R-4 Hyena', category='ASSIST', native_cap_rpm=190,
+      native_cap_status='RUNTIME_SNAPSHOT', balanced_rpm=120,
+      notes='Semi-only [2,0,0], native snapshot cap 190 RPM. Balanced 120 RPM gives the weapon time to settle; Full Auto profile uses native cap.' },
+    { kind='weapon', name='R-72 Censor', category='ASSIST', native_cap_rpm=400,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 380 RPM.' },
+    { kind='weapon', name='SG-8 Punisher', category='ASSIST', native_cap_rpm=80,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile, rounds-feed family. Balanced 80 RPM.' },
+    { kind='weapon', name='SG-8S Slugger', category='ASSIST', native_cap_rpm=80,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile, rounds-feed family. Balanced 80 RPM.' },
+    { kind='weapon', name='SG-20 Halt', category='ASSIST', native_cap_rpm=80,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile, rounds-feed family. Balanced 80 RPM.' },
+    { kind='weapon', name='SG-451 Cookout', category='ASSIST', native_cap_rpm=80,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile, rounds-feed family. Balanced 80 RPM.' },
+    { kind='weapon', name='M90A Shotgun', category='ASSIST', native_cap_rpm=80,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile, rounds-feed family. Balanced 80 RPM.' },
+    { kind='weapon', name='SG-225IE Breaker Incendiary', category='ASSIST', native_cap_rpm=300,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Burst/semi [3,2,0], conventional projectile. Repeated legal Fire chains native bursts like Amendment; Balanced 300 RPM.' },
+    { kind='weapon', name='CB-9 Exploding Crossbow', category='ASSIST', native_cap_rpm=50,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 50 RPM.' },
+    { kind='weapon', name='R-36 Eruptor', category='ASSIST', native_cap_rpm=32,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 32 RPM; game controls recovery.' },
+    { kind='weapon', name='SG-8P Punisher Plasma', category='ASSIST', native_cap_rpm=80,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 80 RPM.' },
+    { kind='weapon', name='R/40-K Hot-Shot Marksman Rifle', category='ASSIST', native_cap_rpm=210,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 210 RPM.' },
+    { kind='weapon', name='JAR-5 Dominator', category='ASSIST', native_cap_rpm=250,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi/burst [2,3,0]. Repeated legal Fire chains native bursts like Amendment; Balanced 250 RPM.' },
+    { kind='weapon', name='P-4 Senator', category='ASSIST', native_cap_rpm=200,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile, rounds-feed family. Balanced 200 RPM.' },
+    { kind='weapon', name='P-11 Stim Pistol', category='ASSIST', native_cap_rpm=70,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile, rounds-feed family. Balanced 70 RPM.' },
+    { kind='weapon', name='SG-22 Bushwhacker', category='ASSIST', native_cap_rpm=650,
+      native_cap_status='RUNTIME_SNAPSHOT', balanced_rpm=90,
+      notes='Semi-only [2,4,0], ordinary Fire repeats the selected legal mode without changing it. Balanced 90 RPM; Full Auto profile uses native cap.' },
+    { kind='weapon', name='P-35 Re-Educator', category='ASSIST', native_cap_rpm=110,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], status-bearing conventional projectile. Balanced 110 RPM.' },
+    { kind='weapon', name='P/40-K Bolt Pistol', category='ASSIST', native_cap_rpm=150,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], explosive-impact projectile. Balanced 150 RPM.' },
+
     -- ─── ENERGY PISTOL ───────────────────────────────────────────────────
 
     { kind = 'weapon', name = 'LAS-58 Talon',
@@ -125,6 +191,8 @@ local ENTRIES = {
     { kind = 'weapon', name = 'AR-23 Liberator',
       category = 'IGNORE_NATIVE_AUTO',
       notes = 'Has native Full Auto in R-menu. Never assist.' },
+    { kind='weapon', name='ARC-12 Blitzer', category='IGNORE_NATIVE_AUTO',
+      notes='Pinned native mode vector [1,0,0] is Full Auto. Unsupported under current policy.' },
 
     -- ─── SUPPORT WEAPONS ─────────────────────────────────────────────────
 
@@ -183,6 +251,8 @@ local PROFILE_KEYS={
     ['P-69 Veto']='veto_profile',
     ['LAS-58 Talon']='talon_profile',
     ['APW-1 Anti-Materiel Rifle']='amr_profile',
+    ['R-4 Hyena']='hyena_profile',
+    ['SG-22 Bushwhacker']='bushwhacker_profile',
 }
 local PROFILE_RPMS={
     ['P-2 Peacemaker']={balanced=380,full_auto=900},
@@ -191,6 +261,8 @@ local PROFILE_RPMS={
     ['LAS-58 Talon']={balanced=TALON_BALANCED_RPM,efficiency=TALON_EFFICIENCY_RPM,
         full_auto=TALON_FULL_AUTO_RPM,fuller_auto=TALON_FULLER_AUTO_RPM},
     ['APW-1 Anti-Materiel Rifle']={balanced=AMR_BALANCED_RPM,full_auto=400},
+    ['R-4 Hyena']={balanced=120,full_auto=190},
+    ['SG-22 Bushwhacker']={balanced=90,full_auto=650},
 }
 
 function M.new(fire_rate_mode,talon_mode,profile_settings)

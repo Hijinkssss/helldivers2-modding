@@ -41,7 +41,7 @@ def main():
         assert manifest['Name']=='Full Auto Assist'
         assert manifest['Description']==('An accessibility-focused QoL mod that lets supported semi-auto and burst weapons '
             'continue firing while Fire is held, without altering damage, recoil, ammo, projectiles, or native weapon stats.')
-        assert len(manifest['Options'])==6 and manifest['Options'][0]['Include']==['Core']
+        assert len(manifest['Options'])==8 and manifest['Options'][0]['Include']==['Core']
         assert z.read('thumbnail.png')==(ROOT/'thumbnail.png').read_bytes()
         assert 'SubOptions' not in manifest['Options'][0]
         assert manifest['Guid']=='cf368f5c-f686-453f-a566-435b4b7fcf26'
@@ -54,6 +54,8 @@ def main():
             'LAS-58 Talon':[('Balanced',210,'balanced'),('Efficiency',60,'efficiency'),
                 ('Full Auto',380,'full_auto'),('FULLER AUTO',750,'fuller_auto')],
             'APW-1 Anti-Materiel Rifle':[('Balanced',120,'balanced'),('Full Auto',400,'full_auto')],
+            'R-4 Hyena':[('Balanced',120,'balanced'),('Full Auto',190,'full_auto')],
+            'SG-22 Bushwhacker':[('Balanced',90,'balanced'),('Full Auto',650,'full_auto')],
         }
         assert [row['Name'] for row in manifest['Options'][1:]]==list(expected)
         option_modules=[];option_keys=[]
