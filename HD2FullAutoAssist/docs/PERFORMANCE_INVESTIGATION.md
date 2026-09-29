@@ -1,9 +1,72 @@
 # Full Auto Assist performance investigation
 
-Status: **instrumentation branch; live performance cause not confirmed.** No
-performance release candidate has been built. The report below separates
-static code inspection from measurements that still require the mod author's
-game session and Mod Lag Watchdog.
+Status: **measured baseline and hot-path diagnosis; optimization pending.** No
+performance release candidate has been built. The measurements below come from
+the diagnostic build's shutdown profiler summary and the author's Watchdog run.
+The profiler covers one mixed ship/mission session rather than isolated scenes.
+
+## 2026-09-29 measured diagnosis (before optimization)
+
+The author observed Full Auto Assist at **57.8 ms/s, worst 3 ms** on the ship/menu
+after a D10 solo Exterminate mission, and approximately **80-90 ms/s** during
+active combat. The 31-second Watchdog window averaged 11.1 ms game frames and
+had no stalls of at least 50 ms. These are sustained-cost observations, not a
+large individual-stall reproduction.
+
+The local `HD2FullAutoAssist.log` shutdown profile covers 859.88 seconds. Its
+`update_wrapper` accounts for 46.72 seconds, or **54.33 ms/s** of elapsed FAA
+time excluding the original game update. This is close to the author's 57.8
+ms/s Watchdog reading, although the two clocks and measurement windows differ.
+The profile recorded 76,272 update callbacks (88.7/s), 75,155 native Fire
+samples (87.4/s), 8,114 identity callbacks (9.4/s), and 14,166 full identity
+snapshots. The Fire callback was entered once per update even when Fire was not
+held.
+
+| Inclusive profiler phase | Calls | Total elapsed | Mean | Run-average contribution |
+| --- | ---: | ---: | ---: | ---: |
+| Update wrapper, excluding stock update | 76,272 | 46.72 s | 612.5 us | 54.33 ms/s |
+| Fire callback | 76,272 | 37.81 s | 495.7 us | 43.97 ms/s |
+| Native Fire input sample | 75,155 | 35.32 s | 470.0 us | 41.08 ms/s |
+| Identity callback | 8,114 | 7.94 s | 978.0 us | 9.23 ms/s |
+| Full guarded identity snapshot | 14,166 | 8.82 s | 622.4 us | 10.25 ms/s |
+| Input eligibility | 6,333 | 0.72 s | 114.2 us | 0.84 ms/s |
+| Toggle polling | 76,272 | 0.71 s | 9.3 us | 0.83 ms/s |
+| Policy resolution | 14,166 | 0.08 s | 5.7 us | 0.09 ms/s |
+| Lease refresh | 2,682 | 0.03 s | 12.5 us | 0.04 ms/s |
+
+The phases are nested, so their totals must not be added. The controller's
+separate idle/held timing counters show **67,524 Fire-up calls / 29.77 s**
+(34.62 ms/s across this run) and **7,631 Fire-held calls / 7.71 s** (8.97
+ms/s across this run). A held call averaged about 1,011 us; an idle call about
+441 us. The larger combat reading is consistent with more held calls, but the
+mixed profile does not isolate D10 combat or prove a combat-only phase split.
+
+The guard layer performed 966,961 reads and 250,973 page queries. Every read
+validates page state/protection before `ReadProcessMemory`; the 1-in-32 sample
+of page validation averaged 42.02 us per read versus 2.72 us for the platform
+read. Extrapolating those sampled means to all calls suggests approximately
+40.6 s in page validation and 2.6 s in the platform read. These estimates
+overlap the inclusive phases and may contain sampling/profiler overhead; they
+identify page validation/querying as the likely cost within the Fire sample
+and identity snapshot, not an independently additive 47 ms/s.
+
+The static audit matches the profile. `native_fire.sample()` reads the controls
+owner, the Fire state record, and the owner again on every sampled update. If
+Fire is held it also reads and rechecks game/player state. `lifecycle.read()`
+validates each read's page, with a cache scoped only to one callback. The
+identity callback takes a guarded full snapshot at most every 100 ms while
+unleased; held Fire takes another full snapshot each eligible update. Policy
+lookup is already cached by resource hash. Lease refresh, toggle polling,
+eligibility, startup hashing, and logging are too small in this capture to
+explain the reported sustained cost.
+
+**Dominant confirmed operation:** repeated guarded Fire sampling on idle
+updates, with page validation/querying the probable underlying cost. The
+second material operation is the full guarded identity snapshot. Any patch
+must preserve native input coverage and read safety, including non-mouse Fire
+bindings, player/weapon changes, UI transitions, and lease restoration. A
+long-lived native pointer or unvalidated page cache is not justified by this
+profile.
 
 ## Report and watchdog metrics
 
@@ -99,10 +162,10 @@ profiling disabled, and use separate profiling runs to localize phase cost.
 
 | Evidence type | Current result |
 | --- | --- |
-| Measured in-game baseline (`ms/s`, `worst`) | Not available. No live game or Mod Lag Watchdog session has been run for this investigation. |
-| Measured in-game phase timings | Not available until the mod author runs the opt-in profiler and unloads FAA. |
+| Measured in-game diagnostic baseline (`ms/s`, `worst`) | 57.8 ms/s and worst 3 ms on the ship/menu; about 80-90 ms/s in active D10 combat. The unprofiled build still needs a separate comparison. |
+| Measured in-game phase timings | One mixed-session summary is analyzed above. Isolated ship and combat profiles remain unavailable. |
 | Static baseline | Full identity resolution and input eligibility are repeated during held-Fire updates; VirtualQuery results are reused only within one update scope; module hashes and config parsing are startup-only. |
-| Confirmed root cause | None yet. The report does not say whether `ms/s`, `worst`, or both were elevated. |
+| Confirmed dominant operation | Guarded Fire sampling on every active update, mostly while Fire is up in the mixed run. Page validation/querying is the likely dominant suboperation. |
 | Optimization in this branch | Removed the prior always-on per-update timing reads/counter math from ordinary mode. Detailed timing is now opt-in. Its in-game benefit has not been measured. Gameplay policy and memory guards are unchanged. |
 | Post-fix measurement | Not available; no runtime root cause has been confirmed or fixed. |
 
@@ -166,9 +229,8 @@ reads; do not compare its `ms/s` with an uninstrumented package.
 
 ## Remaining uncertainty
 
-The author still needs to run Mod Lag Watchdog on public v1.0.0 and the
-instrumented branch, then provide the metric values and profiler summaries.
-Until those data exist, it is unknown whether FAA has sustained cost, a
-transition/startup stall, an interaction with another mod, or no reproducible
-issue. No PERF-RC1 archive is built in this branch because no real performance
-issue has yet been confirmed and fixed.
+The diagnostic session establishes sustained cost on this mod stack. It does
+not isolate combat from ship time or quantify how much the opt-in profiler
+itself adds. Unprofiled A/B Watchdog runs on the same build and mod stack are
+needed before claiming a live improvement. No PERF-RC1 archive has yet been
+built because the measured hot path has not yet been changed.
