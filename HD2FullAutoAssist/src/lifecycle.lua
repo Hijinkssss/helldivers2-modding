@@ -24,24 +24,39 @@ function M.new(environment,options)
     local loader=assert(options.loader or environment.CowboyBingusModLoader,'Bingus Shared Loader required')
     assert(loader.api==1 and type(loader.open_log)=='function','Shared Loader API 1 required')
     local platform=options.platform or Platform.new()
-    assert(platform:module_hash(nil)==EXE and platform:module_hash('game.dll')==DLL,
+    local startup_exe_started=platform:clock_us()
+    local exe_hash=platform:module_hash(nil)
+    local startup_exe_hash_us=math.max(0,platform:clock_us()-startup_exe_started)
+    local startup_dll_started=platform:clock_us()
+    local dll_hash=platform:module_hash('game.dll')
+    local startup_game_dll_hash_us=math.max(0,platform:clock_us()-startup_dll_started)
+    assert(exe_hash==EXE and dll_hash==DLL,
         'Unsupported build: exact EXE and game.dll fingerprints required')
     local base=assert(platform:module_address('game.dll'))
     local self={platform=platform,base=base,callbacks={},closed=false,reads=0,queries=0,
-        failures=0,slow=0,slow_by_kind={},log_errors=0}
+        failures=0,slow=0,slow_by_kind={},log_errors=0,
+        startup_metrics={exe_hash_us=startup_exe_hash_us,game_dll_hash_us=startup_game_dll_hash_us}}
     local file
     function self:log(level,event,fields)
         if file then
+            local started=self.profiler and self.profiler:start()
             local good=pcall(function()
                 assert(file:write(Json.json({level=level,event=event,fields=fields or {}})..'\n'))
                 assert(file:flush())
             end)
+            if self.profiler then self.profiler:finish('log_io',started)end
             if not good then self.log_errors=self.log_errors+1 end
         end
     end
+    function self:clock_us()return platform:clock_us()end
+    function self:set_profiler(profiler)self.profiler=profiler end
+    function self:startup_timing()return self.startup_metrics end
     function self:read(at,n)
         assert(integer(at,0x10000,0x7fffffffffff) and integer(n,1,32768) and
             n-1<=0x7fffffffffff-at,'Read outside supported bounds')
+        local profiler=self.profiler
+        local validation_started=profiler and profiler:sample('memory_page_validation',profiler.memory_samples_every)
+            and profiler:start()
         local cursor,last,walk=at,at+n,0
         while cursor<last do
             walk=walk+1;assert(walk<=64,'Memory region walk budget exceeded')
@@ -50,6 +65,7 @@ function M.new(environment,options)
                 if cursor>=r.base and cursor<r.base+r.size then region=r;break end
             end end
             if not region then
+                if profiler then profiler:increment('page_queries')end
                 region=assert(platform:query_region(cursor),'Memory page unavailable');self.queries=self.queries+1
                 if self.regions and #self.regions<64 then self.regions[#self.regions+1]=region end
             end
@@ -59,7 +75,12 @@ function M.new(environment,options)
                 READABLE[region.protect%256] and math.floor(region.protect/256)%2==0,'Unreadable or guarded page')
             cursor=math.min(last,region.base+region.size)
         end
+        if profiler then profiler:finish('memory_page_validation',validation_started)end
+        local read_started=profiler and profiler:sample('memory_platform_read',profiler.memory_samples_every)
+            and profiler:start()
+        if profiler then profiler:increment('memory_reads')end
         local bytes=platform:read(at,n);self.reads=self.reads+1
+        if profiler then profiler:finish('memory_platform_read',read_started)end
         assert(type(bytes)=='string' and #bytes==n,'Short or failed memory read');return bytes
     end
     function self:read_scope(fn)
@@ -123,6 +144,7 @@ function M.new(environment,options)
     function self:diagnostics()
         local active=0;for _ in pairs(self.callbacks)do active=active+1 end
         return {memory={reads=self.reads,queries=self.queries},observer=observer:status(),
+            startup_timing=self.startup_metrics,
             scheduler={active=active,failures=self.failures,slow=self.slow},log_errors=self.log_errors}
     end
     function self:write_status()self:log('info','status',self:diagnostics())end
@@ -145,6 +167,10 @@ function M.new(environment,options)
         if kind=='identity' then if started<row.next_us then return end;row.next_us=started+100000 end
         local good,why=pcall(row.callback)
         local elapsed=math.max(0,platform:clock_us()-started)
+        if self.profiler then
+            local phase=kind=='fire' and 'callback_fire' or kind=='identity' and 'callback_identity' or 'callback_toggle'
+            self.profiler:observe(phase,elapsed)
+        end
         if elapsed>2000 then
             self.slow=self.slow+1;self.slow_by_kind[kind]=(self.slow_by_kind[kind]or 0)+1
             local count=self.slow_by_kind[kind]
@@ -157,7 +183,11 @@ function M.new(environment,options)
     end
     local function toggle_tick()
         local row=self.callbacks.toggle;if not row or self.closed then return end
-        if not platform:input_focused()then row.armed=false;row.down=false;return end
+        local profile_started=self.profiler and self.profiler:start()
+        if not platform:input_focused()then row.armed=false;row.down=false
+            if self.profiler then self.profiler:finish('toggle_poll',profile_started)end
+            return
+        end
         local down
         if row.binding and not row.native_binding then
             local now=platform:clock_us()
@@ -171,6 +201,7 @@ function M.new(environment,options)
                     if ok and registered==true then
                         row.native_binding=menu
                         row.armed=false;row.down=false
+                        if self.profiler then self.profiler:finish('toggle_poll',profile_started)end
                         return
                     end
                 end
@@ -189,14 +220,23 @@ function M.new(environment,options)
         if pressed then local now=platform:clock_us();local due=now-row.last>=150000;row.last=now
             if due then dispatch('toggle')end
         end
+        if self.profiler then self.profiler:finish('toggle_poll',profile_started)end
     end
     function self:attach()
         assert(type(previous_update)=='function','Game update unavailable')
         update_wrapper=function(...)
+            local before_started=self.profiler and self.profiler:start()
             dispatch('identity');dispatch('fire')
+            local before_stock=before_started and math.max(0,platform:clock_us()-before_started) or 0
             local values=pack(pcall(previous_update,...))
-            if not values[1]then self:stop();error(values[2],0)end
+            if not values[1]then
+                if self.profiler then self.profiler:observe('update_wrapper',before_stock)end
+                self:stop();error(values[2],0)
+            end
+            local after_started=self.profiler and self.profiler:start()
             local good,why=pcall(toggle_tick)
+            local after_stock=after_started and math.max(0,platform:clock_us()-after_started) or 0
+            if self.profiler then self.profiler:observe('update_wrapper',before_stock+after_stock)end
             if not good then self:log('error','input_failed',{reason=tostring(why)});self:stop()end
             return unpack(values,2,values.n)
         end

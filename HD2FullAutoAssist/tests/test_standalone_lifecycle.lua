@@ -36,7 +36,8 @@ local p={clock_us=function()return now end,module_hash=function(_,name)
     end,read=function(_,at,n)return read(at,n)end,prepare_input=function()return true end,
     input_focused=function()return focused end,input_down=function(_,key)assert(key==0xbb,'default must use VK_OEM_PLUS');return down end}
 local log_closed=0
-local loader={api=1,open_log=function()return {write=function(self)return self end,flush=function()return true end,
+local lifecycle_log_lines={}
+local loader={api=1,open_log=function()return {write=function(self,text)lifecycle_log_lines[#lifecycle_log_lines+1]=text;return self end,flush=function()return true end,
     close=function()log_closed=log_closed+1;return true end}end}
 local stock_calls=0
 local stock=function(marker)assert(marker=='fixture');stock_calls=stock_calls+1;return 'stock',nil,7 end
@@ -111,4 +112,23 @@ env.HD2FullAutoAssistStandalone=nil
 env.update=function()error('stock failure')end
 held=false;local c=Life.start(env,options);assert(not pcall(env.update,'fixture'));assert(not b.lease and not c:get_state().effective)
 assert(c:get_state().user_enabled,'A lifecycle failure must not rewrite the saved preference')
+env.update=stock;env.HD2FullAutoAssistStandalone=nil
+options.read_config=function()return 'performance_profile=true\nperformance_label=fixture\n' end
+local profiled=Life.start(env,options);tick(1400)
+local writes_before_updates=#lifecycle_log_lines
+for i=1,8 do tick(1400+i)end
+assert(#lifecycle_log_lines==writes_before_updates,'Profiling must not write a log on gameplay updates')
+held=true;tick(1410);assert(b.lease)
+tick(1420);assert(b.lease)
+held=false;tick(1430);assert(not b.lease)
+assert(#lifecycle_log_lines==writes_before_updates,'Held-Fire profiling still defers log output')
+assert(profiled:stop().ok)
+assert(#lifecycle_log_lines==writes_before_updates+1,'Profiling summary is written once at shutdown')
+assert(lifecycle_log_lines[#lifecycle_log_lines]:find('performance',1,true) and
+    lifecycle_log_lines[#lifecycle_log_lines]:find('fixture',1,true),
+    'Shutdown log includes the requested profiler label and summary')
+for _,phase in ipairs({'update_wrapper','native_input_sample','input_eligibility',
+    'identity_snapshot','policy_resolution','native_fire_begin','native_fire_refresh'})do
+    assert(lifecycle_log_lines[#lifecycle_log_lines]:find(phase,1,true),'Missing phase '..phase)
+end
 print('standalone host and native identity integration passed')

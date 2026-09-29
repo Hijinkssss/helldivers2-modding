@@ -195,6 +195,8 @@ def main():
     check('Arsenal settings precedence and every selectable profile reaches policy',arsenal_profile_checks)
     check('preserved observer layout/race/bounds and complete native UI guard fixtures',preserved_guard_checks)
     check('known resource table matches pinned real Runtime metadata; no discovery',known_data_checks)
+    check('opt-in performance profiler summaries and percentiles',lambda:lua_at(ROOT/'src').execute(
+        (ROOT/'tests/test_performance_profile.lua').read_text(encoding='utf-8')))
     report={'reference_commit':REFERENCE,'checks':checks,'offline_passed':True,
         'core_behavior_parity':'preserved for known identities, guards and input intervals except intentional Talon Balanced change',
         'live_standalone_validated':False,'game_process_accessed':False,

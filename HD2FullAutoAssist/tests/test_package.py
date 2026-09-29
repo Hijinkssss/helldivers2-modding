@@ -45,7 +45,8 @@ def main():
         assert not any('validation.ini' in name.lower() or 'diagnostic' in name.lower() or '/docs/' in name.lower() for name in names)
         example=z.read('HD2FullAutoAssist.example.ini').decode('utf-8')
         for setting in ('enabled = true','user_enabled = true','repeat_ms = 0','toggle_hotkey = =',
-                        'debug_logging = false','validation_logging = false','fire_rate_mode = balanced'):
+                        'debug_logging = false','validation_logging = false','performance_profile = false',
+                        'performance_label = unlabeled','fire_rate_mode = balanced'):
             assert setting in example,setting
         assert manifest['Name']=='Full Auto Assist'
         assert manifest['Description']==('An accessibility-focused QoL mod that lets supported semi-auto, burst, and game-cycled weapons '
