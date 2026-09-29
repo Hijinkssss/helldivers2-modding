@@ -68,6 +68,7 @@ local expansion={
     {'SG-22 Bushwhacker','2b28e17ffed05f7c',650,90},
     {'P-35 Re-Educator','0b882808c6f498e8',110},
     {'P/40-K Bolt Pistol','dbb6c961c59fadc1',150},
+    {'P-92 Warrant','cf8934ff6567a42d',450,380},
 }
 local baseline=Policy.new('balanced','balanced')
 for _,row in ipairs(expansion)do
@@ -83,4 +84,9 @@ local bush=Policy.new('balanced','balanced'):classify('2b28e17ffed05f7c')
 assert(bush.allowed and bush.native_cap_rpm==650 and bush.max_repeat_rpm==90)
 local blitzer=Policy.new('balanced','balanced'):classify('076dd5d4f4360204')
 assert(not blitzer.allowed and blitzer.category=='IGNORE_NATIVE_AUTO')
+local warrant=Policy.new('balanced','balanced'):classify('0xCF8934FF6567A42D')
+assert(warrant.allowed and warrant.name=='P-92 Warrant' and warrant.category=='ASSIST')
+assert(warrant.native_cap_rpm==450 and warrant.max_repeat_rpm==380)
+assert(not Policy.new('balanced','balanced'):classify('cf8934ff6567a42e').allowed,
+    'Incorrect Warrant identity remains fail-closed')
 print('test_arsenal_profiles: all checks passed')

@@ -7,7 +7,8 @@ local rows={
  '41eac4a03987faa0','4f749e2ee26f532d','4e310b1fe4c52b52','d323de60855898ac',
  '90ddc374f4e3d756','c12a34f375bd5a87','f49227a0630a3f7f','b6aff2195568767f',
  '05d8d8c073b9d502','1abbff60d26ba391','80f1a156d9fa1e36','8d3d52a3b2f19402',
- 'd6b1fb05b9109353','2b28e17ffed05f7c','0b882808c6f498e8','dbb6c961c59fadc1'}
+ 'd6b1fb05b9109353','2b28e17ffed05f7c','0b882808c6f498e8','dbb6c961c59fadc1',
+ 'cf8934ff6567a42d'}
 local t=0
 for i,hash in ipairs(rows)do
     t=t+160;resource_hash=hash;entity_id=3000+i;fire=false;tick(t)

@@ -108,7 +108,7 @@ def static_checks():
         except Exception:pass
         else:raise AssertionError('Invalid config accepted: '+text[:40])
     p=lua.eval("require('weapon_policy').new('balanced')")
-    assert p.available and p.status(p).mapped_resources==32
+    assert p.available and p.status(p).mapped_resources==33
     policy_for_talon=lua.eval("function(profile)return require('weapon_policy').new('native_cap',profile)end")
     for profile,rpm in (('balanced',210),('efficiency',60),('full_auto',380),('fuller_auto',750)):
         profile_policy=policy_for_talon(profile)
@@ -183,8 +183,9 @@ def main():
         for name in ('test_policy','test_gate','test_selective','test_validation'):
             check('reference '+name,lambda n=name:controller_test(ref,False,n))
         check('standalone mixed-weapon transitions, guards, toggle and cleanup',lambda:controller_test(ROOT/'src',True,'test_selective'))
+        check('Warrant release, OFF, and unknown-identity guards',lambda:controller_test(ROOT/'src',True,'test_warrant_safety'))
         check('live-order startup reconciliation, delayed avatar, mission persistence and toggles',lambda:controller_test(ROOT/'src',True,'test_live_startup_reconcile'))
-        check('all 20 expansion identities repeat normal Fire and stop on release',lambda:controller_test(ROOT/'src',True,'test_expansion_controller'))
+        check('all 21 expansion identities repeat normal Fire and stop on release',lambda:controller_test(ROOT/'src',True,'test_expansion_controller'))
         check('standalone validation trace and closed identity gate',lambda:[controller_test(ROOT/'src',True,n) for n in ('test_gate','test_validation')])
         check('differential replay: 9 reference weapons, 2 modes, 2 overrides; existing roster preserved',lambda:parity(ref))
     check('native mapping safety, conflicts, axis exclusion and partial rollback',native_test)
