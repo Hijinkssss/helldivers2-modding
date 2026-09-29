@@ -4,7 +4,7 @@
 
 - Added P-92 Warrant to the existing ordinary held-Fire policy at 380 RPM Balanced, using authored fire-rate metadata of 450 RPM.
 - Reused the existing controller. Guided lock, target acquisition, burst behavior, and shot acceptance remain game-controlled; no guidance or targeting automation was added.
-- Requires live validation in Guided and Unguided modes before release.
+- Live tested by the mod author in Guided and Unguided modes; native lock requirements and game-controlled shot acceptance remain intact.
 
 ## 1.0.0
 

@@ -185,7 +185,7 @@ def main():
         check('standalone mixed-weapon transitions, guards, toggle and cleanup',lambda:controller_test(ROOT/'src',True,'test_selective'))
         check('Warrant release, OFF, and unknown-identity guards',lambda:controller_test(ROOT/'src',True,'test_warrant_safety'))
         check('live-order startup reconciliation, delayed avatar, mission persistence and toggles',lambda:controller_test(ROOT/'src',True,'test_live_startup_reconcile'))
-        check('all 21 expansion identities repeat normal Fire and stop on release',lambda:controller_test(ROOT/'src',True,'test_expansion_controller'))
+        check('all 21 expansion identities, including the live-tested Warrant, repeat normal Fire and stop on release',lambda:controller_test(ROOT/'src',True,'test_expansion_controller'))
         check('standalone validation trace and closed identity gate',lambda:[controller_test(ROOT/'src',True,n) for n in ('test_gate','test_validation')])
         check('differential replay: 9 reference weapons, 2 modes, 2 overrides; existing roster preserved',lambda:parity(ref))
     check('native mapping safety, conflicts, axis exclusion and partial rollback',native_test)

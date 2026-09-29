@@ -32,7 +32,7 @@ reload behavior, cadence, audio and animation still need the checklist in
 | SG-22 Bushwhacker | `2b28e17ffed05f7c` | 2/4/0 | 650 | 90 | Supported, profile outlier |
 | P-35 Re-Educator | `0b882808c6f498e8` | 2/0/0 | 110 | 110 | Supported |
 | P/40-K Bolt Pistol | `dbb6c961c59fadc1` | 2/0/0 | 150 | 150 | Supported |
-| P-92 Warrant | `cf8934ff6567a42d` | 3/0/0 | 450* | 380 | RC1, live validation pending |
+| P-92 Warrant | `cf8934ff6567a42d` | 3/0/0 | 450* | 380 | Supported, live-tested Guided and Unguided |
 
 ARC-12 Blitzer (`076dd5d4f4360204`) is excluded because its native mode vector
 is `1/0/0` (Full Auto). GL-15 Evictor, Double Freedom and SG-97 Sweeper remain
@@ -40,7 +40,7 @@ unmapped and fail closed.
 
 *Warrant's 450 RPM is authored `fire_rate` metadata, not a measured accepted
 native cap. The previous deferral required decoding mode and guidance internals
-that FAA does not use. This RC instead follows the demonstrated external-input
+that FAA does not use. Support follows the demonstrated external-input
 contract: FAA repeats ordinary Fire, while the game decides whether a shot is
-legal. See [WARRANT_SUPPORT_RESEARCH.md](WARRANT_SUPPORT_RESEARCH.md) for scope
-and live validation limits.
+legal. The mod author live-tested Guided and Unguided modes. See
+[WARRANT_SUPPORT_RESEARCH.md](WARRANT_SUPPORT_RESEARCH.md) for scope and result.

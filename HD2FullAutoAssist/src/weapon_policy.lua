@@ -136,7 +136,7 @@ local ENTRIES = {
 
     { kind='weapon', name='P-92 Warrant', category='ASSIST', native_cap_rpm=450,
       native_cap_status='RUNTIME_SNAPSHOT',
-      notes='Guided and unguided behavior remains game-controlled. FAA repeats only ordinary Fire; the game decides whether each input is legal. Authored fire_rate metadata 450 RPM; Balanced 380 RPM. Validate both modes live.' },
+      notes='Guided and unguided behavior remains game-controlled. FAA repeats only ordinary Fire; the game decides whether each input is legal. Authored fire_rate metadata 450 RPM; Balanced 380 RPM. Mod author live-tested both modes.' },
 
     -- Targeted 0.24.0 authoring/composition snapshot evidence. These entries
     -- use ordinary legal Fire input; accepted gameplay cadence remains pending.

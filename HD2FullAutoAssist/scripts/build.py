@@ -156,7 +156,7 @@ def main():
         'source_sha256':hashlib.sha256(source).hexdigest(),'archive_sha256':hashlib.sha256(archive).hexdigest(),
         'package_sha256':package_hash,
         'offline_tested':tested.get('offline_passed') is True and tested.get('source_sha256')==hashes,
-        'live_standalone_validated':False,'live_validation_source':'pending_warrant_live_check',
+        'live_standalone_validated':True,'live_validation_source':'user_reported_complete',
         'rc8_diagnostic_cleanup':{'removed':['startup_diagnostic.lua','RC8_DIAGNOSTIC.md','test_startup_diagnostic.lua',
             'phase/restore/toggle/avatar/hold diagnostic taps','lifecycle activation counters and diagnostic status',
             'native diagnostic sampling and mapping records'],

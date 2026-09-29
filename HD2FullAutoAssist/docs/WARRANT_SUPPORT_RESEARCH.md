@@ -1,6 +1,7 @@
 # P-92 Warrant support and RC1 validation
 
-**RC1 policy: supported through the existing held-Fire controller.** The
+**Integrated in unreleased main; RC1 passed live validation.** The Warrant is
+supported through the existing held-Fire controller. The
 previous deferral treated unresolved mode and guidance internals as required
 implementation evidence. That was stricter than FAA's actual contract. FAA
 does not inspect those internals; it repeats ordinary Fire, and the game owns
@@ -42,9 +43,10 @@ weapon-swap guard, OFF behavior, and unknown-identity fail-closed path. There is
 no Warrant-specific controller and no target, lock, guidance, aim, reload,
 projectile, or fire-mode automation.
 
-## RC1 live validation
+## RC1 live validation result
 
-The candidate is unpublished and requires the following game test:
+The mod author live-tested the Warrant RC1 and reported a pass in the actual
+game. Confirmed results:
 
 ### Unguided
 
@@ -70,6 +72,10 @@ The candidate is unpublished and requires the following game test:
 11. Swap weapons and confirm assistance resets safely.
 12. Test one known-good existing burst weapon and one unsupported weapon; confirm both retain their expected behavior.
 
-No Guided/Unguided internal-state tests are added because FAA does not observe
-those states. Existing controller tests exercise the same normal Fire path,
-release, swap, OFF, unknown-identity, and fail-closed behavior for the Warrant.
+Guided and Unguided modes both work with FAA. Native lock requirements remain
+game-controlled. FAA does not bypass target locking, automate guidance or
+target selection, or switch firing modes. Repeated ordinary Fire is sufficient;
+no Warrant-specific gameplay controller is needed. No internal-state tests are
+added because FAA does not observe those states. Offline controller tests cover
+the same ordinary Fire path, release, swap, OFF, unknown-identity, and
+fail-closed behavior for the Warrant.

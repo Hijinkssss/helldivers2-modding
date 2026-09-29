@@ -22,7 +22,7 @@ ARC-12 Blitzer is excluded because it has native Full Auto. Unknown and unlisted
 
 The seven configurable groups are Peacemaker, SOCOM, Veto, Talon, AMR, Hyena, and Bushwhacker. Existing profile values are preserved: Peacemaker 380/900 RPM; SOCOM 380/900; Veto 380/750; Talon Balanced 210, Efficiency 60, Full Auto 380, FULLER AUTO 750; AMR 120/400; Hyena 120/190; Bushwhacker 90/650. Other supported weapons use Balanced at `min(native cap, 380 RPM)`.
 
-The P-92 Warrant uses Balanced at 380 RPM (authored fire-rate metadata: 450 RPM). In Guided mode, the game retains control of lock acquisition and whether each ordinary Fire input is accepted. FAA does not observe or change guidance, lock, mode, aim, or target selection. Warrant RC1 requires live validation in both modes before any release.
+The P-92 Warrant uses Balanced at 380 RPM (authored fire-rate metadata: 450 RPM). The mod author live-tested RC1 in Guided and Unguided modes. In Guided mode, the game retains control of lock acquisition and whether each ordinary Fire input is accepted. FAA does not observe or change guidance, lock, mode, aim, or target selection.
 
 These are input-attempt intervals, not guaranteed shot rates. For Amendment, Breaker Incendiary, and Dominator, Full Auto Assist repeats ordinary legal Fire input; the game controls burst internals, fire-mode selection, and shot acceptance.
 
