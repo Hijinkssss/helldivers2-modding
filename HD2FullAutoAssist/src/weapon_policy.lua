@@ -177,10 +177,32 @@ local function is_assisted(category)
     return category == 'ASSIST' or category == 'SPECIAL'
 end
 
-function M.new(fire_rate_mode,talon_mode)
+local PROFILE_KEYS={
+    ['P-2 Peacemaker']='peacemaker_profile',
+    ['M6C/SOCOM Pistol']='socom_profile',
+    ['P-69 Veto']='veto_profile',
+    ['LAS-58 Talon']='talon_profile',
+    ['APW-1 Anti-Materiel Rifle']='amr_profile',
+}
+local PROFILE_RPMS={
+    ['P-2 Peacemaker']={balanced=380,full_auto=900},
+    ['M6C/SOCOM Pistol']={balanced=380,full_auto=900},
+    ['P-69 Veto']={balanced=380,full_auto=750},
+    ['LAS-58 Talon']={balanced=TALON_BALANCED_RPM,efficiency=TALON_EFFICIENCY_RPM,
+        full_auto=TALON_FULL_AUTO_RPM,fuller_auto=TALON_FULLER_AUTO_RPM},
+    ['APW-1 Anti-Materiel Rifle']={balanced=AMR_BALANCED_RPM,full_auto=400},
+}
+
+function M.new(fire_rate_mode,talon_mode,profile_settings)
     -- fire_rate_mode: 'balanced' (default) | 'native_cap'
     local mode = (fire_rate_mode == 'native_cap') and 'native_cap' or 'balanced'
     local talon_profile=({balanced=true,efficiency=true,full_auto=true,fuller_auto=true})[talon_mode] and talon_mode or 'balanced'
+    profile_settings=type(profile_settings)=='table' and profile_settings or {}
+    local selected_profiles={}
+    for name,key in pairs(PROFILE_KEYS)do
+        local selected=profile_settings[key]
+        if PROFILE_RPMS[name][selected] then selected_profiles[name]=selected end
+    end
     local by_hash, notes = {}, {}
     local self = { available = false, reason = 'known_policy_unavailable', fire_rate_mode = mode }
 
@@ -194,7 +216,10 @@ function M.new(fire_rate_mode,talon_mode)
         local result = copy(entry)
         if is_assisted(result.category) and result._base then
             local base = result._base
-            if base.name=='LAS-58 Talon' then
+            local selected=selected_profiles[base.name]
+            if selected then
+                result.repeat_seconds=60/PROFILE_RPMS[base.name][selected]
+            elseif base.name=='LAS-58 Talon' then
                 local rpm=({balanced=TALON_BALANCED_RPM,efficiency=TALON_EFFICIENCY_RPM,
                     full_auto=TALON_FULL_AUTO_RPM,fuller_auto=TALON_FULLER_AUTO_RPM})[talon_profile]
                 result.repeat_seconds=60/rpm
@@ -220,6 +245,7 @@ function M.new(fire_rate_mode,talon_mode)
             available = self.available, reason = self.reason,
             fire_rate_mode = mode,
             talon_mode=talon_profile,
+            selected_profiles=(function()local out={};for name,profile in pairs(selected_profiles)do out[name]=profile end;return out end)(),
             balanced_ceiling_rpm = BALANCED_CEILING_RPM,
             amr_balanced_rpm = AMR_BALANCED_RPM,
             mapped_resources = count, notes = detached

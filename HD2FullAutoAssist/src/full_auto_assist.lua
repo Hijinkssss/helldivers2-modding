@@ -15,8 +15,15 @@ local schema={enabled={type='boolean',default=true},user_enabled={type='boolean'
     -- Fire-rate mode:
     --   balanced     (default) clamp to 380 RPM ceiling; AMR uses 120 RPM; Talon uses talon_mode
     --   native_cap   allow up to each weapon's actual accepted native cap
-    fire_rate_mode={type='string',default='balanced',max_length=16},
-    talon_mode={type='string',default='balanced',max_length=16}}
+    fire_rate_mode={type='string',default='balanced',max_length=16,values={balanced=true,native_cap=true}},
+    talon_mode={type='string',default='balanced',max_length=16,
+        values={balanced=true,efficiency=true,full_auto=true,fuller_auto=true}},
+    peacemaker_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
+    socom_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
+    veto_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
+    talon_profile={type='string',default='',max_length=16,
+        values={['']=true,balanced=true,efficiency=true,full_auto=true,fuller_auto=true}},
+    amr_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}}}
 local function config_text()
     local root=assert(os.getenv('LOCALAPPDATA'),'LOCALAPPDATA unavailable')
     local f,why,number=io.open(root..'/CowboyBingus/Helldivers2/HD2FullAutoAssist.ini','rb')
@@ -86,14 +93,14 @@ function M.install(host,backend_factory,read_config,validation_factory)
         if trace then trace:close(host:diagnostics())end
     end)
     local loaded,load_error=pcall(function()
-        settings=host:config(schema,(read_config or config_text)())
+        settings=host:config(schema,(read_config or config_text)(),rawget(_G,'FullAutoAssistArsenalOptions'))
         assert(settings.fire_rate_mode=='balanced' or settings.fire_rate_mode=='native_cap',
             'fire_rate_mode must be balanced or native_cap')
         assert(settings.talon_mode=='balanced' or settings.talon_mode=='efficiency' or
             settings.talon_mode=='full_auto' or settings.talon_mode=='fuller_auto','Invalid talon_mode')
         host:parse_key(settings.toggle_hotkey)
         if not settings.enabled then emit('info','disabled');return end
-        policy=Policy.new(settings.fire_rate_mode,settings.talon_mode)
+        policy=Policy.new(settings.fire_rate_mode,settings.talon_mode,settings)
         state=AssistState.new(policy,IDENTITY_VALIDATED)
         state:set_enabled(settings.user_enabled)
         if not policy.available then
@@ -255,7 +262,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     trace:flush(false)
                 end
             end) end
-        emit('info','initialized',{version='0.1.3-standalone-rc3',hotkey=settings.toggle_hotkey,
+        emit('info','initialized',{version='0.1.4-standalone-rc4',hotkey=settings.toggle_hotkey,
             talon_mode=settings.talon_mode,
             active=active,mechanism='selective_native_repeat_interval',identity_validated=IDENTITY_VALIDATED})
     end)

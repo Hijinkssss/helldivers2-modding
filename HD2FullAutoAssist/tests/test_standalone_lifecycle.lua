@@ -41,13 +41,20 @@ local loader={api=1,open_log=function()return {write=function(self)return self e
 local stock_calls=0
 local stock=function(marker)assert(marker=='fixture');stock_calls=stock_calls+1;return 'stock',nil,7 end
 local stock_stop=function(marker)assert(marker=='fixture');return 'stopped',nil,9 end
-local env={CowboyBingusModLoader=loader,stingray={Window={has_focus=function()return focused end,show_cursor=function()return cursor end}},update=stock,shutdown=stock_stop}
+local selected_module='mods/codex/hd2_full_auto_assist_option_peacemaker_profile_full_auto'
+local env={CowboyBingusModLoader=loader,stingray={Window={has_focus=function()return focused end,show_cursor=function()return cursor end},
+    Application={can_get=function(kind,name)assert(kind=='lua');return name==selected_module end}},update=stock,shutdown=stock_stop}
 local b={writes=0,restored=0,clock_us=function()return now end,repeat_seconds=.125,
     sample=function()return {owner=42,held=held,gameplay=true,unit_ref=0x42,pressed=true,trigger=8}end,
     begin=function(self,row,seconds)self.lease={};self.repeat_seconds=seconds;self.writes=self.writes+1;return 1 end,
     refresh=function()return true end,
     restore=function(self)if self.lease then self.restored=self.restored+1 end;self.lease=nil;return true end}
 local options={platform=p,loader=loader,read_config=function()return ''end,backend_factory=function()return b end}
+package.preload[selected_module]=function()
+    local selected=rawget(_G,'FullAutoAssistArsenalOptions') or {}
+    rawset(_G,'FullAutoAssistArsenalOptions',selected);selected.peacemaker_profile='full_auto'
+    return true
+end
 bad_hash=true;assert(not pcall(Life.start,env,options) and env.update==stock and b.writes==0);bad_hash=false
 bad_page=true;assert(not pcall(Life.start,env,options) and env.update==stock);bad_page=false
 local h=Life.new(env,options)
@@ -62,6 +69,8 @@ options.read_config=function()return 'enabled=bad'end
 assert(not pcall(Life.start,env,options) and env.update==stock and b.writes==0)
 options.read_config=function()return ''end
 local a=Life.start(env,options);assert(Life.start(env,options)==a)
+assert(rawget(_G,'FullAutoAssistArsenalOptions').peacemaker_profile=='full_auto',
+    'The selected Arsenal module must load before runtime configuration')
 local function tick(ms)now=ms*1000;local x,y,z=env.update('fixture');assert(x=='stock' and y==nil and z==7)end
 tick(0);assert(a:get_state().effective)
 held=true;tick(20);assert(b.lease)

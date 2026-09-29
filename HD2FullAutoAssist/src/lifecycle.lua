@@ -87,7 +87,7 @@ function M.new(environment,options)
         assert(rva<=size-8,'Symbol outside module image');self:read(base+rva,8);return base+rva
     end
     function self:build_status()return {id=PROFILE,state='exact_fingerprints_matched'}end
-    function self:config(schema,text)return Config.load(schema,text)end
+    function self:config(schema,text,arsenal_options)return Config.load(schema,text,arsenal_options)end
     local memory={read=function(_,at,n)return attempt(function()return self:read(at,n)end)end,
         read_pointer=function(_,at)return attempt(function()return self:ptr(at)end)end,
         with_region_cache=function(_,fn)return self:read_scope(fn)end}
@@ -213,6 +213,31 @@ function M.new(environment,options)
 end
 function M.start(environment,options)
     if environment.HD2FullAutoAssistStandalone then return environment.HD2FullAutoAssistStandalone end
+    -- The Shared Loader discovers addon modules in archive enumeration order.
+    -- Resolve the selected Arsenal option resources here before policy setup so
+    -- profile selection does not depend on whether those modules loaded first.
+    local selected={
+        peacemaker_profile={'balanced','full_auto'},
+        socom_profile={'balanced','full_auto'},
+        veto_profile={'balanced','full_auto'},
+        talon_profile={'balanced','efficiency','full_auto','fuller_auto'},
+        amr_profile={'balanced','full_auto'},
+    }
+    local application=environment.stingray and environment.stingray.Application
+    local global_require=rawget(_G,'require')
+    if application and type(application.can_get)=='function' and type(global_require)=='function' then
+        for key,profiles in pairs(selected)do
+            for _,profile in ipairs(profiles)do
+                local module='mods/codex/hd2_full_auto_assist_option_'..key..'_'..profile
+                local ok,available=pcall(application.can_get,'lua',module)
+                assert(ok,'Could not check Arsenal profile resource: '..module)
+                if available then
+                    local loaded,why=pcall(global_require,module)
+                    assert(loaded,'Could not load Arsenal profile resource: '..module..': '..tostring(why))
+                end
+            end
+        end
+    end
     local host=M.new(environment,options)
     local good,consumer=pcall(require('full_auto_assist').install,host,
         options and options.backend_factory or function(h)return require('native_fire').new(h)end,

@@ -35,8 +35,8 @@ def host(path,standalone):
                 core.Input:Remove(token);core.Hooks:Remove(token)
             end
             function standalone_host:on_stop(fn)assert(core:OnUnload('hd2_full_auto_assist',fn).ok)end
-            function standalone_host:config(schema,text)
-                return require('config').load(schema,text)
+            function standalone_host:config(schema,text,arsenal_options)
+                return require('config').load(schema,text,arsenal_options)
             end
             function standalone_host:parse_key(key)
                 if key=='=' or key=='+' then return 0xbb end
@@ -98,8 +98,10 @@ def static_checks():
         assert 'SendInput' not in s and 'VirtualProtect' not in s
     config=lua.eval("require('config')")
     schema=lua.table_from({'enabled':lua.table_from({'type':'boolean','default':True}),
-        'fire_rate_mode':lua.table_from({'type':'string','default':'balanced','max_length':16}),
-        'talon_mode':lua.table_from({'type':'string','default':'balanced','max_length':16})})
+        'fire_rate_mode':lua.table_from({'type':'string','default':'balanced','max_length':16,
+            'values':lua.table_from({'balanced':True,'native_cap':True})}),
+        'talon_mode':lua.table_from({'type':'string','default':'balanced','max_length':16,
+            'values':lua.table_from({'balanced':True,'efficiency':True,'full_auto':True,'fuller_auto':True})})})
     assert config.load(schema,'enabled=false').enabled is False
     for text in ('enabled=no','enabled=true\nenabled=false','unknown=1','bad line','fire_rate_mode=fast','talon_mode=fast','x'*8193):
         try:config.load(schema,text)
@@ -146,6 +148,9 @@ def parity(ref):
 def lifecycle_checks():
     lua=lua_at(ROOT/'src')
     lua.execute((ROOT/'tests/test_standalone_lifecycle.lua').read_text(encoding='utf-8'))
+def arsenal_profile_checks():
+    lua=lua_at(ROOT/'src')
+    lua.execute((ROOT/'tests/test_arsenal_profiles.lua').read_text(encoding='utf-8'))
 def preserved_guard_checks():
     lua=lua_at(ROOT/'src')
     for name,old,new in [('test_game_state.lua','hd2modcore.game_state','identity'),
@@ -184,6 +189,7 @@ def main():
     check('actual native mapping bytes and restore at every policy interval',native_intervals)
     check('Lua syntax, no external imports, strict config and unknown fail-closed',static_checks)
     check('actual standalone lifecycle, native observer and UI/input guards',lifecycle_checks)
+    check('Arsenal settings precedence and every selectable profile reaches policy',arsenal_profile_checks)
     check('preserved observer layout/race/bounds and complete native UI guard fixtures',preserved_guard_checks)
     check('known resource table matches pinned real Runtime metadata; no discovery',known_data_checks)
     report={'reference_commit':REFERENCE,'checks':checks,'offline_passed':True,

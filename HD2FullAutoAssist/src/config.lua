@@ -1,6 +1,6 @@
 -- Single Full Auto Assist INI; no namespaces or runtime reconfiguration service.
 local M={}
-function M.load(schema,text)
+function M.load(schema,text,arsenal_options)
     assert(type(text)=='string' and #text<=8192,'Configuration exceeds 8192 bytes')
     local values,seen={},{}
     for key,rule in pairs(schema)do values[key]=rule.default end
@@ -15,12 +15,16 @@ function M.load(schema,text)
                 local n=tonumber(raw)
                 if n and n==n and n%1==0 and n>=rule.min and n<=rule.max then value=n end
             elseif rule.type=='string' and #raw<=rule.max_length then value=raw end
+            if value~=nil and rule.values then assert(rule.values[value],'Invalid setting: '..key); end
             assert(value~=nil,'Invalid setting: '..key);values[key]=value
         end
     end
-    assert(values.fire_rate_mode=='balanced' or values.fire_rate_mode=='native_cap','Invalid fire_rate_mode')
-    assert(values.talon_mode=='balanced' or values.talon_mode=='efficiency' or
-        values.talon_mode=='full_auto' or values.talon_mode=='fuller_auto','Invalid talon_mode')
+    for key,value in pairs(arsenal_options or {}) do
+        local rule=schema[key]
+        assert(rule and rule.type=='string' and rule.values and rule.values[value],
+            'Invalid Arsenal option: '..tostring(key))
+        values[key]=value
+    end
     return values
 end
 return M
