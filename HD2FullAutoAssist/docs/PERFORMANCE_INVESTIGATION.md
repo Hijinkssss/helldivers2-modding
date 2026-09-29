@@ -1,7 +1,7 @@
 # Full Auto Assist performance investigation
 
-Status: **measured baseline and hot-path diagnosis; optimization pending.** No
-performance release candidate has been built. The measurements below come from
+Status: **measured baseline; narrow optimization passed offline tests; live
+performance unverified.** The measurements below come from
 the diagnostic build's shutdown profiler summary and the author's Watchdog run.
 The profiler covers one mixed ship/mission session rather than isolated scenes.
 
@@ -68,6 +68,36 @@ bindings, player/weapon changes, UI transitions, and lease restoration. A
 long-lived native pointer or unvalidated page cache is not justified by this
 profile.
 
+## Narrow patch after diagnosis
+
+The measured Fire sample remains necessary every update: the existing code has
+no proven event source that covers every native Fire binding, physical release,
+weapon swap, and teardown with the same timing. Throttling the sample or gating
+it on the left mouse button would change behavior for other bindings. The patch
+instead removes work that the static audit proved redundant:
+
+- Identity's symbol resolver no longer reads a global immediately before the
+  observer's guarded read of the same address. The observer still reads and
+  revalidates each global. A successful full snapshot avoids five redundant
+  reads, and early-failing snapshots avoid however many globals they reached.
+- Identity and Fire callbacks share page-query results within a single
+  pre-stock update. Both callbacks previously opened separate scopes, so a
+  page touched by both could be queried twice in one update. The scope clears
+  before the stock update, and the next update queries pages afresh.
+- The native sampler no longer calls `GetAsyncKeyState` solely to populate a
+  validation-trace field when validation tracing is off. Normal input sampling
+  and lease decisions still use the same native Fire record. Trace-enabled
+  sampling retains the physical mouse observation.
+
+No player, weapon, UI, mapping, or page pointer is cached across updates. On
+weapon swap, death/respawn, UI or stratagem transition, mission transition,
+return to ship, loadout change, or teardown, the existing fresh read and
+restore/release gates remain active; a failed guarded read still fails closed.
+The expected reduction is from fewer native reads, page queries on updates
+where identity and Fire touch the same region, and one fewer input API call per
+sample. This is likely a modest improvement because the 41.08 ms/s Fire sample
+phase remains, and only another unprofiled Watchdog run can measure the result.
+
 ## Report and watchdog metrics
 
 A Nexus user reported that Mod Lag Watchdog attributed delays of up to about
@@ -96,8 +126,9 @@ not 150 ms/s of sustained work. Both fields must be recorded separately.
 ### Suspects checked
 
 - **VirtualQuery:** page-region results are cached only inside one synchronous
-  Fire `read_scope`, then discarded. Repeated reads in that update reuse the
-  region rows. Mapping writes also perform their own writable-page query.
+  pre-stock update scope, then discarded. Identity and Fire reads in that
+  update reuse region rows. Mapping writes also perform their own writable-page
+  query.
 - **Pointer safety:** identity snapshots revalidate guarded pointer/map rows
   before returning. Input eligibility re-reads the UI state and window flags.
   These safety reads currently repeat during held-Fire updates.
@@ -164,10 +195,10 @@ profiling disabled, and use separate profiling runs to localize phase cost.
 | --- | --- |
 | Measured in-game diagnostic baseline (`ms/s`, `worst`) | 57.8 ms/s and worst 3 ms on the ship/menu; about 80-90 ms/s in active D10 combat. The unprofiled build still needs a separate comparison. |
 | Measured in-game phase timings | One mixed-session summary is analyzed above. Isolated ship and combat profiles remain unavailable. |
-| Static baseline | Full identity resolution and input eligibility are repeated during held-Fire updates; VirtualQuery results are reused only within one update scope; module hashes and config parsing are startup-only. |
+| Static baseline | Full identity resolution and input eligibility are repeated during held-Fire updates; module hashes and config parsing are startup-only. |
 | Confirmed dominant operation | Guarded Fire sampling on every active update, mostly while Fire is up in the mixed run. Page validation/querying is the likely dominant suboperation. |
-| Optimization in this branch | Removed the prior always-on per-update timing reads/counter math from ordinary mode. Detailed timing is now opt-in. Its in-game benefit has not been measured. Gameplay policy and memory guards are unchanged. |
-| Post-fix measurement | Not available; no runtime root cause has been confirmed or fixed. |
+| Optimization in this branch | The earlier commit made detailed timing opt-in. The new patch removes the three proven redundancies above without changing the native Fire sampling cadence. |
+| Post-fix measurement | Not available. Live performance improvement is unverified. |
 
 The prior HD2ModCore region-cache measurements were synthetic and belong to a
 different consumer. They are not FAA performance evidence and are not used as
@@ -175,19 +206,15 @@ baseline numbers here.
 
 ## Cache and invalidation decision
 
-No new cache is added for native pointers, identity snapshots, UI state, or
-page-validation results across updates. Those values can change during weapon
-swap, player/mission transitions, or loader lifecycle changes. The existing
-within-update region cache is cleared at the end of each `read_scope`; identity
-guard rows are revalidated before the snapshot is accepted; a failed check
-keeps the controller fail-closed and restores an active lease. The policy
-decision cache remains keyed by the normalized resource hash, and policy is
-immutable for one controller lifetime.
-
-Only if live profiling shows a repeated phase is material should a follow-up
-change define a precise cache key and invalidation rule. It must cover held
-resource/entity changes, avatar/player changes, mission transition, invalid
-pointer checks, shutdown/reload, and restore-before-release safety.
+No cache is added for native pointers, identity snapshots, UI state, or page
+validation across updates. Those values can change during weapon swap,
+player/mission transitions, or loader lifecycle changes. The shared region
+cache exists only from the beginning of the identity callback through the end
+of the Fire callback in one pre-stock update. `read_scope` clears it on both
+success and error. Identity guard rows are revalidated before the snapshot is
+accepted; a failed check keeps the controller fail-closed and restores an
+active lease. The existing policy decision cache remains keyed by the
+normalized resource hash, and policy is immutable for one controller lifetime.
 
 ## Local comparison plan
 
@@ -195,12 +222,10 @@ For Watchdog comparison, use the same game build, mission, graphics settings,
 normal mod stack, and a fresh game launch for each version. Keep profiling and
 validation logging disabled for both comparison runs. Record both Watchdog
 `ms/s` and `worst` after a warm-up, including the reported interval and run
-duration. Repeat runs where practical. If the feature branch has no behavioral
-optimization, treat this as a baseline confirmation rather than a claim that
-the report is fixed. There is no PERF-RC1 at this stage. If the author elects
-to compare builds now, candidate B is an unpublished package from this branch
-with profiling disabled, used only to compare the gated removal of the old
-always-on timing counters. It is not a claimed performance fix.
+duration. Repeat runs where practical. Compare the previous diagnostic source
+commit `fa186bd` with the new patch commit, built separately with the same
+Arsenal selections. This is an unpublished A/B candidate, not a claimed live
+performance fix.
 
 Run each scenario separately and set `performance_label` to its name for the
 diagnostic pass. Save the shutdown summary before changing the label or
@@ -232,5 +257,6 @@ reads; do not compare its `ms/s` with an uninstrumented package.
 The diagnostic session establishes sustained cost on this mod stack. It does
 not isolate combat from ship time or quantify how much the opt-in profiler
 itself adds. Unprofiled A/B Watchdog runs on the same build and mod stack are
-needed before claiming a live improvement. No PERF-RC1 archive has yet been
-built because the measured hot path has not yet been changed.
+needed before claiming a live improvement. The patch has only offline coverage
+so far. The unchanged per-update native input sample likely leaves a material
+floor to FAA's sustained cost.

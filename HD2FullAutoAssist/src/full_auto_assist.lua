@@ -234,7 +234,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
             local ok,why=pcall(function()
                 counters.input_checks=counters.input_checks+1
                 local sample_started=profiler and profiler:start()
-                local row=backend:sample()
+                local row=backend:sample(trace~=nil)
                 if profiler then profiler:finish('native_input_sample',sample_started);profiler:increment('native_input_samples')end
                 if trace then trace:input(row,state:snapshot(),backend.lease~=nil)end
                 if not row then restore('input_unavailable');wait_release=true;return end

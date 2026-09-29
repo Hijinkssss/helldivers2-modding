@@ -70,7 +70,7 @@ function M.new(host,make_adapter)
     for _,r in ipairs(anchors) do assert(read(a.base+r[1],#r[2])==r[2],'Native input code anchor changed') end
     local pm_global=host:symbol('player_manager')
     local self={lease=nil,writes=0,restored=0,conflicts=0,repeat_seconds=REPEAT_SECONDS,clock_us=a.clock_us}
-    function self:sample()
+    function self:sample(capture_physical)
         local owner=maybe_ptr(a.base+CONTROLS);if not owner then return nil end
         local bytes=read(owner+FIRE,32)
         assert(ptr(a.base+CONTROLS)==owner,'Controls owner changed during sample')
@@ -80,7 +80,7 @@ function M.new(host,make_adapter)
             seconds>=0 and seconds<86400 and trigger<=10 and pressed<=1,'Invalid Fire input layout')
         local row={owner=owner,held=math.abs(magnitude)>=0.5,pressed=pressed==1,
             trigger=trigger,held_seconds=seconds,mapping_index=u32(bytes,16),gameplay=false}
-        if a.raw_lmb_down then row.raw_lmb_down=a.raw_lmb_down()end
+        if capture_physical and a.raw_lmb_down then row.raw_lmb_down=a.raw_lmb_down()end
         if not row.held then return row end
         local state=maybe_ptr(a.base+STATE);if not state then return row end
         row.game_state=host:u32(state+0xac21c)

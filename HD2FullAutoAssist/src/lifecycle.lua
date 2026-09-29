@@ -103,16 +103,24 @@ function M.new(environment,options)
     assert(self:read(base+pe,4)=='PE\0\0','Invalid PE signature')
     assert(self:read(base+pe+24,2)=='\x0b\x02','Expected PE32+ image')
     local size=self:u32(base+pe+24+56);assert(integer(size,4096,0x80000000),'Invalid module image size')
-    function self:symbol(name)
+    local function symbol_address(name)
         local rva=assert(RVAS[name],'Unknown assist symbol')
-        assert(rva<=size-8,'Symbol outside module image');self:read(base+rva,8);return base+rva
+        assert(rva<=size-8,'Symbol outside module image');return base+rva
+    end
+    function self:symbol(name)
+        local address=symbol_address(name)
+        self:read(address,8)
+        return address
     end
     function self:build_status()return {id=PROFILE,state='exact_fingerprints_matched'}end
     function self:config(schema,text,arsenal_options)return Config.load(schema,text,arsenal_options)end
     local memory={read=function(_,at,n)return attempt(function()return self:read(at,n)end)end,
         read_pointer=function(_,at)return attempt(function()return self:ptr(at)end)end,
         with_region_cache=function(_,fn)return self:read_scope(fn)end}
-    local symbols={resolve=function(_,name)return attempt(function()return {address=self:symbol(name)}end)end}
+    -- Identity immediately reads and later revalidates each resolved global.
+    -- Keep the startup-facing symbol API guarded, but avoid reading the same
+    -- global a third time on every full identity snapshot.
+    local symbols={resolve=function(_,name)return attempt(function()return {address=symbol_address(name)}end)end}
     local observer=Identity.new(memory,symbols)
     function self:local_avatar()return observer:snapshot()end
     function self:eligibility()return Input.sample(platform,memory,{id=PROFILE},environment.stingray)end
@@ -226,7 +234,11 @@ function M.new(environment,options)
         assert(type(previous_update)=='function','Game update unavailable')
         update_wrapper=function(...)
             local before_started=self.profiler and self.profiler:start()
-            dispatch('identity');dispatch('fire')
+            -- Both callbacks run before the stock update. Share only this
+            -- update's page-query rows, then discard them before game code runs.
+            self:read_scope(function()
+                dispatch('identity');dispatch('fire')
+            end)
             local before_stock=before_started and math.max(0,platform:clock_us()-before_started) or 0
             local values=pack(pcall(previous_update,...))
             if not values[1]then
