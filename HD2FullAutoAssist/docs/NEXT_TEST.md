@@ -1,33 +1,32 @@
 # Full Auto Assist 1.0 pre-release live validation
 
-The 1.0 release remains blocked on reproducing and fixing default-ON mission
-startup, exact-build evidence for the requested roster, and a fresh live pass.
-The current local validation setup is explicitly marked test-only and has
-`enabled=true`, `user_enabled=false`, plus the F8 test binding. Its startup log
-records `active=false`, followed by a manual toggle to ON. This accounts for
-that run starting OFF; it does not reproduce a default-ON mission-entry failure.
-The standard example config and absent-INI defaults both set `user_enabled=true`.
+RC6 is pre-release. Offline checks establish controller and package behavior;
+they do not prove live shot acceptance, reload independence, cadence feel,
+audio/animation continuity or personal-modpack compatibility.
 
-## Short live sequence after a corrected package is built
+## Short gameplay pass
 
-1. With default config and no toggle press, enter a mission; hold Fire with a
-   known eligible weapon and confirm immediate assistance.
-2. Toggle OFF and ON using the registered Mod Bindings Menu binding, if present;
-   otherwise use `=` / `+`. Confirm native binding precedence after registration.
-3. Check one existing known-good weapon, then each newly approved weapon once.
-   Group them by loadout and swap weapons within one mission where practical.
-4. Confirm Double Freedom remains untouched and SG-97 Sweeper remains native
-   Full Auto.
-5. Check one charge/hold negative control; release Fire and confirm assistance
-   stops immediately.
-6. Swap weapons, open a menu, and change focus while holding Fire; confirm the
-   safety guard prevents stuck Fire and requires release before resuming.
-7. Confirm the personal modpack still works.
-8. Check Arsenal branding, the five existing profile groups, one saved profile
-   change, and artwork. Preserve the Peacemaker, SOCOM, Veto, Talon, and AMR
-   profile values listed in the README.
+Use three mission entries so both ON and OFF persistence are observed:
 
-The candidate matrix lists requested weapons that are still deferred because
-the checked-in exact-build evidence does not establish their identity, fire
-modes, reload/charge behavior, and accepted cadence. Do not claim or test them
-as supported until those records are added and policy tests cover them.
+1. With no explicit `user_enabled` override, start the game and enter Mission 1
+   without pressing `=`. Confirm ON and firing on one existing known-good gun.
+   In the same mission, test all 20 expansion weapons listed in
+   [weapon-candidate-matrix.md](weapon-candidate-matrix.md), swapping within
+   each slot. Confirm each gets shots from held normal Fire without a reload
+   input between shots. Include a charge/hold negative control and leave
+   Blitzer untouched.
+2. Test Hyena Balanced/Full Auto (120/190), Bushwhacker Balanced/Full Auto
+   (90/650), Breaker Incendiary Semi/Burst and Dominator Semi/Burst. Do not
+   change weapon modes through the mod. Release Fire after every hold and check
+   that repetition stops immediately. Confirm reload never starts by itself.
+   Exercise weapon swap, menu and focus guards while holding Fire.
+3. Enter Mission 2 still ON and confirm startup-to-mission persistence. Toggle
+   OFF with the Mod Bindings action, or `=`/`+` if registration is unavailable;
+   confirm exactly one state change. Enter Mission 3 still OFF and verify no
+   repeated Fire. Toggle back ON once. Confirm menu/focus/swap guards never
+   change the preference, then confirm the existing personal modpack works.
+
+For Arsenal, confirm the seven profile groups, saved profile selection,
+mutual exclusivity and artwork. Blitzer must remain vanilla because its native
+mode is Full Auto. Do not publish v1.0.0 until this pass succeeds on the exact
+supported build and current personal modpack.

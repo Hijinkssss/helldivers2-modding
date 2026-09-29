@@ -14,10 +14,9 @@ planned, and is not provided by this version.
 ## Current status
 
 The existing runtime, Talon Balanced at 210 RPM, and compatibility with the user's
-personal modpack passed earlier live testing. This 1.0.0-RC5 candidate keeps the
-validated roster and Arsenal profiles while preparing the accessibility-focused
-public name and description. Current mission-entry startup and the requested
-weapon additions still require the checks in [NEXT_TEST.md](docs/NEXT_TEST.md).
+personal modpack passed earlier live testing. This 1.0.0-RC6 candidate adds 20
+weapons from pinned build metadata; newly added weapon behavior still requires
+the checks in [NEXT_TEST.md](docs/NEXT_TEST.md).
 
 Full Auto Assist starts ON. `=` toggles assistance by default; the optional Mod
 Bindings Menu can register a persistent rebindable action and takes precedence
@@ -26,7 +25,7 @@ after successful registration.
 ## Install
 
 1. Close the game. Install one copy of Bingus Shared Loader v18 / API 1.
-2. Import `Full-Auto-Assist-1.0.0-RC5-Arsenal.zip` into Arsenal.
+2. Import `Full-Auto-Assist-1.0.0-RC6-Arsenal.zip` into Arsenal.
    Replace the older Full Auto Assist entry; enable only one copy of this mod.
 3. Enable the standalone option and the loader. Give the loader winning startup
    priority as described in its instructions, then Purge / Deploy.
@@ -58,20 +57,42 @@ and deploying remain separate actions; this task did neither.
 | R-2 Amendment | 380 | 480 |
 | LAS-58 Talon | **210, estimated 8 shots to overheat** | 750 |
 | APW-1 Anti-Materiel Rifle | **120** | 400 |
+| R-2124 Constitution | 60 | 60 |
+| R-6 Deadeye | 100 | 100 |
+| R-4 Hyena | **120** | 190 |
+| R-72 Censor | 380 | 400 |
+| SG-8 Punisher | 80 | 80 |
+| SG-8S Slugger | 80 | 80 |
+| SG-20 Halt | 80 | 80 |
+| SG-451 Cookout | 80 | 80 |
+| M90A Shotgun | 80 | 80 |
+| SG-225IE Breaker Incendiary | 300 | 300 |
+| CB-9 Crossbow | 50 | 50 |
+| R-36 Eruptor | 32 | 32 |
+| SG-8P Punisher Plasma | 80 | 80 |
+| R/40-K Hot Shot Marksman Rifle | 210 | 210 |
+| JAR-5 Dominator | 250 | 250 |
+| P-4 Senator | 200 | 200 |
+| P-11 Stim Pistol | 70 | 70 |
+| SG-22 Bushwhacker | **90** | 650 |
+| P-35 Re-Educator | 110 | 110 |
+| P/40-K Bolt Pistol | 150 | 150 |
 
 These values set input-attempt intervals, not guaranteed measured shot rates.
 Verdict/Diligence caps come from reviewed current-build Runtime snapshot data;
 reference Balanced play passed, but this does not establish every Native Cap rate.
 Liberator is ignored, Quasar's charge/hold stays vanilla, and Laser Cannon's
 ambiguous resources remain unmapped/vanilla. All unlisted or invalid resources
-fail closed. The supported weapon set is unchanged from the reference.
+fail closed. ARC-12 Blitzer remains unsupported because it has native Full Auto.
+Other expansion values are pinned snapshot RPM metadata; live accepted cadence
+and exact in-game fire behavior remain unverified.
 
 ## Cadence and limitations
 
-Arsenal exposes only the outliers: Peacemaker, SOCOM, Veto, Talon, and AMR. Their
-Balanced/Full Auto RPM values are 380/900, 380/900, 380/750, and 120/400,
-respectively. Talon additionally offers Efficiency at 60 RPM and FULLER AUTO at
-750 RPM. Other supported weapons use `min(native cap, 380 RPM)` automatically.
+Arsenal exposes only the outliers: Peacemaker, SOCOM, Veto, Talon, AMR, Hyena
+and Bushwhacker. Hyena offers Balanced 120 / Full Auto 190 RPM. Bushwhacker
+offers Balanced 90 / Full Auto 650 RPM. Existing profile values are preserved;
+other supported weapons use `min(native cap, 380 RPM)` automatically.
 These are input-attempt cadences, not guaranteed shot rates. No weapon statistics
 are changed.
 
@@ -127,8 +148,8 @@ python HD2FullAutoAssist/scripts/build.py
 python HD2FullAutoAssist/tests/test_package.py --loader-discovery <BingusSharedLoader-v18/src/discover.lua>
 ```
 
-Output: `HD2FullAutoAssist/build/Full-Auto-Assist-1.0.0-RC5-Arsenal.zip`.
+Output: `HD2FullAutoAssist/build/Full-Auto-Assist-1.0.0-RC6-Arsenal.zip`.
 The builder owns resource encoding, writes the supplied artwork as `thumbnail.png`,
-and creates one required core option plus five Aggro Counter-style profile groups.
+and creates one required core option plus seven Aggro Counter-style profile groups.
 [Dependency audit](docs/DEPENDENCIES.md) and [validation boundaries](docs/VALIDATION.md)
 describe exactly what was extracted, preserved and verified.

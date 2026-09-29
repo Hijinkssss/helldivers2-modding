@@ -1,4 +1,4 @@
-# RC3 validation boundaries
+# Historical reference validation and RC6 scope
 
 Reference commit: `a93008f5c0a69bf5bcf4be8bddb468dc5607bcf3`.
 Supported Steam build: `25480438`. EXE and game.dll SHA-256 fingerprints are
@@ -52,10 +52,14 @@ idle identity transitions and source hashes. Their Core/Runtime references descr
 that historical capture. `weapon-policy-evidence.json` preserves three reviewed
 snapshot caps. These records have not been relabeled as standalone observations.
 The extracted observer retains its original ownership/back-reference checks and
-96-read budget. No original capture is manufactured or required to install RC3.
+96-read budget. No original capture is manufactured or required to install this standalone consumer.
 
 The native binding API exposes registration and key-state reading, but does not
 accept a custom first-use key. That means the API cannot guarantee `=` as the
 initial native binding; the local fallback uses `=` when registration is absent.
 Follow [NEXT_TEST.md](NEXT_TEST.md) once before a standalone gameplay-release claim.
 Future patch resilience, automatic discovery and R-menu introspection are deferred.
+
+## RC6 expansion status
+
+RC6 adds the 20 weapons in [weapon-candidate-matrix.md](weapon-candidate-matrix.md), using pinned Runtime audit metadata at fd0c0d2b5618807a1ff63bedc9ed2f4b807c759. Added identities and policy caps are tested offline. The checks do not establish live accepted cadence or weapon-specific reload behavior. RC6 remains a pre-release candidate pending [NEXT_TEST.md](NEXT_TEST.md).
