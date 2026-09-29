@@ -1,5 +1,6 @@
 -- Consumer weapon classification table.
--- Metadata can veto approval; it can never grant approval.
+-- Exact-build known identities only. Unknown resources cannot grant approval.
+-- R-menu and whole-arsenal discovery are deferred.
 -- Policy categories:
 --   ASSIST               eligible for Full Auto Assist
 --   IGNORE_NATIVE_AUTO   weapon already has native Full Auto in the R-menu; never assist
@@ -31,24 +32,11 @@ local BALANCED_CEILING_RPM = 380
 
 -- AMR Balanced override: 120 RPM ~= 500 ms interval.
 -- Conservative because of extreme recoil, no vanilla third-person reticle,
--- and the precision support role. Provisional; refine after gameplay testing.
+-- and the precision support role. Preserve the user-reported live-tested value.
 local AMR_BALANCED_RPM = 120
 
 -- Battery-efficiency candidate; heat-neutral operation is not established.
 local TALON_BALANCED_RPM = 60
-
--- Derive the interval (seconds) for a given entry and fire_rate_mode.
-local function resolve_interval(entry, fire_rate_mode)
-    local native_rpm = entry.native_cap_rpm
-    if fire_rate_mode == 'native_cap' then
-        return 60 / native_rpm
-    end
-    if entry.balanced_rpm then
-        return 60 / entry.balanced_rpm
-    end
-    local rpm = math.min(native_rpm, BALANCED_CEILING_RPM)
-    return 60 / rpm
-end
 
 -- Classification table.
 -- All fields:
@@ -60,6 +48,20 @@ end
 --   native_cap_status 'VERIFIED' | 'RUNTIME_SNAPSHOT' | 'UNRESOLVED'
 --   balanced_rpm      (optional) explicit Balanced override; omit to use generic ceiling.
 --   notes             (optional) human-readable annotation.
+local KNOWN_HASHES={
+    ['P-2 Peacemaker']='05e4e5c2db6e44a2',
+    ['M6C/SOCOM Pistol']='4d58c77087b774c5',
+    ['P-69 Veto']='c780bcd79547da0f',
+    ['P-113 Verdict']='1a437158e1b8d2a1',
+    ['R-63 Diligence']='03e67a19b07c6523',
+    ['R-63CS Diligence Counter Sniper']='4c786785c79d44e7',
+    ['R-2 Amendment']='0f83639ab8c86165',
+    ['LAS-58 Talon']='416d053372c4e433',
+    ['AR-23 Liberator']='968211c0033dce64',
+    ['APW-1 Anti-Materiel Rifle']='89c5493e08ca4207',
+    ['LAS-99 Quasar Cannon']='35a61296619cc47e',
+}
+
 local ENTRIES = {
     -- ─── SEMI-AUTO PISTOLS ────────────────────────────────────────────────
 
@@ -78,19 +80,19 @@ local ENTRIES = {
     { kind = 'weapon', name = 'P-113 Verdict',
       category = 'ASSIST', native_cap_rpm = 450, native_cap_status = 'RUNTIME_SNAPSHOT',
       notes = 'Runtime 0.24.0: semi-only [2,0,0], conventional projectile. '..
-              'Snapshot cap 450 RPM; Balanced 380. Live cadence pending.' },
+              'Snapshot cap 450 RPM; Balanced 380. Balanced behavior passed user-reported live validation on the reference.' },
 
     -- ─── SEMI-AUTO RIFLES ────────────────────────────────────────────────
 
     { kind = 'weapon', name = 'R-63 Diligence',
       category = 'ASSIST', native_cap_rpm = 350, native_cap_status = 'RUNTIME_SNAPSHOT',
       notes = 'Runtime 0.24.0: semi-only [2,0,0], conventional projectile. '..
-              'Snapshot cap and Balanced 350 RPM. Live cadence pending.' },
+              'Snapshot cap and Balanced 350 RPM. Balanced behavior passed user-reported live validation on the reference.' },
 
     { kind = 'weapon', name = 'R-63CS Diligence Counter Sniper',
       category = 'ASSIST', native_cap_rpm = 350, native_cap_status = 'RUNTIME_SNAPSHOT',
       notes = 'Runtime 0.24.0: semi-only [2,0,0], conventional projectile. '..
-              'Snapshot cap and Balanced 350 RPM. Live cadence pending.' },
+              'Snapshot cap and Balanced 350 RPM. Balanced behavior passed user-reported live validation on the reference.' },
 
     -- ─── BURST-FIRE ───────────────────────────────────────────────────────
     -- Burst weapons without native Full Auto are eligible.
@@ -124,8 +126,8 @@ local ENTRIES = {
       balanced_rpm = AMR_BALANCED_RPM,
       notes = 'Extreme recoil, no vanilla third-person reticle, precision role. '..
               'Verified 400 RPM native cap. '..
-              'Balanced: '..tostring(AMR_BALANCED_RPM)..' RPM (provisional special override). '..
-              'Native Cap: 400 RPM. Refine Balanced value after live gameplay testing.' },
+              'Balanced: '..tostring(AMR_BALANCED_RPM)..' RPM (live-tested Balanced override). '..
+              'Native Cap: 400 RPM. Recenter and FULLER AUTO per-weapon UI remain roadmap items.' },
 
     { kind = 'support_weapon', name = 'LAS-99 Quasar Cannon',
       category = 'EXCLUDE_CHARGE_HOLD',
@@ -141,12 +143,6 @@ function M.hash(value)
     value = value:lower():gsub('^0x', '')
     if #value ~= 16 or value:find('[^0-9a-f]') then return nil end
     return value
-end
-
-local function single(values)
-    if type(values) ~= 'table' or values[1] == nil then return false end
-    for key in pairs(values) do if key ~= 1 then return false end end
-    return true
 end
 
 local function copy(entry)
@@ -174,11 +170,11 @@ local function is_assisted(category)
     return category == 'ASSIST' or category == 'SPECIAL'
 end
 
-function M.new(bridge, fire_rate_mode)
+function M.new(fire_rate_mode)
     -- fire_rate_mode: 'balanced' (default) | 'native_cap'
     local mode = (fire_rate_mode == 'native_cap') and 'native_cap' or 'balanced'
     local by_hash, notes = {}, {}
-    local self = { available = false, reason = 'optional_runtime_bridge_unavailable', fire_rate_mode = mode }
+    local self = { available = false, reason = 'known_policy_unavailable', fire_rate_mode = mode }
 
     function self:classify(resource_hash)
         local key = M.hash(resource_hash)
@@ -217,107 +213,20 @@ function M.new(bridge, fire_rate_mode)
         }
     end
 
-    if type(bridge) ~= 'table' or type(bridge.Connect) ~= 'function' or
-       type(bridge.Target) ~= 'function' then return self end
-
-    local connected, result = pcall(bridge.Connect, bridge)
-    if not connected or type(result) ~= 'table' or result.ok ~= true then
-        self.reason = 'runtime_unavailable'; return self
-    end
-
-    self.available = true; self.reason = 'ready'
-
-    for _, entry in ipairs(ENTRIES) do
-        local ok, metadata, modes = pcall(function()
-            local result = bridge:Target(entry.kind, entry.name)
-            assert(type(result) == 'table' and result.ok == true and
-                   type(result.value) == 'table', 'Target unavailable')
-            local target = result.value
-            return target:describe(),
-                   type(target.fire_modes) == 'function' and target:fire_modes() or nil
-        end)
-
-        local resources = ok and type(metadata) == 'table' and
-                          (metadata.resources or metadata.resourceHashes)
-        local identity  = ok and type(metadata) == 'table' and
-                          (metadata.name or metadata.catalogIdentity)
-
-        if not single(resources) or not M.hash(resources[1]) or identity ~= entry.name then
-            notes[#notes + 1] = {
-                name = entry.name, category = 'REVIEW',
-                reason = 'semantic_identity_not_unique_or_malformed'
-            }
+    self.available=true;self.reason='ready'
+    for _,entry in ipairs(ENTRIES)do
+        local key=KNOWN_HASHES[entry.name]
+        if key then
+            assert(M.hash(key) and not by_hash[key],'Malformed or duplicate known weapon')
+            local allowed=is_assisted(entry.category)
+            by_hash[key]={name=entry.name,semantic_id=entry.kind..':'..entry.name,
+                category=entry.category,allowed=allowed,resource_hash=key,
+                reason='explicit_consumer_policy',notes=entry.notes,
+                native_cap_status=entry.native_cap_status,
+                native_cap_rpm=allowed and entry.native_cap_rpm or nil,
+                _base=allowed and entry or nil}
         else
-            local key      = M.hash(resources[1])
-            local category = entry.category
-            local reason   = 'explicit_consumer_policy'
-
-            -- Support weapons get extra identity checks.
-            if entry.kind == 'support_weapon' and
-               (metadata.identityResolution ~= 'UNIQUE' or
-                M.hash(metadata.canonicalResourceHash) ~= key) then
-                category = 'REVIEW'; reason = 'semantic_identity_not_unique'
-            end
-
-            -- ASSIST and SPECIAL: verify the weapon is NOT natively full-auto
-            -- and that repeated Fire alone continues firing.
-            if is_assisted(category) then
-                local valid_fire_modes = false
-                if type(modes) == 'table' then
-                    local semantics = modes.defaultModeSemantics
-                    local allowed   = modes.allowedModes
-                    local vector    = modes.nativeModeVector
-                    local mode_id = semantics == 'semi_auto' and 2 or
-                                    semantics == 'burst_fire' and 3 or nil
-                    -- Runtime allowedModes filters the native vector. Check both;
-                    -- only the explicitly approved Amendment may retain semi/burst.
-                    local valid_vector = type(vector) == 'table' and vector[1] == mode_id and
-                        vector[2] == 0 and vector[3] == 0
-                    if entry.name == 'R-2 Amendment' and type(vector) == 'table' then
-                        valid_vector = vector[1] == mode_id and vector[2] == 3 and vector[3] == 0
-                    end
-                    if type(vector) == 'table' then
-                        for key in pairs(vector) do
-                            if key ~= 1 and key ~= 2 and key ~= 3 then valid_vector = false end
-                        end
-                    end
-                    valid_fire_modes = mode_id ~= nil and single(allowed) and
-                        allowed[1] == mode_id and valid_vector
-                elseif entry.category == 'SPECIAL' then
-                    valid_fire_modes = (modes == nil or modes == false)
-                end
-                if not valid_fire_modes then
-                    category = 'REVIEW'; reason = 'fire_mode_check_failed_or_native_auto_detected'
-                end
-            end
-
-            if by_hash[key] then
-                by_hash[key] = { category = 'REVIEW', allowed = false, reason = 'semantic_hash_collision' }
-            else
-                local allowed_flag = is_assisted(category)
-                local record = {
-                    name = identity,
-                    semantic_id = entry.kind .. ':' .. identity,
-                    category = category,
-                    allowed = allowed_flag,
-                    resource_hash = key,
-                    reason = reason,
-                    notes = entry.notes,
-                    native_cap_status = entry.native_cap_status,
-                }
-                if allowed_flag then
-                    record._base = entry
-                    if mode == 'native_cap' then
-                        record.repeat_seconds = native_interval(entry)
-                    else
-                        record.repeat_seconds = balanced_interval(entry)
-                    end
-                    record.repeat_ms = math.floor(record.repeat_seconds * 1000 + 0.5)
-                    record.max_repeat_rpm = math.floor(60 / record.repeat_seconds + 0.5)
-                    record.native_cap_rpm = entry.native_cap_rpm
-                end
-                by_hash[key] = record
-            end
+            notes[#notes+1]={name=entry.name,category='REVIEW',reason='semantic_identity_not_unique_or_malformed'}
         end
     end
 
