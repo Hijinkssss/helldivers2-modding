@@ -18,7 +18,7 @@ for profile,rpm in pairs({stable_26=26,balanced_27=27,fast_28=28,max_32=32,balan
         f:fire(false);f:tick();assert(f:restored());assert(f.consumer:stop().ok)
     end
 end
-local charge_hashes={'96de9cd50f7306e6','fb3a19078694708a','aa69a60d74a3ec54','6cfcc7f8801a0266'}
+local charge_hashes={'96de9cd50f7306e6','fb3a19078694708a','aa69a60d74a3ec54','6cfcc7f8801a0266','30061f91af477f5e'}
 for _,hash in ipairs(charge_hashes)do
     assert(not Policy.new():classify(hash).allowed,'Unverified charge automation enabled')
     local f=Fixture.new();f:weapon(hash);f:tick();f:fire(true);f:tick()
@@ -101,7 +101,8 @@ hud=Hud.new(engine);hud:present({visible=true});assert(hud.failures==1 and not h
 f:fire(true);f:tick();f:healthy();assert(f.backend.lease,'HUD failure disabled assistance')
 f:fire(false);f:tick();assert(f:restored() and f.consumer:stop().ok)
 -- Read-only observer cache, native-work bounds and failure before stale access.
-for _,hash in ipairs(charge_hashes)do
+local probe_hashes={'30061f91af477f5e','6cfcc7f8801a0266'}
+for _,hash in ipairs(probe_hashes)do
     f=Fixture.new();f:weapon(hash);f:tick()
     local manager,entities,entries,map,settings=0x81000000,0x82000000,0x83000000,0x84000000,0x85000000
     f:put(f.G+0x3326c20,f.ptr(manager))
@@ -111,7 +112,7 @@ for _,hash in ipairs(charge_hashes)do
     f:put(map+0xa9%8*8,f.u32(0xa9)..f.u32(0));f:put(manager+144,f.ptr(settings));f:put(settings,string.rep('\0',216))
     local observer=Observer.new(f.host);local state=f.consumer:get_state()
     local sample=observer:sample(state);assert(sample.state=='raw_observed' and #sample.runtime_hex==80 and #sample.settings_hex==48)
-    if hash==charge_hashes[1]then
+    if hash==probe_hashes[1]then
         local lines,flushes,closes={},0,0
         local logger={open_log=function(name)
             assert(name=='HD2FullAutoAssist-charge-probe.log' and name:match('^[%w_-]+%.log$'))

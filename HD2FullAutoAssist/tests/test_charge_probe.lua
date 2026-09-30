@@ -74,5 +74,6 @@ research=Research.new(f.host,function()return {}end,{open_log=function()return f
 Observer.new=old_new;Signals.new=old_signals
 for _=1,6001 do f.now=f.now+1000;research:tick()end
 assert(research.closed and research.samples==6000 and table.concat(texts):find('research_end',1,true))
+assert(table.concat(texts):find('"sample_limit_hit":true',1,true) and table.concat(texts):find('"reason":"sample_limit"',1,true))
 assert(f.consumer:stop().ok)
 print('PASS targeted charge probe: native snapshots, cache, absence backoff, zero writes, logger failures and bounded cleanup')

@@ -2,9 +2,7 @@
 -- Layout informed by ArcThrowerRevamped and exact-build static xrefs.
 local M={}
 local Signals=require('charge_signals')
-local names={['96de9cd50f7306e6']='ARC-3 Arc Thrower',
-    ['fb3a19078694708a']='PLAS-101 Purifier',['aa69a60d74a3ec54']='PLAS-15 Loyalist',
-    ['6cfcc7f8801a0266']='40-K Meltagun'}
+local names=require('charge_probe_targets').names
 local function u32(s,n)local a,b,c,d=s:byte(n+1,n+4);assert(d,'Short charge record');return a+b*256+c*65536+d*16777216 end
 local function pointer(s,n)
     local value=u32(s,n or 0)+u32(s,(n or 0)+4)*4294967296
@@ -102,6 +100,7 @@ function M.new(host)
             return {name=names[w.resource_hash],state='raw_observed',entity_id=w.entity_id,
                 resource_hash=w.resource_hash,identity_token=w.identity_token,slot=index,
                 runtime_hex=hex(raw),settings_hex=settings and hex(settings),
+                settings_state=settings and 'observed' or 'not_found',
                 settings_layout='f32@0,f32@24,f32@48,bytes@184:12',
                 charge_seconds=Signals.float(raw,4),discharged_charge_seconds=Signals.float(raw,8),
                 phase_value=Signals.float(raw,0),recovery_timer=Signals.float(raw,24),

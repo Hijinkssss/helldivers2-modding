@@ -5,7 +5,7 @@ from run_b3 import runtime,plain,work
 ROOT=Path(__file__).resolve().parents[1]
 BASE='2bba9ab85ab2f1264a310e9aa77168a9e22a5185'
 HASHES={'Arc':'96de9cd50f7306e6','Purifier':'fb3a19078694708a',
-        'Loyalist':'aa69a60d74a3ec54','Meltagun':'6cfcc7f8801a0266'}
+        'Loyalist':'aa69a60d74a3ec54','Meltagun':'6cfcc7f8801a0266','Accelerator':'30061f91af477f5e'}
 def charge_idle(src,weapon,held=False):
     lua=runtime(src);lua.globals().weapon_hash=weapon;lua.globals().held=held
     return plain(lua.execute('''
@@ -25,6 +25,7 @@ def charge_idle(src,weapon,held=False):
 def main():
     lua=runtime(ROOT/'src');lua.execute((ROOT/'tests/test_next_version.lua').read_text())
     lua.execute((ROOT/'tests/test_charge_probe.lua').read_text())
+    lua.execute((ROOT/'tests/test_charge_probe_targets.lua').read_text())
     research=plain(lua.globals().NEXT_RESEARCH_BUDGETS)
     with tempfile.TemporaryDirectory(dir=ROOT/'build') as temp:
         src=Path(temp)

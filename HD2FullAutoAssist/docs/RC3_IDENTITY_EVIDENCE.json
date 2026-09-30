@@ -1,0 +1,166 @@
+{
+  "revision": "1.1.0-research-rc3",
+  "steam_build": "25480438",
+  "catalog_commit": "fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595",
+  "catalog_repository": "https://github.com/SkyeShade/HD2Runtime",
+  "source_snapshot": "F5FEE03DCFDB-20260926T222226Z.hd2snap",
+  "game_fingerprints": {
+    "dll": "2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E",
+    "exe": "F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06"
+  },
+  "targets": [
+    {
+      "name": "PLAS-39 Accelerator Rifle",
+      "resource_hash": "30061f91af477f5e",
+      "resolution": "UNIQUE",
+      "catalog_file": "schemas/player_weapon_authoring_catalog.json",
+      "catalog_sha256": "1a991f887f4c10c5fb34ef48f54b98c03138f3218fdcaebb28c80bf8704600d2",
+      "catalog_matches_pinned_commit": true,
+      "resolved_entry": {
+        "name": "PLAS-39 Accelerator Rifle",
+        "slot": "primary",
+        "category": "Energy-Based",
+        "resolution": "UNIQUE",
+        "resources": [
+          "0x30061F91AF477F5E"
+        ]
+      },
+      "charge_ownership": {
+        "component": "WeaponChargeComponentData",
+        "componentIndex": 204,
+        "componentType": "0xEAC335A1",
+        "indexRow": 2,
+        "ownerCount": 1,
+        "recordIndex": 2,
+        "uniqueOwner": true
+      },
+      "beam_ownership": null
+    },
+    {
+      "name": "40-K Meltagun",
+      "resource_hash": "6cfcc7f8801a0266",
+      "resolution": "UNIQUE",
+      "catalog_file": "schemas/support_weapon_authoring_catalog.json",
+      "catalog_sha256": "de11ff7dbb7ad37aa661388a8eada24a507f7a9a4239f207ba4ab80d998d65be",
+      "catalog_matches_pinned_commit": true,
+      "resolved_entry": {
+        "name": "40-K Meltagun",
+        "resolution": "UNIQUE",
+        "confidence": "EXACT",
+        "resources": [
+          "0x6CFCC7F8801A0266"
+        ],
+        "canonicalResource": "0x6CFCC7F8801A0266",
+        "attackResource": "0x6CFCC7F8801A0266",
+        "ownershipChain": [],
+        "attackGraph": [
+          {
+            "catalogIndex": 1,
+            "name": "40-K MELTAGUN B",
+            "kind": "Beam",
+            "parentAttack": null,
+            "childAttacks": [
+              "Fire Panic",
+              "FlamerSlowed"
+            ],
+            "charge": null,
+            "state": "RESOLVED",
+            "runtimeMatch": {
+              "runtimeAttackRole": "primary",
+              "runtimeAttackKind": "Beam",
+              "runtimeParentRole": null,
+              "matchedFields": [
+                "standard_damage",
+                "durable_damage",
+                "ap_direct",
+                "ap_slight",
+                "ap_large",
+                "ap_extreme",
+                "demolition",
+                "stagger",
+                "push_force"
+              ],
+              "mismatchedFields": [],
+              "compared": 9
+            },
+            "unresolvedReason": null
+          },
+          {
+            "catalogIndex": 2,
+            "name": "Fire Panic",
+            "kind": "Status",
+            "parentAttack": "40-K MELTAGUN B",
+            "childAttacks": [],
+            "charge": null,
+            "state": "PARTIAL",
+            "runtimeMatch": {
+              "runtimeAttackRole": "primary_status_6",
+              "runtimeAttackKind": "Status",
+              "runtimeParentRole": "primary",
+              "matchedFields": [
+                "status_duration"
+              ],
+              "mismatchedFields": [
+                "status_strength"
+              ],
+              "compared": 2
+            },
+            "unresolvedReason": "no structurally linked StatusEffectSettings branch matched this catalog branch"
+          },
+          {
+            "catalogIndex": 3,
+            "name": "FlamerSlowed",
+            "kind": "Status",
+            "parentAttack": "40-K MELTAGUN B",
+            "childAttacks": [],
+            "charge": null,
+            "state": "RESOLVED",
+            "runtimeMatch": {
+              "runtimeAttackRole": "primary_status_67",
+              "runtimeAttackKind": "Status",
+              "runtimeParentRole": "primary",
+              "matchedFields": [
+                "status_strength",
+                "status_duration"
+              ],
+              "mismatchedFields": [],
+              "compared": 2
+            },
+            "unresolvedReason": null
+          }
+        ],
+        "unresolvedLinks": [
+          "Fire Panic: no structurally linked StatusEffectSettings branch matched this catalog branch"
+        ],
+        "backpackDependent": false,
+        "linkedAmmoOwned": false,
+        "fireRateDiagnosticOnly": true,
+        "sourceSection": "Warbonds",
+        "weaponType": "Heavy Energy-Based",
+        "rootRack": null
+      },
+      "charge_ownership": {
+        "component": "WeaponChargeComponentData",
+        "componentIndex": 204,
+        "componentType": "0xEAC335A1",
+        "indexRow": 10,
+        "ownerCount": 1,
+        "recordIndex": 7,
+        "uniqueOwner": true
+      },
+      "beam_ownership": {
+        "component": "BeamWeaponComponentData",
+        "componentIndex": 270,
+        "componentType": "0xF0721C2C",
+        "indexRow": 16,
+        "ownerCount": 1,
+        "recordIndex": 21,
+        "uniqueOwner": true
+      }
+    }
+  ],
+  "target_count": 2,
+  "identity_verified": true,
+  "automation_enabled": false,
+  "live_identity_verified": false
+}

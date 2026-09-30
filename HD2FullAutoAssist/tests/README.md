@@ -27,3 +27,8 @@ logger failure/cleanup. Run `test_probe_loader.py --loader-source <shared_loader
 to exercise the actual Shared Loader logging implementation. RC1's `.jsonl`
 filename must be rejected before file operations; RC2's `.log` must be accepted.
 Run `run_next_version.py` for exact ordinary native-work parity with v1.0.1.
+
+Research RC3 targets only Accelerator `30061f91af477f5e` and Meltagun
+`6cfcc7f8801a0266`. `test_charge_probe_targets.lua` exercises actual observer and
+recorder recognition for both, and verifies Arc/Purifier/Loyalist, conventional,
+and unknown resources consume zero probe reads or samples. Both suites run it.
