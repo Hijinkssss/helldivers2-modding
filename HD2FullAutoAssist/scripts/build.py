@@ -4,7 +4,7 @@ import argparse,hashlib,json,struct,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-VERSION='1.1.0-research-rc3'
+VERSION='1.1.0-research-rc4'
 PACKAGE=f'Full-Auto-Assist-{VERSION}-Arsenal.zip'
 OUTPUT=ROOT/'build'/VERSION
 LUA_TYPE=0xA14E8DFA2CD117E2
@@ -130,7 +130,7 @@ def main():
             option_archives[(setting,profile)]=packed
     out.mkdir(parents=True,exist_ok=True)
     (out/'hd2_full_auto_assist.lua').write_bytes(source);(out/ARCHIVE).write_bytes(archive)
-    description=('Read-only RC3 charge probe: PLAS-39 Accelerator Rifle and 40-K Meltagun only. Charge automation remains disabled.'
+    description=('Read-only RC4 charge and independent left-mouse probe: 40-K Meltagun only. Charge automation remains disabled.'
         if args.research else 'Unpublished test candidate: existing FAA assistance, Eruptor cadence choices and a small HUD indicator. Charge weapons await native evidence.')
     groups=[{'Name':'Full Auto Assist','Description':'Required. The assistance feature and its supported-weapon policy.',
         'Include':['Core'],'Image':'thumbnail.png'}]
@@ -148,13 +148,12 @@ def main():
         groups.append({'Name':title,'Description':'Select one assisted fire-rate profile. '+('Stable 26 RPM is the default.' if setting=='eruptor_profile' else 'Balanced is the default.'),
             'SubOptions':children})
     files['manifest.json']=(json.dumps({'Version':1,'Guid':'cf368f5c-f686-453f-a566-435b4b7fcf26',
-        'Name':'Full Auto Assist RC3 Charge Probe' if args.research else 'Full Auto Assist',
+        'Name':'Full Auto Assist RC4 Meltagun Probe' if args.research else 'Full Auto Assist',
         'Description':description,'Options':groups},indent=2)+'\n').encode()
     for name in ('HD2FullAutoAssist.example.ini',):
         files[name]=(ROOT/name).read_bytes()
-    files['README.md']=(ROOT/'docs'/('RC3_CHARGE_PROBE.md' if args.research else 'NEXT_VERSION_CANDIDATE.md')).read_bytes()
-    files['LIVE_TEST.md']=(ROOT/'docs'/('RC3_LIVE_TEST.md' if args.research else 'NEXT_VERSION_LIVE_TEST.md')).read_bytes()
-    if args.research:files['RC3_IDENTITY_EVIDENCE.json']=(ROOT/'docs/RC3_IDENTITY_EVIDENCE.json').read_bytes()
+    files['README.md']=(ROOT/'docs'/('RC4_CHARGE_PROBE.md' if args.research else 'NEXT_VERSION_CANDIDATE.md')).read_bytes()
+    files['LIVE_TEST.md']=(ROOT/'docs'/('RC4_LIVE_TEST.md' if args.research else 'NEXT_VERSION_LIVE_TEST.md')).read_bytes()
     files['CHARGE_REASSESSMENT.md']=(ROOT/'docs/CHARGE_REASSESSMENT.md').read_bytes()
     with zipfile.ZipFile(out/package_name,'w',zipfile.ZIP_DEFLATED) as z:
         for name,raw in sorted(files.items()):
@@ -186,7 +185,7 @@ def main():
         'charge_research_enabled':args.research,'charge_automation_enabled':False,
         'charge_probe_filename':'HD2FullAutoAssist-charge-probe.log' if args.research else None,
         'charge_probe_sampling':'each relevant stock update, capped at 6000 samples' if args.research else None,
-        'charge_probe_targets':{'30061f91af477f5e':'PLAS-39 Accelerator Rifle','6cfcc7f8801a0266':'40-K Meltagun'} if args.research else None,
+        'charge_probe_targets':{'6cfcc7f8801a0266':'40-K Meltagun'} if args.research else None,
         'profiling_default':False,'validation_logging_default':False,'debug_logging_default':False,
         'baseline_commit':'be04ea15359b505bf953ef22d747e8f5e2de013e',
         'rc8_diagnostic_cleanup':{'removed':['startup_diagnostic.lua','RC8_DIAGNOSTIC.md','test_startup_diagnostic.lua',

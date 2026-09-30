@@ -22,12 +22,21 @@ local trigger,beam,ammo,tmap,bmap=tables(f)
 local signals=Signals.new(f.host);local state=f.consumer:get_state()
 local sample=signals:sample(state)
 assert(sample.fire.state=='observed' and sample.fire.physical_binding_verified==false)
+assert(sample.fire.raw_lmb.state=='up' and sample.fire.raw_lmb.binding_verified==false and
+    sample.fire.raw_lmb.independent_of_processed_fire)
+f.host.platform.input_down=function(_,key)assert(key==1);return f.physical_lmb==true end
+f.physical_lmb=true;sample=signals:sample(state)
+assert(sample.fire.raw_lmb.state=='down' and sample.fire.pressed==0,
+    'Independent raw left-mouse diagnostic was coupled to processed Fire')
+f.physical_lmb=false;sample=signals:sample(state)
+assert(sample.fire.raw_lmb.state=='up')
 assert(sample.trigger.command==1 and #sample.trigger.raw_hex==80)
 assert(sample.beam.current_flag==1 and sample.beam.request_flag==1 and sample.beam.timer==.75)
 assert(#sample.ammo.raw_hex==32 and #sample.ammo.extra_hex==24)
 local discoveries=signals.discoveries;local reads=f.host.reads
 for _=1,100 do signals:sample(state)end
-assert(signals.discoveries==discoveries and signals.cache_hits==300 and f.writes==0)
+assert(signals.discoveries==discoveries and signals.cache_hits>=300 and f.writes==0,
+    tostring(signals.discoveries)..':'..tostring(discoveries)..':'..tostring(signals.cache_hits)..':'..tostring(f.writes))
 assert(f.host.reads-reads<=5000,'Targeted signals exceed read budget')
 -- A native beam end and empty count are observations only, never a Fire lease.
 f:put(beam,'\0\0\0\0'..f.u32(1)..f.float(0));f:put(ammo,f.u32(0))

@@ -18,6 +18,21 @@ function M.new(host)
     assert(host:build_status().id=='steam-25480438-v02-candidate','Unsupported probe build')
     local self={cache={},discoveries=0,cache_hits=0,probes=0}
     local function read(at,n)return (host.read_live or host.read)(host,at,n)end
+    local function raw_lmb_sample()
+        local platform=host.platform
+        if type(platform)~='table' or type(platform.prepare_input)~='function' or
+            type(platform.input_focused)~='function' or type(platform.input_down)~='function' then
+            return {state='unavailable'}
+        end
+        local ok,available=pcall(platform.prepare_input,platform)
+        if not ok or available==nil then return {state='unavailable'}end
+        local focused_ok,focused=pcall(platform.input_focused,platform)
+        if not focused_ok or focused~=true then return {state='unavailable',reason='game_not_focused'}end
+        local read_ok,down=pcall(platform.input_down,platform,1)
+        if not read_ok or type(down)~='boolean' then return {state='unavailable'}end
+        return {state=down and 'down' or 'up',independent_of_processed_fire=true,
+            binding_verified=false,virtual_key=1}
+    end
     function self:invalidate()self.cache={}end
     local function table_row(tag,w,rva,map_offset,rows_offset,stride,length,entities_offset,command_offset,extra_offset,extra_stride,extra_length)
         local root=host.base+rva;local manager=ptr(read(root,8))
@@ -92,7 +107,8 @@ function M.new(host)
             local root=host.base+0x347cf18;local owner=ptr(read(root,8));local raw=read(owner+0x1c88,32)
             assert(ptr(read(root,8))==owner,'Probe Fire owner changed')
             return {state='observed',raw_hex=hex(raw),pressed=raw:byte(1),magnitude=M.float(raw,4),
-                held_seconds=M.float(raw,8),trigger=u32(raw,24),physical_binding_verified=false}
+                held_seconds=M.float(raw,8),trigger=u32(raw,24),physical_binding_verified=false,
+                raw_lmb=raw_lmb_sample()}
         end)
         out.trigger=guarded('trigger',function()
             return table_row('trigger',w,0x3326660,40,80,40,40,64,88)

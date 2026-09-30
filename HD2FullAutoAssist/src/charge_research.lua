@@ -11,7 +11,7 @@ function M.new(host,provider,loader)
     local signals=Signals.new(host)
     local file=assert(loader.open_log(M.filename),'Charge probe log unavailable: '..M.filename)
     local opened,reason=pcall(function()
-        assert(file:write(Json.json({event='research_start',version='1.1.0-research-rc3',
+        assert(file:write(Json.json({event='research_start',version='1.1.0-research-rc4',
             filename=M.filename,format='json_lines',automatic_charge_fire=false,
             steam_build='25480438',sampling='each_relevant_stock_update',max_samples=M.max_samples,
             targets=Targets.names})..'\n'))

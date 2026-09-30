@@ -208,7 +208,9 @@ def main():
         lambda:native_transition_checks('test_next_version.lua'))
     check('targeted charge/beam/ammo probe and loader filename/cleanup safety',
         lambda:native_transition_checks('test_charge_probe.lua'))
-    check('RC3 Accelerator/Meltagun recorder recognition and excluded-weapon zero-read/sample filter',
+    check('charge settings native resource fallback, collisions, precedence, relocation and read-race guards',
+        lambda:native_transition_checks('test_charge_settings_fallback.lua'))
+    check('RC4 Meltagun-only recorder and excluded-weapon zero-read/sample filter',
         lambda:native_transition_checks('test_charge_probe_targets.lua'))
     report={'reference_commit':REFERENCE,'checks':checks,'offline_passed':True,
         'core_behavior_parity':'preserved for known identities, guards and input intervals except intentional Talon Balanced change',

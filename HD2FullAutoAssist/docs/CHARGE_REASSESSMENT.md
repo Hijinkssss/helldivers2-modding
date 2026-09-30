@@ -1,5 +1,11 @@
 # Charge evidence reassessment, research RC2
 
+> Historical analysis. Current checkpoint: `FAA_CHARGE_HANDOFF.md`. The current
+> unpublished RC4 research build targets the Meltagun alone, adds the verified
+> stock resource-settings fallback, and records a raw left-mouse diagnostic.
+> The settings fix has offline regression coverage; physical binding correlation
+> and Meltagun beam completion still need the single focused RC4 observation.
+
 Continued `feature/full-auto-assist-charge-weapons-hud` from `12a60aa`.
 No merge, publication, Nexus update, installation, deployment, game launch or
 live process access occurred. The ordinary controller/cache/native Fire path,

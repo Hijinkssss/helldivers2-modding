@@ -49,16 +49,12 @@ def main():
         isolated=source.decode('utf-8').replace(tail,"return own_require('charge_probe_targets').names")
         packed_targets=LuaRuntime().execute(isolated)
         targets={str(hash):str(name) for hash,name in packed_targets.items()}
-        assert targets=={'30061f91af477f5e':'PLAS-39 Accelerator Rifle','6cfcc7f8801a0266':'40-K Meltagun'}
+        assert targets=={'6cfcc7f8801a0266':'40-K Meltagun'}
         assert targets==report['charge_probe_targets']
     suffix='-Charge-Research-Arsenal.zip' if args.research else '-Arsenal.zip'
     assert package.name==f'Full-Auto-Assist-{builder.VERSION}'+suffix
     with zipfile.ZipFile(package) as z:
         names=z.namelist();manifest=json.loads(z.read('manifest.json'))
-        if args.research:
-            identity=json.loads(z.read('RC3_IDENTITY_EVIDENCE.json'))
-            assert identity['identity_verified'] and identity['target_count']==2 and not identity['automation_enabled']
-            assert {row['resource_hash']:row['name'] for row in identity['targets']}==targets
         assert {'README.md','LIVE_TEST.md','HD2FullAutoAssist.example.ini'} <= set(names)
         assert not any('validation.ini' in name.lower() or 'diagnostic' in name.lower() or '/docs/' in name.lower() for name in names)
         example=z.read('HD2FullAutoAssist.example.ini').decode('utf-8')
@@ -66,7 +62,7 @@ def main():
                         'debug_logging = false','validation_logging = false','performance_profile = false',
                         'performance_label = unlabeled','fire_rate_mode = balanced'):
             assert setting in example,setting
-        assert manifest['Name']==('Full Auto Assist RC3 Charge Probe' if args.research else 'Full Auto Assist')
+        assert manifest['Name']==('Full Auto Assist RC4 Meltagun Probe' if args.research else 'Full Auto Assist')
         assert manifest['Description']==report['description']
         assert len(manifest['Options'])==9 and manifest['Options'][0]['Include']==['Core']
         assert z.read('thumbnail.png')==(ROOT/'thumbnail.png').read_bytes()
@@ -101,9 +97,8 @@ def main():
         assert len(option_modules)==len(set(option_modules))
         assert len(option_keys)==len(set(option_keys))
         assert not any('hd2modcore' in name.lower() or 'hd2runtime' in name.lower() for name in names)
-        sources={'README.md':ROOT/'docs'/('RC3_CHARGE_PROBE.md' if args.research else 'NEXT_VERSION_CANDIDATE.md'),
-            'LIVE_TEST.md':ROOT/'docs'/('RC3_LIVE_TEST.md' if args.research else 'NEXT_VERSION_LIVE_TEST.md'),
-            'RC3_IDENTITY_EVIDENCE.json':ROOT/'docs/RC3_IDENTITY_EVIDENCE.json',
+        sources={'README.md':ROOT/'docs'/('RC4_CHARGE_PROBE.md' if args.research else 'NEXT_VERSION_CANDIDATE.md'),
+            'LIVE_TEST.md':ROOT/'docs'/('RC4_LIVE_TEST.md' if args.research else 'NEXT_VERSION_LIVE_TEST.md'),
             'CHARGE_REASSESSMENT.md':ROOT/'docs/CHARGE_REASSESSMENT.md'}
         for name in names:
             if name not in ('manifest.json',) and not name.startswith(('Core/','Options/')):
