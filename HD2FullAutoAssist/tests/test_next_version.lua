@@ -110,11 +110,11 @@ for _,hash in ipairs(charge_hashes)do
     f:put(manager+80,f.ptr(map)..f.u32(8)..f.u32(0xffffffff)..f.u32(1))
     f:put(map+0xa9%8*8,f.u32(0xa9)..f.u32(0));f:put(manager+144,f.ptr(settings));f:put(settings,string.rep('\0',216))
     local observer=Observer.new(f.host);local state=f.consumer:get_state()
-    local sample=observer:sample(state);assert(sample.state=='raw_observed' and #sample.runtime_hex==80 and #sample.settings_hex==432)
+    local sample=observer:sample(state);assert(sample.state=='raw_observed' and #sample.runtime_hex==80 and #sample.settings_hex==48)
     if hash==charge_hashes[1]then
         local lines,flushes,closes={},0,0
         local logger={open_log=function(name)
-            assert(name=='HD2FullAutoAssist-charge-research.jsonl')
+            assert(name=='HD2FullAutoAssist-charge-probe.log' and name:match('^[%w_-]+%.log$'))
             return {write=function(self,text)lines[#lines+1]=text;return self end,
                 flush=function()flushes=flushes+1;return true end,
                 close=function()closes=closes+1;return true end}
@@ -126,12 +126,12 @@ for _,hash in ipairs(charge_hashes)do
         f.now=f.now+20000;research:tick();assert(research.samples==samples+1 and f.writes==0)
         research:close();assert(research.closed and closes==1 and flushes>=2)
         local joined=table.concat(lines)
-        assert(joined:find('research_start',1,true) and joined:find('runtime_hex',1,true) and joined:find('fire_hex',1,true))
+        assert(joined:find('research_start',1,true) and joined:find('runtime_hex',1,true) and joined:find('physical_binding_verified',1,true))
     end
     local before=f.host.reads
     for _=1,100 do assert(observer:sample(state).state=='raw_observed')end
     assert(observer.discoveries==1 and observer.cache_hits==100 and observer.expensive_scans==0)
-    assert(f.host.reads-before<=2000 and f.writes==0,'Read-only research budget violated')
+    assert(f.host.reads-before<=2400 and f.writes==0,'Read-only research budget violated')
     NEXT_RESEARCH_BUDGETS[hash]={samples=100,native_reads=f.host.reads-before,
         identity_rediscoveries=0,charge_slot_discoveries=observer.discoveries,
         expensive_scans=observer.expensive_scans,cache_hits=observer.cache_hits,weapon_writes=f.writes,
@@ -139,6 +139,7 @@ for _,hash in ipairs(charge_hashes)do
     f.failed_read=manager+16;assert(observer:sample(state).state=='unavailable' and not observer.cached)
     f.failed_read=nil;assert(observer:sample(state).state=='raw_observed')
     f:put(f.ERECORD+16,'\1');assert(observer:sample(state).state=='unavailable')
+    assert(observer:sample(state).state=='unavailable','Stale generation must stay rejected after invalidation')
     observer:invalidate();local idle={identity_observed=false};before=f.host.reads
     assert(observer:sample(idle)==nil and f.host.reads==before)
     f:fire(true);f:tick();assert(f.writes==0 and not f.backend.lease)

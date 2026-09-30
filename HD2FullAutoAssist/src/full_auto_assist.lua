@@ -360,7 +360,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     trace:flush(false)
                 end
             end) end
-        local initialized={version='1.1.0-research-rc1',hotkey=settings.toggle_hotkey,
+        local initialized={version='1.1.0-research-rc2',hotkey=settings.toggle_hotkey,
             talon_mode=settings.talon_mode,
             active=state:is_enabled(),mechanism='selective_native_repeat_interval',identity_validated=IDENTITY_VALIDATED}
         if profiler then

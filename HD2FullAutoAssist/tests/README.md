@@ -19,3 +19,11 @@ active A/B/C swaps, unsupported transitions, hash/entity/root changes, transient
 identity page/read failure, ship/mission and death/new-avatar respawn. Page-scope
 checks reject different and crossing addresses and verify error cleanup.
 Eruptor and Crossbow must pass through native `begin`, not a permissive mock.
+
+Research RC2 adds `test_charge_probe.lua`, run by both standalone and next-version
+suites. It verifies selected charge/trigger/beam/ammo observations, generation
+tokens, relocation, missing-table backoff, scope, zero writes, sample bounds and
+logger failure/cleanup. Run `test_probe_loader.py --loader-source <shared_loader.lua>`
+to exercise the actual Shared Loader logging implementation. RC1's `.jsonl`
+filename must be rejected before file operations; RC2's `.log` must be accepted.
+Run `run_next_version.py` for exact ordinary native-work parity with v1.0.1.

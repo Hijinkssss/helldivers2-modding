@@ -4,7 +4,7 @@ import argparse,hashlib,json,struct,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-VERSION='1.1.0-research-rc1'
+VERSION='1.1.0-research-rc2'
 PACKAGE=f'Full-Auto-Assist-{VERSION}-Arsenal.zip'
 OUTPUT=ROOT/'build'/VERSION
 LUA_TYPE=0xA14E8DFA2CD117E2
@@ -152,6 +152,7 @@ def main():
         files[name]=(ROOT/name).read_bytes()
     files['README.md']=(ROOT/'docs/NEXT_VERSION_CANDIDATE.md').read_bytes()
     files['LIVE_TEST.md']=(ROOT/'docs/NEXT_VERSION_LIVE_TEST.md').read_bytes()
+    files['CHARGE_REASSESSMENT.md']=(ROOT/'docs/CHARGE_REASSESSMENT.md').read_bytes()
     with zipfile.ZipFile(out/package_name,'w',zipfile.ZIP_DEFLATED) as z:
         for name,raw in sorted(files.items()):
             info=zipfile.ZipInfo(name,(1980,1,1,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED
@@ -180,6 +181,8 @@ def main():
         'validated_base_commit':'2bba9ab85ab2f1264a310e9aa77168a9e22a5185',
         'live_validation_scope':'pending Eruptor/HUD gameplay and read-only charge research',
         'charge_research_enabled':args.research,'charge_automation_enabled':False,
+        'charge_probe_filename':'HD2FullAutoAssist-charge-probe.log' if args.research else None,
+        'charge_probe_sampling':'each relevant stock update, capped at 6000 samples' if args.research else None,
         'profiling_default':False,'validation_logging_default':False,'debug_logging_default':False,
         'baseline_commit':'be04ea15359b505bf953ef22d747e8f5e2de013e',
         'rc8_diagnostic_cleanup':{'removed':['startup_diagnostic.lua','RC8_DIAGNOSTIC.md','test_startup_diagnostic.lua',

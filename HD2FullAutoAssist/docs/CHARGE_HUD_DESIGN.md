@@ -1,5 +1,9 @@
 # Next-version design and evidence gate
 
+Research RC2 supersedes the RC1 manual trace plan below. See
+[CHARGE_REASSESSMENT.md](CHARGE_REASSESSMENT.md) for corrected runtime `+8`
+semantics, exact native transitions, logger root cause and the targeted probe.
+
 Base: public main `2bba9ab85ab2f1264a310e9aa77168a9e22a5185` (v1.0.1).
 Branch: `feature/full-auto-assist-charge-weapons-hud`. No release, tag,
 Nexus update or merge is authorized for this candidate.

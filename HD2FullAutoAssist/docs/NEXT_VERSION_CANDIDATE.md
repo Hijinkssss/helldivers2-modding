@@ -1,4 +1,4 @@
-# Full Auto Assist 1.1.0 research RC1 (unpublished)
+# Full Auto Assist 1.1.0 research RC2 (unpublished)
 
 This is a partial next-version candidate based on public v1.0.1. Do not upload
 it to Nexus or treat it as a completed charge-weapon release.
@@ -35,7 +35,7 @@ ArcThrowerRevamped or its Megapack option during stock charge research.
 
 All logging/profiling options default OFF. The ordinary candidate never starts
 the charge observer. The separately named Charge Research ZIP enables only the
-bounded developer trace, in addition to the same Eruptor/HUD candidate behavior.
+targeted developer probe, in addition to the same Eruptor/HUD candidate behavior.
 An existing INI can override logging defaults; verify it before measuring.
 
 Reference attribution: CowboyBingus's [ArcThrowerRevamped in VanillaPlusMegapack](https://github.com/CowboyBingus/VanillaPlusMegapack/tree/1b943e61d2436f204fb5d8740a6082f44a780e42/components/ArcThrowerRevamped)
@@ -44,5 +44,12 @@ charge-flag writes were not copied. KnowYourConstellation in the same source
 demonstrates the exposed retained GUI API and world-lifetime checks. FAA's glyph
 and presentation code are newly written.
 
-See LIVE_TEST.md. No live validation, installation or deployment has been
+The filename failure is fixed: the JSON Lines probe is written through Loader
+API 1 to `HD2FullAutoAssist-charge-probe.log`. Broad four-weapon manual tracing
+is superseded by the staged shared-charge comparison and separate beam probe in
+CHARGE_REASSESSMENT.md. Settings sampling is narrowed to selected boundaries and
+flags; only Meltagun samples beam state, and Arc skips ammo. All charge automation
+remains disabled.
+
+See LIVE_TEST.md and CHARGE_REASSESSMENT.md. No live validation, installation or deployment has been
 performed by the development task. v1.0.1 history, tag and release are preserved.

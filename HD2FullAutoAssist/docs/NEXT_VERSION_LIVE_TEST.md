@@ -23,51 +23,40 @@
 6. Record Watchdog active-Fire cost with the Eruptor and a conventional assisted
    sidearm. Return to idle and check cost falls back. Exit the game normally.
 
-## Charge Research candidate: manual cycles only
+## Research RC2: targeted manual observations only
 
-This package does NOT repeat charge weapons. Its purpose is to resolve native
-signals before automation. Disable the ordinary candidate when selecting it.
-Disable ArcThrowerRevamped, its Megapack option, and other charge/weapon-stat mods
-so traces describe stock behavior. No new installation/deployment is automatic.
+Charge automation remains disabled. The logger contract is fixed; its JSON Lines
+file is `%LOCALAPPDATA%/CowboyBingus/Helldivers2/Logs/HD2FullAutoAssist-charge-probe.log`.
+Check `charge_probe_ready` in the normal FAA log and `research_start` in that file
+before any cycles. Disable the ordinary candidate and ArcThrowerRevamped / its
+Megapack option while selecting this separate research build. Preserve the log
+before the next launch overwrites it.
 
-The observer samples at most 50 times/second, reads a bounded charge table and
-records raw charge/settings/Fire bytes. It caches the selected slot and validates
-roots, index and identity on reuse. It never writes charge or weapon records.
-It stops after 10,000 relevant samples (about 200 seconds at 50 Hz). Normal exit
-flushes/closes the trace. The log is
-`%LOCALAPPDATA%/CowboyBingus/Helldivers2/Logs/HD2FullAutoAssist-charge-research.jsonl`.
-Save the log under a unique weapon/session name before another launch overwrites
-it. An `unavailable` or `charge_row_absent` record is a research result, not a
-reason to relax guards.
+The old broad four-weapon trace is superseded by CHARGE_REASSESSMENT.md. That file
+explains each known native signal and exactly why each remaining test is needed.
 
-Use one weapon per fresh run, recording action timestamps:
+1. Shared charge-release stage: Arc (short reference), Purifier and Loyalist,
+   preferably in one mission. Idle two seconds per weapon, two normal full
+   charge/release cycles, one early release, and one blocked swap while full
+   followed by manual discharge and a successful swap. Fire/charge/native commands
+   are recorded together; no manual timestamp worksheet. Compare the two plasma
+   weapons before adding more cases. One empty Fire attempt/manual reload resolves
+   the ammo gate; defer the second plasma empty case if their gate semantics and
+   policy are demonstrably identical.
+2. Meltagun stage: idle two seconds, two normal beams, briefly keep Fire held
+   after one beam finishes then manually release/re-press, one interrupted charge
+   or beam, and one swap after completion. One empty Fire attempt -> manual reload
+   -> normal cycle distinguishes completion/restart from reload denial.
 
-1. Arc Thrower: idle, initial hold through ready, manual release/fire, four
-   consecutive manual charge/release cycles, release partway through charge,
-   swap away during hold, swap back and manually fire again.
-2. Purifier: idle, short hold/release, full hold/manual release, four full-charge
-   manual cycles, release during charge, empty magazine, attempt Fire while
-   empty, manual reload, then another normal cycle.
-3. Loyalist: the same sequence as Purifier, identifying full-charge audio/visual
-   cues and recording how many rounds are consumed by each manual release.
-4. Meltagun: hold through charge and the entire beam, keep holding after beam
-   ends, then manually release and re-press. Perform four consecutive manual
-   beam cycles; release during charge, during beam and after beam. Empty the
-   weapon, attempt Fire, reload manually, and repeat one beam. Record beam start
-   and end times and audio continuity. No Reload input is emitted by FAA.
-5. For each, also swap charge -> conventional -> charge, die/respawn, and return
-   to ship. Confirm charge weapons have no FAA lease or indicator.
+This is a bounded read-only probe, not a request to perform testing immediately.
+It samples each relevant stock update, stops after 6,000 relevant samples per
+launch (100 seconds at 60 FPS, 50 at 120, 25 at 240), and flushes on normal exit.
+The normal header/end records and field-specific unavailable states make failure
+visible. There are no charge/beam/ammo writes, heap scans, native function calls,
+synthetic charge releases, automatic reloads or weapon switches. Existing ordinary
+FAA behavior remains in the package. Unrelated weapons perform no probe reads.
 
-Keep the 50-Hz research observer OFF for comparative Watchdog measurements.
-Its diagnostic cost is deliberately separate from the ordinary candidate.
-
-## Automation live pass after the evidence gate
-
-These checks are pending and cannot be performed with this partial candidate:
-automatic Arc repeated firing, Purifier repeated full-charge firing, Loyalist
-repeat charge/fire, and Meltagun consecutive beams until manual reload is
-required. Once native observation and Fire-edge integration are verified, build
-a new profiling/logging-OFF candidate and perform these holds/releases, swaps,
-death/respawn and ship/mission transitions, then 30-second Watchdog idle and
-active-Fire measurements for each new weapon. Never infer acceptance from raw
-logs, a synthetic state machine, or successful package loading.
+Do not compare Watchdog performance with research enabled. The ordinary candidate
+still needs Eruptor/HUD gameplay and wall-time validation. The eventual charge
+Fire-edge adapter needs separate observed physical release, stock cycle/cadence,
+ammo, restoration and performance validation before assistance can be enabled.

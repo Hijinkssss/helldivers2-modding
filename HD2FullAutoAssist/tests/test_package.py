@@ -88,7 +88,8 @@ def main():
         assert len(option_modules)==len(set(option_modules))
         assert len(option_keys)==len(set(option_keys))
         assert not any('hd2modcore' in name.lower() or 'hd2runtime' in name.lower() for name in names)
-        sources={'README.md':ROOT/'docs/NEXT_VERSION_CANDIDATE.md','LIVE_TEST.md':ROOT/'docs/NEXT_VERSION_LIVE_TEST.md'}
+        sources={'README.md':ROOT/'docs/NEXT_VERSION_CANDIDATE.md','LIVE_TEST.md':ROOT/'docs/NEXT_VERSION_LIVE_TEST.md',
+            'CHARGE_REASSESSMENT.md':ROOT/'docs/CHARGE_REASSESSMENT.md'}
         for name in names:
             if name not in ('manifest.json',) and not name.startswith(('Core/','Options/')):
                 assert z.read(name)==sources.get(name,ROOT/name).read_bytes(),name

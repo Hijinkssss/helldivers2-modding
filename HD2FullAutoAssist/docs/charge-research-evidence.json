@@ -23,20 +23,72 @@
     "flag_clear_rva": "0x740bb0",
     "settings_accessor_rva": "0x5052c0",
     "charge_scaling_settings_read_rva": "0x73e316",
-    "charge_scaling_runtime_offset8_read_rva": "0x73e32d"
+    "charge_scaling_runtime_offset8_read_rva": "0x73e32d",
+    "charge_update_rva": "0x73c8f0",
+    "runtime_progress_offset": 4,
+    "runtime_latched_discharge_charge_offset": 8,
+    "runtime_recovery_timer_offset": 24,
+    "runtime_unclassified_latch_offset": 32,
+    "charge_level_offsets": [
+      0,
+      24,
+      48
+    ],
+    "auto_fire_in_safety_offset": 184,
+    "release_dispatch_rva": "0x73d8c0",
+    "beam_manager_rva": "0x33266d8",
+    "beam_entity_map_offset": 80,
+    "beam_runtime_array_offset": 120,
+    "beam_runtime_stride": 168,
+    "beam_selected_bytes": 12,
+    "ammo_gate_manager_rva": "0x3326648",
+    "trigger_manager_rva": "0x3326660"
   },
   "weapons": [
-    {"name": "ARC-3 Arc Thrower", "resource_hash": "96de9cd50f7306e6", "automation_enabled": false},
-    {"name": "PLAS-101 Purifier", "resource_hash": "fb3a19078694708a", "automation_enabled": false},
-    {"name": "PLAS-15 Loyalist", "resource_hash": "aa69a60d74a3ec54", "automation_enabled": false},
-    {"name": "40-K Meltagun", "resource_hash": "6cfcc7f8801a0266", "attack_kind": "Beam", "automation_enabled": false}
+    {
+      "name": "ARC-3 Arc Thrower",
+      "resource_hash": "96de9cd50f7306e6",
+      "automation_enabled": false,
+      "classification": "NEEDS SMALL TARGETED LIVE PROBE",
+      "existing_charge_levels": [
+        1,
+        1.1,
+        1.2
+      ],
+      "charge_component_record": 6
+    },
+    {
+      "name": "PLAS-101 Purifier",
+      "resource_hash": "fb3a19078694708a",
+      "automation_enabled": false,
+      "classification": "NEEDS SMALL TARGETED LIVE PROBE"
+    },
+    {
+      "name": "PLAS-15 Loyalist",
+      "resource_hash": "aa69a60d74a3ec54",
+      "automation_enabled": false,
+      "classification": "NEEDS SMALL TARGETED LIVE PROBE"
+    },
+    {
+      "name": "40-K Meltagun",
+      "resource_hash": "6cfcc7f8801a0266",
+      "attack_kind": "Beam",
+      "automation_enabled": false,
+      "classification": "NEEDS SMALL TARGETED LIVE PROBE",
+      "existing_charge_levels": [
+        0.4,
+        0.5,
+        1
+      ],
+      "charge_component_record": 7
+    }
   ],
   "unknown": [
-    "runtime offset 4/8 exact cycle semantics for each weapon",
-    "full readiness predicate without changing vanilla charge settings",
-    "Meltagun beam completion and next-cycle readiness",
-    "reload-required and cannot-fire predicates",
-    "input-only charge release/re-press backend with independent physical input and exact restoration",
+    "stock bound Purifier/Loyalist shared charge component and state policy",
+    "mapping of reported swap lock to native latch/state",
+    "Meltagun beam completion, interruption and next-cycle permission semantics",
+    "stock reload-required/cannot-fire interpretation per selected instance",
+    "input-only release/re-press with independent physical release and exact restoration",
     "native ammo-widget fade and placement integration"
   ],
   "game_process_accessed_during_development": false,
@@ -44,5 +96,15 @@
   "weapon_data_writes_added": 0,
   "charge_entry_writes_added": 0,
   "heap_scanners_added": 0,
-  "next_step": "bounded read-only manual charge/beam trace using separate research package"
+  "next_step": "staged short shared-charge comparison; separate targeted Meltagun lifecycle probe",
+  "continued_from_commit": "12a60aa",
+  "revision": "1.1.0-research-rc2",
+  "logger_failure": {
+    "cause": "Shared Loader open_log rejects .jsonl before file/path operations",
+    "old_filename": "HD2FullAutoAssist-charge-research.jsonl",
+    "corrected_filename": "HD2FullAutoAssist-charge-probe.log",
+    "format": "JSON Lines",
+    "actual_loader_api_fixture_passed": true
+  },
+  "broad_research_logger_needed": false
 }
