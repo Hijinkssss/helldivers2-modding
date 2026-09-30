@@ -208,9 +208,22 @@ function M.new(environment,options)
     end
     function self:write_status()self:log('info','status',self:diagnostics())end
     local previous_update,previous_shutdown=environment.update,environment.shutdown
+    local hud,hud_provider,charge_research
+    function self:set_hud_provider(provider)
+        hud_provider=provider
+        hud=require('hud_indicator').new(environment.stingray)
+    end
+    function self:set_charge_research(provider)
+        charge_research=require('charge_research').new(self,provider,loader)
+    end
     local update_wrapper,shutdown_wrapper
     function self:stop()
         if self.closed then return ok(true)end
+        if hud then hud:clear()end
+        if charge_research then
+            -- Diagnostic I/O must never prevent restoration of the Fire lease.
+            pcall(charge_research.close,charge_research);charge_research=nil
+        end
         -- A restore failure retains callbacks and cleanup for a later retry.
         local good,why=pcall(self.cleanup or function()end)
         if not good then self:log('error','cleanup_failed',{reason=tostring(why)});return {ok=false,error={detail=tostring(why)}}end
@@ -298,6 +311,14 @@ function M.new(environment,options)
             end
             local after_started=self.profiler and self.profiler:start()
             local good,why=pcall(toggle_tick)
+            if hud and hud_provider then hud:present(hud_provider())end
+            if charge_research then
+                local ok,reason=pcall(charge_research.tick,charge_research)
+                if not ok then
+                    self:log('warning','charge_research_stopped',{reason=tostring(reason)})
+                    pcall(charge_research.close,charge_research);charge_research=nil
+                end
+            end
             local after_stock=after_started and math.max(0,platform:clock_us()-after_started) or 0
             if self.profiler then self.profiler:observe('update_wrapper',before_stock+after_stock)end
             if not good then self:log('error','input_failed',{reason=tostring(why)});self:stop()end
@@ -327,7 +348,7 @@ function M.start(environment,options)
         amr_profile={'balanced','full_auto'},
         hyena_profile={'balanced','full_auto'},
         bushwhacker_profile={'balanced','full_auto'},
-        eruptor_profile={'balanced','full_auto'},
+        eruptor_profile={'balanced','full_auto','stable_26','balanced_27','fast_28','max_32'},
     }
     local application=environment.stingray and environment.stingray.Application
     local global_require=rawget(_G,'require')
@@ -349,6 +370,10 @@ function M.start(environment,options)
         options and options.backend_factory or function(h)return require('native_fire').new(h)end,
         options and options.read_config,options and options.validation_factory)
     if not good then host:stop();error(consumer,0)end
+    if options and options.charge_research==true then
+        local ready,reason=pcall(host.set_charge_research,host,function()return consumer:get_state()end)
+        if not ready then host:log('warning','charge_research_unavailable',{reason=tostring(reason)})end
+    end
     local attached,why=pcall(host.attach,host)
     if not attached then host:stop();error(why,0)end
     environment.HD2FullAutoAssistStandalone=consumer;return consumer

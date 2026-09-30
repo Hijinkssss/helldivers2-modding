@@ -29,7 +29,7 @@ local profiles={{'05e4e5c2db6e44a2','peacemaker_profile',{'balanced','full_auto'
  {'89c5493e08ca4207','amr_profile',{'balanced','full_auto'}},
  {'e5796355a8fd67e0','hyena_profile',{'balanced','full_auto'}},
  {'2b28e17ffed05f7c','bushwhacker_profile',{'balanced','full_auto'}},
- {'b6aff2195568767f','eruptor_profile',{'balanced','full_auto'}}}
+ {'b6aff2195568767f','eruptor_profile',{'balanced','full_auto','stable_26','balanced_27','fast_28','max_32'}}}
 local cases={}
 for _,mode in ipairs({'balanced','native_cap'})do
     local p=Policy.new(mode)
@@ -49,7 +49,7 @@ for _,entry in ipairs(profiles)do for _,profile in ipairs(entry[3])do
     cases[#cases+1]={hash=entry[1],config=entry[2]..'='..profile,
         seconds=Policy.new('balanced','balanced',{[entry[2]]=profile}):classify(entry[1]).repeat_seconds}
 end end
-assert(#cases==78)
+assert(#cases==82)
 for _,case in ipairs(cases)do
     local f=Fixture.new(case.config);f:weapon(case.hash);f:fire(true);f:tick()
     assert(f.backend.lease and f.backend.repeat_seconds==case.seconds)
@@ -102,4 +102,4 @@ for _,mode in ipairs({'balanced','native_cap'})do
     assert(Policy.new(mode,'balanced',{eruptor_profile='full_auto'}):classify('b6aff2195568767f').max_repeat_rpm==32)
 end
 assert(math.abs(Native.native_period(60/26)-20/26)<1e-12,'Existing divided retry calculation retained')
-print('B3 native threshold replay: 78 policy/profile cases, long holds, release and boundary taps passed')
+print('B3 native threshold replay: '..#cases..' policy/profile cases, long holds, release and boundary taps passed')

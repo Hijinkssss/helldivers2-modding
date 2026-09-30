@@ -1,10 +1,10 @@
-"""Build the Shared Loader-only Full Auto Assist 1.0.1 Arsenal package."""
+"""Build unpublished next-version candidates. Never changes release artifacts."""
 from pathlib import Path
-import hashlib,json,struct,zipfile
+import argparse,hashlib,json,struct,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-VERSION='1.0.1'
+VERSION='1.1.0-research-rc1'
 PACKAGE=f'Full-Auto-Assist-{VERSION}-Arsenal.zip'
 OUTPUT=ROOT/'build'/VERSION
 LUA_TYPE=0xA14E8DFA2CD117E2
@@ -58,7 +58,7 @@ def verify_archive(data: bytes, source: bytes, module: str = MODULE) -> None:
 
 
 
-def bundle(module: str = MODULE):
+def bundle(module: str = MODULE, research: bool = False):
     lines=[f'-- HD2-Addon: {module}','local factories,loaded={},{}','local builtin_require=require',
         'local function own_require(name)',
         " if name=='ffi' then return builtin_require(name) end",
@@ -70,7 +70,8 @@ def bundle(module: str = MODULE):
         assert b'\r' not in raw and b'\0' not in raw and not raw.startswith(b'\xef\xbb\xbf')
         assert b'hd2modcore.' not in raw and b'mods/skyeshade/hd2runtime' not in raw
         lines += [f'factories[{f.stem!r}]=function(require)',raw.decode('utf-8'),'end']
-    lines += ["return own_require('lifecycle').start(_G)",'']
+    options=',{charge_research=true}' if research else ''
+    lines += [f"return own_require('lifecycle').start(_G{options})",'']
     return '\n'.join(lines).encode('utf-8')
 
 def option_bundle(module: str, setting: str, profile: str) -> bytes:
@@ -106,15 +107,20 @@ OPTIONS=[
         ('Balanced','Deliberate slow cadence that avoids dumping the entire load immediately while Fire is held.','balanced',90),
         ('Full Auto',"Uses the Bushwhacker's native fire-rate ceiling.",'full_auto',650)]),
     ('eruptor_profile','R-36 Eruptor',[
-        ('Balanced','Controlled cadence gives the long bolt animation additional time to settle.','balanced',26),
-        ('Full Auto',"Retains the Eruptor's maximum native cadence; less settling time.",'full_auto',32)]),
+        ('Stable','Controlled cadence gives the long bolt animation additional time to settle.','stable_26',26),
+        ('Balanced','Slightly faster controlled cadence.','balanced_27',27),
+        ('Fast','Fast controlled cadence.','fast_28',28),
+        ('Max',"Retains the Eruptor's maximum native cadence; less settling time.",'max_32',32)]),
 ]
 
 def option_module(setting: str, profile: str) -> str:
     return f'mods/codex/hd2_full_auto_assist_option_{setting}_{profile}'
 
 def main():
-    source=bundle();archive=archive_resource(source);verify_archive(archive,source)
+    parser=argparse.ArgumentParser();parser.add_argument('--research',action='store_true');args=parser.parse_args()
+    package_name=PACKAGE.replace('-Arsenal.zip','-Charge-Research-Arsenal.zip') if args.research else PACKAGE
+    out=OUTPUT/'charge-research' if args.research else OUTPUT
+    source=bundle(research=args.research);archive=archive_resource(source);verify_archive(archive,source)
     option_archives={}
     for setting,_,profiles in OPTIONS:
         for _,_,profile,_ in profiles:
@@ -122,9 +128,9 @@ def main():
             content=option_bundle(module,setting,profile)
             packed=archive_resource(content,module);verify_archive(packed,content,module)
             option_archives[(setting,profile)]=packed
-    out=OUTPUT;out.mkdir(parents=True,exist_ok=True)
+    out.mkdir(parents=True,exist_ok=True)
     (out/'hd2_full_auto_assist.lua').write_bytes(source);(out/ARCHIVE).write_bytes(archive)
-    description='An accessibility-focused QoL mod that lets supported semi-auto, burst, and game-cycled weapons continue firing while Fire is held, without altering damage, recoil, ammo, projectiles, or native weapon stats.'
+    description='Unpublished test candidate: existing FAA assistance, Eruptor cadence choices and a small HUD indicator. Charge weapons await native evidence.'
     groups=[{'Name':'Full Auto Assist','Description':'Required. The assistance feature and its supported-weapon policy.',
         'Include':['Core'],'Image':'thumbnail.png'}]
     files={'thumbnail.png':(ROOT/'thumbnail.png').read_bytes(),
@@ -138,46 +144,54 @@ def main():
             files[folder+'/'+ARCHIVE]=packed
             files[folder+'/'+ARCHIVE+'.stream']=b''
             files[folder+'/'+ARCHIVE+'.gpu_resources']=b''
-        groups.append({'Name':title,'Description':'Select one assisted fire-rate profile. Balanced is the default.',
+        groups.append({'Name':title,'Description':'Select one assisted fire-rate profile. '+('Stable 26 RPM is the default.' if setting=='eruptor_profile' else 'Balanced is the default.'),
             'SubOptions':children})
     files['manifest.json']=(json.dumps({'Version':1,'Guid':'cf368f5c-f686-453f-a566-435b4b7fcf26',
         'Name':'Full Auto Assist','Description':description,'Options':groups},indent=2)+'\n').encode()
-    for name in ('README.md','CHANGELOG.md','HD2FullAutoAssist.example.ini'):
+    for name in ('HD2FullAutoAssist.example.ini',):
         files[name]=(ROOT/name).read_bytes()
-    with zipfile.ZipFile(out/PACKAGE,'w',zipfile.ZIP_DEFLATED) as z:
+    files['README.md']=(ROOT/'docs/NEXT_VERSION_CANDIDATE.md').read_bytes()
+    files['LIVE_TEST.md']=(ROOT/'docs/NEXT_VERSION_LIVE_TEST.md').read_bytes()
+    with zipfile.ZipFile(out/package_name,'w',zipfile.ZIP_DEFLATED) as z:
         for name,raw in sorted(files.items()):
             info=zipfile.ZipInfo(name,(1980,1,1,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED
             info.external_attr=0o100644<<16;z.writestr(info,raw)
-    package_hash=hashlib.sha256((out/PACKAGE).read_bytes()).hexdigest()
-    (out/(PACKAGE+'.sha256')).write_text(f'{package_hash}  {PACKAGE}\n',encoding='ascii')
+    package_hash=hashlib.sha256((out/package_name).read_bytes()).hexdigest()
+    (out/(package_name+'.sha256')).write_text(f'{package_hash}  {package_name}\n',encoding='ascii')
     checks=ROOT/'build'/'standalone-checks.json'
     hashes={f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in sorted((ROOT/'src').glob('*.lua'))}
     tested=json.loads(checks.read_text()) if checks.exists() else {}
     b3_path=ROOT/'build/b3-checks.json'
     b3=json.loads(b3_path.read_text()) if b3_path.exists() else {}
     b3_passed=bool(b3.get('passed')) and b3.get('source_sha256')==hashes
+    next_path=ROOT/'build/next-version-checks.json'
+    next_checks=json.loads(next_path.read_text()) if next_path.exists() else {}
+    next_passed=next_checks.get('passed') is True and next_checks.get('source_sha256')==hashes
     report={'version':VERSION,'supported_build':'25480438','name':'Full Auto Assist',
         'description':description,'configuration_precedence':'Arsenal selected profile > explicit per-weapon INI profile > legacy INI mode > built-in Balanced policy',
         'external_dependencies':['Bingus Shared Loader v18 / API 1'],
         'source_sha256':hashlib.sha256(source).hexdigest(),'archive_sha256':hashlib.sha256(archive).hexdigest(),
         'package_sha256':package_hash,
-        'offline_tested':tested.get('offline_passed') is True and tested.get('source_sha256')==hashes and b3_passed,
+        'offline_tested':tested.get('offline_passed') is True and tested.get('source_sha256')==hashes and b3_passed and next_passed,
+        'next_version_regressions_and_evidence_gates_passed':next_passed,
         'b3_regressions_and_work_budgets_passed':b3_passed,
-        'live_standalone_validated':True,'live_validation_source':'Mod author reported successful B3 gameplay on 2026-09-29',
-        'release_status':'public release build',
-        'validated_base_commit':'9010c978a66b72e13a67c47a0c4802f9256fe3e7',
-        'live_validation_scope':'User-reported B3 gameplay and Watchdog performance; final 26 RPM Eruptor profile checked offline',
+        'live_standalone_validated':False,'live_validation_source':None,
+        'release_status':'unpublished partial candidate; charge automation gated',
+        'validated_base_commit':'2bba9ab85ab2f1264a310e9aa77168a9e22a5185',
+        'live_validation_scope':'pending Eruptor/HUD gameplay and read-only charge research',
+        'charge_research_enabled':args.research,'charge_automation_enabled':False,
+        'profiling_default':False,'validation_logging_default':False,'debug_logging_default':False,
         'baseline_commit':'be04ea15359b505bf953ef22d747e8f5e2de013e',
         'rc8_diagnostic_cleanup':{'removed':['startup_diagnostic.lua','RC8_DIAGNOSTIC.md','test_startup_diagnostic.lua',
             'phase/restore/toggle/avatar/hold diagnostic taps','lifecycle activation counters and diagnostic status',
             'native diagnostic sampling and mapping records'],
             'retained':['existing opt-in validation_trace.lua; disabled unless validation_logging=true']},
         'identity_observer_sha256':hashes['identity.lua'],'source_files':hashes,
-        'embedded_core':False,'embedded_hd2runtime':False,'package':PACKAGE,
+        'embedded_core':False,'embedded_hd2runtime':False,'package':package_name,
         'cadence':{'balanced_ceiling_rpm':380,'profiles':{title:{label:rpm for label,_,_,rpm in profiles}
             for _,title,profiles in OPTIONS},'input_attempts_are_not_shots':True},
         'artwork':'thumbnail.png','arsenal_option_groups':[{'name':title,'profiles':[{'label':label,'mode':profile,'rpm':rpm}
             for label,_,profile,rpm in profiles]} for _,title,profiles in OPTIONS]}
     (out/'build-report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
-    print('Built Full Auto Assist '+VERSION+': '+PACKAGE+'; Shared Loader v18 / API 1 only.')
+    print('Built Full Auto Assist '+VERSION+': '+package_name+'; Shared Loader v18 / API 1 only.')
 if __name__=='__main__':main()

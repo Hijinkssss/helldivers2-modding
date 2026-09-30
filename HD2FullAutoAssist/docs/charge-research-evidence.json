@@ -1,0 +1,48 @@
+{
+  "steam_build": "25480438",
+  "base_main": "2bba9ab85ab2f1264a310e9aa77168a9e22a5185",
+  "module_capture_sha256": "e27989fe7a2c0e2184ef64d4d587828f3ba5bc79f09a2d95c29f0724b8ab1969",
+  "game_dll_sha256": "2e2c3b7c2500646dadd5f2b4c6e0504dbb7e7896139f64cddc0d1813c718f51e",
+  "reference_repository": "https://github.com/CowboyBingus/VanillaPlusMegapack",
+  "reference_commit": "1b943e61d2436f204fb5d8740a6082f44a780e42",
+  "arc_reference_source_sha256": "041c162fab76448f027dad176d752d438ed50036f06022aca8ba2b3793c1cc65",
+  "catalog_repository": "https://github.com/SkyeShade/HD2Runtime",
+  "catalog_commit": "fd0c0d2b5618807a1ff63bedc9ed2f4b807c7595",
+  "observed_offline": {
+    "charge_manager_rva": "0x3326c20",
+    "charge_manager_static_xref_count": 38,
+    "runtime_count_offset": 16,
+    "entity_pointer_array_offset": 56,
+    "runtime_array_offset": 64,
+    "runtime_stride": 40,
+    "settings_entity_map_offset": 80,
+    "settings_array_offset": 144,
+    "settings_stride": 216,
+    "runtime_flag_offset": 12,
+    "flag_set_rva": "0x740a88",
+    "flag_clear_rva": "0x740bb0",
+    "settings_accessor_rva": "0x5052c0",
+    "charge_scaling_settings_read_rva": "0x73e316",
+    "charge_scaling_runtime_offset8_read_rva": "0x73e32d"
+  },
+  "weapons": [
+    {"name": "ARC-3 Arc Thrower", "resource_hash": "96de9cd50f7306e6", "automation_enabled": false},
+    {"name": "PLAS-101 Purifier", "resource_hash": "fb3a19078694708a", "automation_enabled": false},
+    {"name": "PLAS-15 Loyalist", "resource_hash": "aa69a60d74a3ec54", "automation_enabled": false},
+    {"name": "40-K Meltagun", "resource_hash": "6cfcc7f8801a0266", "attack_kind": "Beam", "automation_enabled": false}
+  ],
+  "unknown": [
+    "runtime offset 4/8 exact cycle semantics for each weapon",
+    "full readiness predicate without changing vanilla charge settings",
+    "Meltagun beam completion and next-cycle readiness",
+    "reload-required and cannot-fire predicates",
+    "input-only charge release/re-press backend with independent physical input and exact restoration",
+    "native ammo-widget fade and placement integration"
+  ],
+  "game_process_accessed_during_development": false,
+  "live_validation": false,
+  "weapon_data_writes_added": 0,
+  "charge_entry_writes_added": 0,
+  "heap_scanners_added": 0,
+  "next_step": "bounded read-only manual charge/beam trace using separate research package"
+}

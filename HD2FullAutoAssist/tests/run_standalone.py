@@ -204,6 +204,8 @@ def main():
     check('known resource table matches pinned real Runtime metadata; no discovery',known_data_checks)
     check('opt-in performance profiler summaries and percentiles',lambda:lua_at(ROOT/'src').execute(
         (ROOT/'tests/test_performance_profile.lua').read_text(encoding='utf-8')))
+    check('next-version Eruptor profiles, semantic charge groundwork, HUD and read-only observer',
+        lambda:native_transition_checks('test_next_version.lua'))
     report={'reference_commit':REFERENCE,'checks':checks,'offline_passed':True,
         'core_behavior_parity':'preserved for known identities, guards and input intervals except intentional Talon Balanced change',
         'live_standalone_validated':False,'game_process_accessed':False,

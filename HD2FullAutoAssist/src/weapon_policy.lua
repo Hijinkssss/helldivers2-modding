@@ -269,7 +269,7 @@ local PROFILE_RPMS={
     ['APW-1 Anti-Materiel Rifle']={balanced=AMR_BALANCED_RPM,full_auto=400},
     ['R-4 Hyena']={balanced=120,full_auto=190},
     ['SG-22 Bushwhacker']={balanced=90,full_auto=650},
-    ['R-36 Eruptor']={balanced=26,full_auto=32},
+    ['R-36 Eruptor']={balanced=26,full_auto=32,stable_26=26,balanced_27=27,fast_28=28,max_32=32},
 }
 
 function M.new(fire_rate_mode,talon_mode,profile_settings)

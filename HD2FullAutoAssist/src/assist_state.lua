@@ -1,5 +1,6 @@
 -- One consumer-owned resolved state. A future HUD reads snapshot(), never memory.
 local Policy=require('weapon_policy')
+local Hud=require('hud_indicator')
 local M={}
 local function integer(value,maximum)
     return type(value)=='number' and value==value and value%1==0 and value>0 and value<maximum
@@ -58,6 +59,7 @@ function M.new(policy,validated)
     end
     function self:set_repeat(active)state.repeat_active=active==true end
     function self:snapshot()return clone(state) end
+    function self:hud_state()return Hud.project(state)end
     function self:cache_status()return {hits=self.cache_hits,misses=self.cache_misses}end
     return self
 end

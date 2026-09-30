@@ -4,13 +4,17 @@ import argparse,hashlib,importlib.util,json,subprocess,sys,tempfile,zipfile
 from lupa.luajit21 import LuaRuntime
 ROOT=Path(__file__).resolve().parents[1]
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--loader-discovery',type=Path);args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--loader-discovery',type=Path)
+    parser.add_argument('--research',action='store_true');args=parser.parse_args()
     spec=importlib.util.spec_from_file_location('faa_builder',ROOT/'scripts/build.py')
     builder=importlib.util.module_from_spec(spec);spec.loader.exec_module(builder)
+    if args.research:
+        builder.OUTPUT=builder.OUTPUT/'charge-research'
+        builder.PACKAGE=builder.PACKAGE.replace('-Arsenal.zip','-Charge-Research-Arsenal.zip')
     archive=builder.OUTPUT/builder.ARCHIVE;package=builder.OUTPUT/builder.PACKAGE
     source=(builder.OUTPUT/'hd2_full_auto_assist.lua').read_bytes()
     builder.verify_archive(archive.read_bytes(),source)
-    assert source==builder.bundle()
+    assert source==builder.bundle(research=args.research)
     assert b"mods/codex/hd2_mod_core" not in source and b"mods/skyeshade/hd2runtime" not in source
     lua=LuaRuntime(unpack_returned_tuples=True)
     assert lua.eval('loadstring')(source.decode('utf-8')) is not None
@@ -35,13 +39,14 @@ def main():
     ''')
     report=json.loads((builder.OUTPUT/'build-report.json').read_text())
     assert report['external_dependencies']==['Bingus Shared Loader v18 / API 1']
-    assert report['offline_tested'] and report['live_standalone_validated'] is True
+    assert report['offline_tested'] and report['live_standalone_validated'] is False
     assert report['version']==builder.VERSION and report['supported_build']=='25480438'
-    assert report['live_standalone_validated'] is True
-    assert package.name=='Full-Auto-Assist-1.0.1-Arsenal.zip'
+    assert report['charge_automation_enabled'] is False and report['charge_research_enabled'] is args.research
+    suffix='-Charge-Research-Arsenal.zip' if args.research else '-Arsenal.zip'
+    assert package.name==f'Full-Auto-Assist-{builder.VERSION}'+suffix
     with zipfile.ZipFile(package) as z:
         names=z.namelist();manifest=json.loads(z.read('manifest.json'))
-        assert {'README.md','CHANGELOG.md','HD2FullAutoAssist.example.ini'} <= set(names)
+        assert {'README.md','LIVE_TEST.md','HD2FullAutoAssist.example.ini'} <= set(names)
         assert not any('validation.ini' in name.lower() or 'diagnostic' in name.lower() or '/docs/' in name.lower() for name in names)
         example=z.read('HD2FullAutoAssist.example.ini').decode('utf-8')
         for setting in ('enabled = true','user_enabled = true','repeat_ms = 0','toggle_hotkey = =',
@@ -49,8 +54,7 @@ def main():
                         'performance_label = unlabeled','fire_rate_mode = balanced'):
             assert setting in example,setting
         assert manifest['Name']=='Full Auto Assist'
-        assert manifest['Description']==('An accessibility-focused QoL mod that lets supported semi-auto, burst, and game-cycled weapons '
-            'continue firing while Fire is held, without altering damage, recoil, ammo, projectiles, or native weapon stats.')
+        assert manifest['Description']=='Unpublished test candidate: existing FAA assistance, Eruptor cadence choices and a small HUD indicator. Charge weapons await native evidence.'
         assert len(manifest['Options'])==9 and manifest['Options'][0]['Include']==['Core']
         assert z.read('thumbnail.png')==(ROOT/'thumbnail.png').read_bytes()
         assert 'SubOptions' not in manifest['Options'][0]
@@ -66,7 +70,7 @@ def main():
             'APW-1 Anti-Materiel Rifle':[('Balanced',120,'balanced'),('Full Auto',400,'full_auto')],
             'R-4 Hyena':[('Balanced',120,'balanced'),('Full Auto',190,'full_auto')],
             'SG-22 Bushwhacker':[('Balanced',90,'balanced'),('Full Auto',650,'full_auto')],
-            'R-36 Eruptor':[('Balanced',26,'balanced'),('Full Auto',32,'full_auto')],
+            'R-36 Eruptor':[('Stable',26,'stable_26'),('Balanced',27,'balanced_27'),('Fast',28,'fast_28'),('Max',32,'max_32')],
         }
         assert [row['Name'] for row in manifest['Options'][1:]]==list(expected)
         option_modules=[];option_keys=[]
@@ -84,9 +88,10 @@ def main():
         assert len(option_modules)==len(set(option_modules))
         assert len(option_keys)==len(set(option_keys))
         assert not any('hd2modcore' in name.lower() or 'hd2runtime' in name.lower() for name in names)
+        sources={'README.md':ROOT/'docs/NEXT_VERSION_CANDIDATE.md','LIVE_TEST.md':ROOT/'docs/NEXT_VERSION_LIVE_TEST.md'}
         for name in names:
             if name not in ('manifest.json',) and not name.startswith(('Core/','Options/')):
-                assert z.read(name)==(ROOT/name).read_bytes(),name
+                assert z.read(name)==sources.get(name,ROOT/name).read_bytes(),name
         for f in (ROOT/'src').glob('*.lua'):assert f.read_bytes().replace(b'\r\n',b'\n') in source
     discovery=False
     if args.loader_discovery:
@@ -106,7 +111,7 @@ def main():
             assert found=={builder.MODULE,*option_modules} and len(warnings)==0, (found,option_modules,list(warnings.values()))
         discovery=True
     before=hashlib.sha256(package.read_bytes()).hexdigest()
-    subprocess.run([sys.executable,str(ROOT/'scripts/build.py')],check=True)
+    subprocess.run([sys.executable,str(ROOT/'scripts/build.py')]+(['--research'] if args.research else []),check=True)
     assert hashlib.sha256(package.read_bytes()).hexdigest()==before,'Nondeterministic package'
     result={'package_file':package.name,'archive_source_zip_parity':True,'bundle_requires_only_builtin_ffi':True,
         'missing_loader_and_unsupported_process_fail_closed':True,'arsenal_profile_groups_and_empty_companions':True,
