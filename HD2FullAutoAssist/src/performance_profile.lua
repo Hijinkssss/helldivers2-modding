@@ -1,7 +1,7 @@
 -- Opt-in, in-memory runtime profiling. Summaries are emitted only on unload.
 local M={}
 local LIMITS={1,2,5,10,25,50,100,250,500,1000,2000,5000,10000,50000}
-local NAMES={'callback_fire','callback_identity','callback_toggle','toggle_poll','update_tick','update_wrapper','hud_present',
+local NAMES={'callback_fire','callback_identity','callback_toggle','toggle_poll','update_tick','update_wrapper','hud_present','hud_anchor',
     'backend_initialize','native_input_sample','input_eligibility','identity_snapshot',
     'policy_resolution','identity_fingerprint','cadence_logic','native_fire_begin','native_fire_refresh',
     'native_fire_restore','memory_page_validation','memory_platform_read','log_io',

@@ -1,3 +1,5 @@
+> Historical development document. Current authority: COMPLETION_CHECKPOINT.md and REMAINING_WEAPON_AUDIT.md. Eruptor vanilla native hold-to-repeat is confirmed; OFF repetition is expected. Mode labels in historical tables are metadata, not held-trigger evidence.
+
 # Controlled next-version validation
 
 ## Ordinary candidate: Eruptor and HUD
@@ -15,7 +17,7 @@
    whether it obstructs any native HUD element. Capture a screenshot for layout.
 4. Hold Eruptor Fire across several bolts; release and check immediate stop.
    Repeat with Slower Cadence 27 and Balanced 28, using separate closed-game
-   Arsenal selections and redeployment. Compare Maximum Full Auto 32. Record shot
+   Arsenal selections and redeployment. Compare Maximum / native-speed cadence 32. Record shot
    count, intervals, sound/animation continuity and settling feel separately.
 5. Test supported -> supported, supported -> unsupported -> supported, death /
    respawn, and ship -> mission -> ship. Confirm glyph and Fire mapping recovery.

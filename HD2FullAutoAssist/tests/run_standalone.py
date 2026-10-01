@@ -209,6 +209,8 @@ def main():
     check('read-only mapping audit and existing SPECIAL AMR eligibility',lambda:native_transition_checks('test_fire_audit.lua'))
     check('Eruptor OFF with live type-2 mappings and held transitions',lambda:native_transition_checks('test_off_native.lua'))
     check('HUD three states and guarded native extents',lambda:native_transition_checks('test_hud_anchor.lua'))
+    check('behavior roles, native hold-to-repeat OFF and manual-edge OFF',lambda:native_transition_checks('test_behavior_roles.lua'))
+    check('HUD bounded checked-read budget and race verification',lambda:native_transition_checks('test_hud_work_budget.lua'))
     check('RC2 migration, Commando and multi-world HUD diagnostics',lambda:native_transition_checks('test_rc2.lua'))
     check('next-version Eruptor profiles, semantic charge groundwork, HUD and read-only observer',
         lambda:native_transition_checks('test_next_version.lua'))

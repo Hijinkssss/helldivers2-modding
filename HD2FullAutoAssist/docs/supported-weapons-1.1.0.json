@@ -4,216 +4,278 @@
     "hash": "05e4e5c2db6e44a2",
     "balanced_rpm": 380,
     "category": "ASSIST",
-    "native_cap_status": "VERIFIED"
+    "native_cap_status": "VERIFIED",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "M6C/SOCOM Pistol",
     "hash": "4d58c77087b774c5",
     "balanced_rpm": 380,
     "category": "ASSIST",
-    "native_cap_status": "VERIFIED"
+    "native_cap_status": "VERIFIED",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "P-69 Veto",
     "hash": "c780bcd79547da0f",
     "balanced_rpm": 380,
     "category": "ASSIST",
-    "native_cap_status": "VERIFIED"
+    "native_cap_status": "VERIFIED",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "P-113 Verdict",
     "hash": "1a437158e1b8d2a1",
     "balanced_rpm": 380,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "R-63 Diligence",
     "hash": "03e67a19b07c6523",
     "balanced_rpm": 350,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "R-63CS Diligence Counter Sniper",
     "hash": "4c786785c79d44e7",
     "balanced_rpm": 350,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "R-2 Amendment",
     "hash": "0f83639ab8c86165",
     "balanced_rpm": 380,
     "category": "ASSIST",
-    "native_cap_status": "VERIFIED"
+    "native_cap_status": "VERIFIED",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "LAS-58 Talon",
     "hash": "416d053372c4e433",
     "balanced_rpm": 210,
     "category": "ASSIST",
-    "native_cap_status": "VERIFIED"
+    "native_cap_status": "VERIFIED",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "APW-1 Anti-Materiel Rifle",
     "hash": "89c5493e08ca4207",
     "balanced_rpm": 120,
     "category": "SPECIAL",
-    "native_cap_status": "VERIFIED"
+    "native_cap_status": "VERIFIED",
+    "assist_role": "Special",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "R-2124 Constitution",
     "hash": "7b75e5132ffd4ca6",
     "balanced_rpm": 60,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "R-6 Deadeye",
     "hash": "e6d932be83729076",
     "balanced_rpm": 100,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "R-4 Hyena",
     "hash": "e5796355a8fd67e0",
     "balanced_rpm": 120,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "R-72 Censor",
     "hash": "f0338468dcdb6a6c",
     "balanced_rpm": 380,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "SG-8 Punisher",
     "hash": "41eac4a03987faa0",
     "balanced_rpm": 80,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "SG-8S Slugger",
     "hash": "4f749e2ee26f532d",
     "balanced_rpm": 80,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "SG-20 Halt",
     "hash": "4e310b1fe4c52b52",
     "balanced_rpm": 80,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "SG-451 Cookout",
     "hash": "d323de60855898ac",
     "balanced_rpm": 80,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "M90A Shotgun",
     "hash": "90ddc374f4e3d756",
     "balanced_rpm": 80,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "SG-225IE Breaker Incendiary",
     "hash": "c12a34f375bd5a87",
     "balanced_rpm": 300,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "CB-9 Exploding Crossbow",
     "hash": "f49227a0630a3f7f",
     "balanced_rpm": 50,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "R-36 Eruptor",
     "hash": "b6aff2195568767f",
     "balanced_rpm": 28,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Cadence Control",
+    "held_behavior_evidence": "user verified fresh vanilla native hold-to-repeat, 2026-10-01"
   },
   {
     "name": "SG-8P Punisher Plasma",
     "hash": "05d8d8c073b9d502",
     "balanced_rpm": 80,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "R/40-K Hot-Shot Marksman Rifle",
     "hash": "1abbff60d26ba391",
     "balanced_rpm": 210,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "JAR-5 Dominator",
     "hash": "80f1a156d9fa1e36",
     "balanced_rpm": 250,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "P-4 Senator",
     "hash": "8d3d52a3b2f19402",
     "balanced_rpm": 200,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "P-11 Stim Pistol",
     "hash": "d6b1fb05b9109353",
     "balanced_rpm": 70,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "SG-22 Bushwhacker",
     "hash": "2b28e17ffed05f7c",
     "balanced_rpm": 90,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "P-35 Re-Educator",
     "hash": "0b882808c6f498e8",
     "balanced_rpm": 110,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "P/40-K Bolt Pistol",
     "hash": "dbb6c961c59fadc1",
     "balanced_rpm": 150,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "P-92 Warrant",
     "hash": "cf8934ff6567a42d",
     "balanced_rpm": 380,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   },
   {
     "name": "MLS-4X Commando",
     "hash": "5990123d142b16cb",
     "balanced_rpm": 120,
     "category": "ASSIST",
-    "native_cap_status": "RUNTIME_SNAPSHOT"
+    "native_cap_status": "RUNTIME_SNAPSHOT",
+    "assist_role": "Repeat Assist policy",
+    "held_behavior_evidence": "not individually re-audited in this pass"
   }
 ]

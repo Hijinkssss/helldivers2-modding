@@ -4,7 +4,7 @@ import argparse,hashlib,json,struct,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-VERSION='1.1.0-rc3-private-off-audit'
+VERSION='1.1.0-rc3-completion-checkpoint'
 PACKAGE=f'Full-Auto-Assist-{VERSION}-Arsenal.zip'
 OUTPUT=ROOT/'build'/VERSION
 LUA_TYPE=0xA14E8DFA2CD117E2
@@ -113,7 +113,7 @@ OPTIONS=[
     ('eruptor_profile','R-36 Eruptor',[
         ('Balanced / default','Default assisted cadence.','balanced_28',28),
         ('Slower Cadence','Deliberately slower assisted cadence.','slower_27',27),
-        ('Maximum Full Auto',"Retains the Eruptor's maximum native cadence.",'max_32',32)]),
+        ('Maximum / native-speed cadence',"Retains the Eruptor's maximum native cadence.",'max_32',32)]),
 ]
 
 def option_module(setting: str, profile: str) -> str:
@@ -134,7 +134,7 @@ def main():
     out.mkdir(parents=True,exist_ok=True)
     (out/'hd2_full_auto_assist.lua').write_bytes(source);(out/ARCHIVE).write_bytes(archive)
     description=('Read-only RC4 charge and independent left-mouse probe: 40-K Meltagun only. Charge automation remains disabled.'
-        if args.research else 'Full Auto Assist 1.1.0 private RC3: restoration ownership fix and OFF-state diagnostics; persistent Eruptor OFF repetition remains under investigation. Preserves RC2 profiles and 31 supported weapons. Meltagun support is not included.')
+        if args.research else 'Full Auto Assist 1.1.0 completion checkpoint, not final RC: 31 supported weapons, Eruptor native hold-to-repeat cadence control and measured offline HUD read-cost reduction. Charge input and live performance gates remain open. Meltagun support is not included.')
     groups=[{'Name':'Full Auto Assist','Description':'Required. The assistance feature and its supported-weapon policy.',
         'Include':['Core'],'Image':'thumbnail.png'}]
     files={'thumbnail.png':(ROOT/'thumbnail.png').read_bytes(),
@@ -167,6 +167,8 @@ def main():
         files['CHANGELOG.md']=(ROOT/'CHANGELOG.md').read_bytes()
         files['RELEASE_NOTES.md']=(ROOT/'docs/RELEASE_1.1.0.md').read_bytes()
         files['SUPPORTED_WEAPONS.md']=(ROOT/'docs/SUPPORTED_WEAPONS_1.1.0.md').read_bytes()
+        files['REMAINING_WEAPON_AUDIT.md']=(ROOT/'docs/REMAINING_WEAPON_AUDIT.md').read_bytes()
+        files['COMPLETION_CHECKPOINT.md']=(ROOT/'docs/COMPLETION_CHECKPOINT.md').read_bytes()
     with zipfile.ZipFile(out/package_name,'w',zipfile.ZIP_DEFLATED) as z:
         for name,raw in sorted(files.items()):
             info=zipfile.ZipInfo(name,(1980,1,1,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED
@@ -191,9 +193,13 @@ def main():
         'next_version_regressions_and_evidence_gates_passed':next_passed,
         'b3_regressions_and_work_budgets_passed':b3_passed,
         'live_standalone_validated':False,'live_validation_source':None,
-        'release_status':'private diagnostic candidate; Eruptor OFF release blocker unresolved',
+        'release_status':'verification checkpoint; final private RC withheld',
+        'final_private_rc_ready':False,
+        'remaining_release_gates':['physical-release-safe charge adapter','bound readiness and completion for the five intended charge weapons','matched live RC3 performance attribution and after measurement'],
+        'eruptor_native_behavior':'native hold-to-repeat; OFF repetition is expected',
+        'hud_visual_implementation_unchanged':True,
         'validated_base_commit':'735c1025f1b2c3d5f5cbb4dc6d4f4b7b875ce5e9',
-        'live_validation_scope':'RC2 lineage preserved; persistent Eruptor OFF root cause remains unresolved; private diagnostic candidate only',
+        'live_validation_scope':'Eruptor OFF concern closed by user vanilla test; HUD approved by user on RC3; new HUD read optimization has offline verification only',
         'charge_research_enabled':args.research,'charge_automation_enabled':False,
         'charge_probe_filename':'HD2FullAutoAssist-charge-probe.log' if args.research else None,
         'charge_probe_sampling':'each relevant stock update, capped at 6000 samples' if args.research else None,

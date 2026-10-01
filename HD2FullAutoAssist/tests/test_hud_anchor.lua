@@ -5,7 +5,7 @@ local ffi=require('ffi')
 local host=Fixture.host();local anchor=Anchor.new(host)
 local plain=assert(anchor:sample(1920,1080))
 assert(plain.right==240 and plain.x==246 and plain.y==107 and plain.scale==1)
-assert(plain.nodes==6 and host.reads==22 and host.writes==0)
+assert(plain.nodes==6 and host.reads==16 and host.writes==0)
 local pack=host.layout.pack
 host:put(pack,Fixture.widget(270,90,64,48,host.layout.panel,nil,nil,2,true))
 local wide=assert(anchor:sample(1920,1080));assert(wide.right==334 and wide.x==340 and wide.y==plain.y)

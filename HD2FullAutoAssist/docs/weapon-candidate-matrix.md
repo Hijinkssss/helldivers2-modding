@@ -1,3 +1,5 @@
+> Historical development document. Current authority: COMPLETION_CHECKPOINT.md and REMAINING_WEAPON_AUDIT.md. Eruptor vanilla native hold-to-repeat is confirmed; OFF repetition is expected. Mode labels in historical tables are metadata, not held-trigger evidence.
+
 # Full Auto Assist 1.0 weapon expansion
 
 Identity, mode vectors, family data and snapshot RPMs come from the pinned

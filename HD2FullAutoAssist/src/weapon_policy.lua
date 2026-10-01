@@ -4,7 +4,7 @@
 -- Policy categories:
 --   ASSIST               eligible for Full Auto Assist
 --   IGNORE_NATIVE_AUTO   weapon already has native Full Auto in the R-menu; never assist
---   EXCLUDE_CHARGE_HOLD   charge/hold weapon; hold-to-fire is inherent, repeated Fire assist incompatible
+--   EXCLUDE_CHARGE_HOLD   charge/hold weapon; generic repeat requires a validated charge policy
 --   SPECIAL              special-case weapon with per-weapon tuning (e.g. AMR)
 --   REVIEW               unresolved or ambiguous; fail closed (no assist)
 -- Unknown/unrecognised weapons always fail closed (no assist).
@@ -165,7 +165,8 @@ local ENTRIES = {
     { kind='weapon', name='CB-9 Exploding Crossbow', category='ASSIST', native_cap_rpm=50,
       native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 50 RPM.' },
     { kind='weapon', name='R-36 Eruptor', category='ASSIST', native_cap_rpm=32, balanced_rpm=28,
-      native_cap_status='RUNTIME_SNAPSHOT', notes='Default 28 RPM Balanced cadence. Slower Cadence 27 RPM and Maximum Full Auto 32 RPM; game controls recovery.' },
+      assist_role='CADENCE_CONTROL', native_held_behavior='native_hold_to_repeat',
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Vanilla native hold-to-repeat through the bolt cycle, observed near 32 RPM. FAA controls cadence: 27 slower, 28 default, 32 native-speed. OFF restores native repetition; game controls recovery.' },
     { kind='weapon', name='SG-8P Punisher Plasma', category='ASSIST', native_cap_rpm=80,
       native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 80 RPM.' },
     { kind='weapon', name='R/40-K Hot-Shot Marksman Rifle', category='ASSIST', native_cap_rpm=210,
@@ -351,6 +352,8 @@ function M.new(fire_rate_mode,talon_mode,profile_settings)
             local allowed=is_assisted(entry.category)
             by_hash[key]={name=entry.name,semantic_id=entry.kind..':'..entry.name,
                 category=entry.category,allowed=allowed,resource_hash=key,
+                assist_role=entry.assist_role or (allowed and (entry.category=='SPECIAL' and 'SPECIAL' or 'REPEAT_ASSIST') or 'UNSUPPORTED'),
+                native_held_behavior=entry.native_held_behavior or 'not_individually_audited',
                 reason='explicit_consumer_policy',notes=entry.notes,
                 native_cap_status=entry.native_cap_status,
                 native_cap_rpm=allowed and entry.native_cap_rpm or nil,

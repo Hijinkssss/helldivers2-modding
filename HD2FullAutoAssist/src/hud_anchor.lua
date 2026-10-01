@@ -6,10 +6,12 @@ local ROOT=0x346d538
 local PANEL=0x24e340+0x60
 local AMMO=0x3220
 local LIMIT,DEPTH=192,16
+local WORD=ffi.typeof('const uint32_t *')
+local FLOAT=ffi.typeof('const float *')
 local function number(bytes,offset,kind)
-    local value=ffi.new(kind..'[1]')
-    ffi.copy(value,bytes:sub(offset+1,offset+4),4)
-    return tonumber(value[0])
+    -- These are already-owned Lua strings, never live pointers. Typed views
+    -- avoid an allocation, substring and copy for every field of every node.
+    return tonumber(ffi.cast(kind=='float' and FLOAT or WORD,bytes)[offset/4])
 end
 local function pointer(bytes,offset)
     local lo=number(bytes,offset,'uint32_t')
@@ -39,8 +41,12 @@ function M.new(host)
     local self={samples=0,unavailable=0,nodes=0}
     function self:sample(width,height)
         self.samples=self.samples+1
+        local profiler=host.profiler
+        local started=profiler and profiler:start()
+        local reads=0
         local good,result=pcall(function()
             local function read(at,n)
+                reads=reads+1
                 local bytes=host:read_live(at,n)
                 assert(type(bytes)=='string' and #bytes==n,'HUD read unavailable')
                 return bytes
@@ -59,7 +65,7 @@ function M.new(host)
                 local bytes=read(at,248)
                 local first,next_node,actual_parent=pointer(bytes,224),pointer(bytes,232),pointer(bytes,240)
                 assert(parent==nil or actual_parent==parent,'HUD parent changed')
-                links[#links+1]={at=at,bytes=bytes:sub(225,248),flags=bytes:sub(1,4)}
+                links[#links+1]={at=at,bytes=bytes}
                 local flags=number(bytes,0,'uint32_t')
                 local opacity=number(bytes,84,'float')
                 assert(finite(opacity,0,1.01),'Invalid HUD opacity')
@@ -86,7 +92,11 @@ function M.new(host)
             assert(read(host.base+ROOT,8)==root_bytes and read(panel+AMMO,248)==row_bytes,
                 'Native HUD changed during sample')
             for _,link in ipairs(links)do
-                assert(read(link.at+224,24)==link.bytes and read(link.at,4)==link.flags,
+                -- One checked read replaces separate link and flag reads.
+                -- Keep exactly the existing flag/topology race predicates.
+                local current=read(link.at,248)
+                assert(current:sub(225,248)==link.bytes:sub(225,248) and
+                    current:sub(1,4)==link.bytes:sub(1,4),
                     'Native HUD tree changed during sample')
             end
             self.nodes=count
@@ -96,6 +106,12 @@ function M.new(host)
             assert(x+17*s<=width and y>=0 and y+14*s<=height,'No room after native HUD')
             return {x=x,y=y,scale=s,right=right,gap=6*row.scale,nodes=count}
         end)
+        if profiler then
+            profiler:finish('hud_anchor',started)
+            profiler:increment('hud_anchor_reads',reads)
+            profiler:increment(good and 'hud_anchor_successes' or 'hud_anchor_failures')
+            if good then profiler:increment('hud_anchor_nodes',result.nodes)end
+        end
         if not good then self.unavailable=self.unavailable+1;self.nodes=0;return nil end
         return result
     end

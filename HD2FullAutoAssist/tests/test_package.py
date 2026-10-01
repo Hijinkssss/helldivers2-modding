@@ -40,6 +40,7 @@ def main():
     report=json.loads((builder.OUTPUT/'build-report.json').read_text())
     assert report['external_dependencies']==['Bingus Shared Loader v18 / API 1']
     assert report['offline_tested'] and report['live_standalone_validated'] is False
+    assert report['final_private_rc_ready'] is False and report['remaining_release_gates']
     assert report['version']==builder.VERSION and report['supported_build']=='25480438'
     assert report['charge_automation_enabled'] is False and report['charge_research_enabled'] is args.research
     if args.research:
@@ -56,6 +57,8 @@ def main():
     with zipfile.ZipFile(package) as z:
         names=z.namelist();manifest=json.loads(z.read('manifest.json'))
         assert {'README.md','LIVE_TEST.md','HD2FullAutoAssist.example.ini'} <= set(names)
+        if not args.research:
+            assert {'REMAINING_WEAPON_AUDIT.md','COMPLETION_CHECKPOINT.md'} <= set(names)
         assert not any('validation.ini' in name.lower() or '/docs/' in name.lower() or
             ('diagnostic' in name.lower() and name!='OFF-STATE-DIAGNOSTIC.ini') for name in names)
         assert z.read('OFF-STATE-DIAGNOSTIC.ini')==(ROOT/'docs/OFF-STATE-DIAGNOSTIC.ini').read_bytes()
@@ -75,7 +78,7 @@ def main():
         if not args.research:
             assert report['target_release_version']=='1.1.0' and report['supported_weapon_count']==31
             assert report['charge_factories_packaged'] is False
-            assert b"version='1.1.0-rc3-private-off-audit'" in source
+            assert b"version='1.1.0-rc3-completion-checkpoint'" in source
             tail="return own_require('lifecycle').start(_G)"
             assert source.decode().count(tail)==1
             packed_policy=LuaRuntime(unpack_returned_tuples=True).execute(source.decode().replace(tail,"return own_require('weapon_policy').new('balanced')"))
@@ -113,7 +116,7 @@ def main():
             'MLS-4X Commando':[('Balanced',120,'balanced'),('Full Auto',240,'full_auto')],
             'R-4 Hyena':[('Balanced',120,'balanced'),('Full Auto',190,'full_auto')],
             'SG-22 Bushwhacker':[('Balanced',90,'balanced'),('Full Auto',650,'full_auto')],
-            'R-36 Eruptor':[('Balanced / default',28,'balanced_28'),('Slower Cadence',27,'slower_27'),('Maximum Full Auto',32,'max_32')],
+            'R-36 Eruptor':[('Balanced / default',28,'balanced_28'),('Slower Cadence',27,'slower_27'),('Maximum / native-speed cadence',32,'max_32')],
         }
         assert [row['Name'] for row in manifest['Options'][1:]]==list(expected)
         option_modules=[];option_keys=[]
@@ -139,6 +142,8 @@ def main():
             'OFF-STATE-DIAGNOSTIC.ini':ROOT/'docs/OFF-STATE-DIAGNOSTIC.ini',
             'HUD_ANCHORING.md':ROOT/'docs/HUD_RC2_LAYOUT.md',
             'RELEASE_NOTES.md':ROOT/'docs/RELEASE_1.1.0.md',
+            'COMPLETION_CHECKPOINT.md':ROOT/'docs/COMPLETION_CHECKPOINT.md',
+            'REMAINING_WEAPON_AUDIT.md':ROOT/'docs/REMAINING_WEAPON_AUDIT.md',
             'SUPPORTED_WEAPONS.md':ROOT/'docs/SUPPORTED_WEAPONS_1.1.0.md'}
         for name in names:
             if name not in ('manifest.json',) and not name.startswith(('Core/','Options/')):

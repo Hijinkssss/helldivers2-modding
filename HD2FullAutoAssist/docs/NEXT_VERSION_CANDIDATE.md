@@ -1,9 +1,11 @@
+> Historical development document. Current authority: COMPLETION_CHECKPOINT.md and REMAINING_WEAPON_AUDIT.md. Eruptor vanilla native hold-to-repeat is confirmed; OFF repetition is expected. Mode labels in historical tables are metadata, not held-trigger evidence.
+
 # Full Auto Assist 1.1.0 research RC2 (unpublished)
 
 This is a partial next-version candidate based on public v1.0.1. Do not upload
 it to Nexus or treat it as a completed charge-weapon release.
 
-Implemented: Eruptor Slower Cadence 27, Balanced / default 28 and Maximum Full Auto 32 RPM selections,
+Implemented: Eruptor Slower Cadence 27, Balanced / default 28 and Maximum / native-speed cadence 32 RPM selections,
 and a small static three-cartridge indicator beside the lower-left weapon HUD.
 The indicator uses exposed Stingray screen-GUI rectangles, no text or animation,
 and reads only already-resolved FAA state. It hides when FAA is OFF, identity is

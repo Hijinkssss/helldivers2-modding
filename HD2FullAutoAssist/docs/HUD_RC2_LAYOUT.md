@@ -1,6 +1,6 @@
-# FAA 1.1.0 RC2 HUD layout
+# FAA 1.1.0 approved HUD layout
 
-This private candidate continues the authoritative RC2 commit `735c1025f1b2c3d5f5cbb4dc6d4f4b7b875ce5e9` and carries forward the preserved HUD work. The RC2 roster and all profile/option archives remain unchanged. The separate restoration defect and unresolved Eruptor OFF symptom are documented in OFF-STATE-INVESTIGATION.md.
+The user approved RC3's HUD in live testing on 2026-10-01. Its renderer, colors, cartridge geometry, gap, scale, world selection, native extent and per-frame sampling are frozen. Eruptor's former OFF concern is closed by vanilla validation. The completion checkpoint changes only captured-byte parsing and combines the existing flag/link verification reads; it does not alter the visual behavior below.
 
 ## Three states
 

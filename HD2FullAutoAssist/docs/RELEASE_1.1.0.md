@@ -1,21 +1,13 @@
-# Full Auto Assist v1.1.0 private RC3 notes (unpublished)
+# Full Auto Assist 1.1.0 completion checkpoint
 
-Private RC3 continues the current RC2 lineage. It retains saved Fire originals across context/conflict failures, rejects failed restore transitions, keeps OFF's authoritative gate closed, and retries verified rollback with bounded errors. HUD OFF is opaque white; ON yellow/geometry is unchanged. Native panel extent replaces fixed screen placement. Persistent Eruptor OFF repetition is not yet proven solved: this is a diagnostic candidate, not a release-ready fix.
+Not a final private RC. Continues RC3 at 8fbe8d4 on the existing branch. All 31 supported identities, Commando 120/240 RPM and AMR SPECIAL are retained. No charge automation is enabled. Meltagun support is not included; actively researching how to implement it for a later update remains historical context, not a decision to exclude it permanently from this requested scope.
 
-Adds MLS-4X Commando through ordinary repeated Fire, with Balanced at 120 RPM by default and Full Auto at the retained native 240 RPM ceiling. Its Arsenal group follows the AMR profile setup; the optional INI setting is `commando_profile=balanced|full_auto`, with Arsenal taking precedence. Projectile behavior, guidance, selector, reload, ammo, damage and all other mechanics remain game-controlled. The existing 30-weapon roster is retained, with Eruptor tuning as the sole cadence change.
+Eruptor is Cadence Control for observed native hold-to-repeat through the bolt cycle. Keep 27 RPM slower, 28 RPM default/balanced and 32 RPM maximum/native-speed. OFF restores vanilla held repetition; it is not a regression. The user's improved follow-up accuracy at 28 RPM is an observation, not an official design-intent claim.
 
-Eruptor now offers exactly:
+The approved HUD renderer is byte-identical to RC3. Internal sampled-string parsing and combined flag/topology verification reduce checked reads from 3N+4 to 2N+4 without changing visual rules, sampling frequency or native extent guards. Controlled own-process Windows-memory timings improve, but live Watchdog attribution and after measurements remain required. Profiling is opt-in/in-memory; release defaults and HUD logging stay OFF.
 
-- 27 RPM - Slower Cadence
-- 28 RPM - Balanced / default
-- 32 RPM - Maximum Full Auto
+All five intended charge weapons were audited, including newer RC4 and RC5 Meltagun captures. Physical-release-safe charge input is unvalidated. Accelerator burst completion/empty denial and Meltagun beam ownership/completion remain unresolved. Bound settings from the newer Meltagun recording correct the old missing-settings conclusion for that weapon only. No plateau threshold, reset-as-shot rule or broad heap scan was introduced.
 
-The Arsenal default selection is listed first as Balanced 28 RPM. Old RC1 configuration selections migrate safely; the retired slow setting falls back to the new 28 RPM default. Legacy Balanced also migrates to 28, while existing selections for the remaining cadences retain their rates. Compatibility names are accepted only while parsing/discovering old settings, and are not selectable options.
+Offline regressions cover native-held OFF preservation, manual-edge OFF, Eruptor 27/28/32 lease cadence, held swaps, unsupported suppression, approved HUD states, restore ownership, race verification and bounded expensive work. Offline checks are not live accepted-shot or performance proof. Requires Shared Loader v18/API 1 and exact Steam build 25480438. See LIVE_TEST.md and COMPLETION_CHECKPOINT.md.
 
-HUD diagnostics now default OFF. A separate short-run diagnostic INI enables read-only native mapping/state audits and profiling. Audit snapshots are capped at 96; native level-input trace records are deduplicated while timed pulses remain recorded. Synchronous trace and ordinary event logging can affect diagnostic timings. The 14 ms live spike remains unattributed; hud_present and existing log/callback/init metrics support the next measurement.
-
-**Meltagun support is not included in v1.1.0. I am actively researching how to implement it for a later update.** Arc Thrower, Purifier, Loyalist and Accelerator also remain unassisted. The normal package includes no charge-research factories.
-
-Requires Bingus Shared Loader v18 / API 1 and supported Steam build 25480438. Starts ON; use `=` or your registered binding to toggle. Unknown/native-auto weapons stay unassisted. No merge, push, publication, deployment or public-release modification was performed.
-
-Offline regression and package checks do not establish live HUD visibility or accepted weapon cadence. See LIVE_TEST.md for the remaining acceptance checks.
+No merge, push, publication, deployment or Nexus edit. The final private RC is withheld pending the stated evidence gates.

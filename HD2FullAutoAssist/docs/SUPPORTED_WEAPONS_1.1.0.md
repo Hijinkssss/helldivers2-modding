@@ -38,4 +38,14 @@
 
 Commando repeats ordinary Fire with Balanced at 120 RPM (500 ms) by default or Full Auto at the retained native 240 RPM ceiling (250 ms); guided/dumb-fire behavior, four-round expendable capacity and shot acceptance remain game-controlled. Exact identity, owned native cadence and offline input safety are checked; accepted live shot cadence and guidance continuity remain pending RC2 validation.
 
-Meltagun support is not included. I am actively researching how to implement it for a later update. Arc Thrower, Purifier, Loyalist and Accelerator also remain unassisted pending charge input validation. Native Full Auto and unknown/unlisted weapons stay under normal game control.
+Meltagun, Arc Thrower, Purifier, Loyalist and Accelerator are audited Special candidates and currently unassisted. See REMAINING_WEAPON_AUDIT.md for specific evidence and blockers. Native Full Auto and unknown/unlisted weapons stay under normal game control.
+
+## Assistance roles and evidence limits
+
+**Cadence Control:** R-36 Eruptor. A fresh verified no-mod vanilla launch showed native hold-to-repeat through the bolt cycle near 32 RPM. FAA paces that existing behavior: 27 slower, 28 default/balanced, 32 maximum/native-speed. OFF releases control and vanilla repetition continues. The user observed more controlled follow-up shots at 28 RPM. This is observed input behavior, not official design intent or a weapon-stat modification.
+
+**Special:** APW-1 Anti-Materiel Rifle retains its existing validated SPECIAL policy, 120/400 RPM profiles and normal Fire lease. The five charge candidates are also Special, but are not enabled; their audit is separate below.
+
+**Repeat Assist policy:** the other 29 supported entries, including Commando, retain existing repeated ordinary Fire handling and profiles. This names FAA's current policy role; it does not claim a fresh vanilla held-trigger audit for all 29. Metadata/native mode vectors establish identity and configured modes, not whether holding Fire naturally repeats. If live vanilla behavior demonstrates native repetition, reclassify the role from evidence without silently changing eligibility or rates.
+
+**Unsupported:** native-auto exclusions, unknown identities and the five gated charge candidates receive no FAA input ownership. Gated Special candidates may add value once their release/completion gates are established; they are not classified as having no value.
