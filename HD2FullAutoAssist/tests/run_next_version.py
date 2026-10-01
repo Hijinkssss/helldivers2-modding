@@ -24,6 +24,7 @@ def charge_idle(src,weapon,held=False):
     '''))
 def main():
     lua=runtime(ROOT/'src');lua.execute((ROOT/'tests/test_next_version.lua').read_text())
+    lua.execute((ROOT/'tests/test_rc2.lua').read_text())
     lua.execute((ROOT/'tests/test_charge_probe.lua').read_text())
     lua.execute((ROOT/'tests/test_charge_probe_targets.lua').read_text())
     research=plain(lua.globals().NEXT_RESEARCH_BUDGETS)

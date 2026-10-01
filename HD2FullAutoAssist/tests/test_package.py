@@ -69,14 +69,14 @@ def main():
         assert 'SubOptions' not in manifest['Options'][0]
         assert manifest['Guid']=='cf368f5c-f686-453f-a566-435b4b7fcf26'
         if not args.research:
-            assert report['target_release_version']=='1.1.0' and report['supported_weapon_count']==30
+            assert report['target_release_version']=='1.1.0' and report['supported_weapon_count']==31
             assert report['charge_factories_packaged'] is False
-            assert b"version='1.1.0-rc1'" in source
+            assert b"version='1.1.0-rc2'" in source
             tail="return own_require('lifecycle').start(_G)"
             assert source.decode().count(tail)==1
             packed_policy=LuaRuntime(unpack_returned_tuples=True).execute(source.decode().replace(tail,"return own_require('weapon_policy').new('balanced')"))
             roster=json.loads((ROOT/'docs/supported-weapons-1.1.0.json').read_text())
-            assert len(roster)==30 and len({r['hash'] for r in roster})==30
+            assert len(roster)==31 and len({r['hash'] for r in roster})==31
             for row in roster:
                 decision=packed_policy.classify(packed_policy,row['hash'])
                 assert decision.allowed and decision.name==row['name']
@@ -87,6 +87,16 @@ def main():
             assert 'CHARGE_REASSESSMENT.md' not in names
             assert b'Meltagun support is not included' in z.read('README.md')
             assert b'actively researching how to implement it for a later update' in z.read('RELEASE_NOTES.md')
+        assert report['hud_force_visible_default'] is False and report['hud_diagnostics_record_cap']==120
+        assert 'hud_probe_visible = false' in example and 'hud_diagnostics = true' in example
+        assert not any('stable_26' in name for name in names)
+        for name in ('README.md','CHANGELOG.md','RELEASE_NOTES.md','SUPPORTED_WEAPONS.md','LIVE_TEST.md'):
+            if not args.research:
+                text=z.read(name).decode()
+                assert '26 RPM' not in text and '26/27' not in text
+                assert '1.1.0-rc1-Arsenal.zip' not in text
+        assert '31 explicitly supported' in z.read('README.md').decode()
+        assert 'MLS-4X Commando' in z.read('README.md').decode()
         assert z.read('Core/'+builder.ARCHIVE)==archive.read_bytes()
         for ext in ('.stream','.gpu_resources'):assert z.read('Core/'+builder.ARCHIVE+ext)==b''
         expected={
@@ -98,7 +108,7 @@ def main():
             'APW-1 Anti-Materiel Rifle':[('Balanced',120,'balanced'),('Full Auto',400,'full_auto')],
             'R-4 Hyena':[('Balanced',120,'balanced'),('Full Auto',190,'full_auto')],
             'SG-22 Bushwhacker':[('Balanced',90,'balanced'),('Full Auto',650,'full_auto')],
-            'R-36 Eruptor':[('Stable',26,'stable_26'),('Balanced',27,'balanced_27'),('Fast',28,'fast_28'),('Max',32,'max_32')],
+            'R-36 Eruptor':[('Balanced / default',28,'balanced_28'),('Slower Cadence',27,'slower_27'),('Maximum Full Auto',32,'max_32')],
         }
         assert [row['Name'] for row in manifest['Options'][1:]]==list(expected)
         option_modules=[];option_keys=[]
@@ -106,7 +116,7 @@ def main():
             assert group['Name']==title and len(group['SubOptions'])==len(expected[title])
             assert len({child['Name'] for child in group['SubOptions']})==len(group['SubOptions'])
             for child,(label,rpm,mode),(_,_,profile,expected_rpm) in zip(group['SubOptions'],expected[title],profiles):
-                assert rpm==expected_rpm and child['Name']==f'{label} ({rpm} RPM)'
+                assert rpm==expected_rpm and child['Name']==(f'{rpm} RPM - {label}' if setting=='eruptor_profile' else f'{label} ({rpm} RPM)')
                 folder=child['Include'][0]
                 module=builder.option_module(setting,mode);option_modules.append(module);option_keys.append((setting,mode))
                 content=builder.option_bundle(module,setting,mode)

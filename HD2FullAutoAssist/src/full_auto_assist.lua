@@ -14,6 +14,8 @@ local schema={enabled={type='boolean',default=true},user_enabled={type='boolean'
     repeat_ms={type='integer',default=0,min=0,max=1000},
     toggle_hotkey={type='string',default='=',max_length=16},debug_logging={type='boolean',default=false},
     validation_logging={type='boolean',default=false},
+    hud_diagnostics={type='boolean',default=true},
+    hud_probe_visible={type='boolean',default=false},
     performance_profile={type='boolean',default=false},
     performance_label={type='string',default='unlabeled',max_length=48},
     -- Fire-rate mode:
@@ -31,7 +33,7 @@ local schema={enabled={type='boolean',default=true},user_enabled={type='boolean'
     hyena_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
     bushwhacker_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
     eruptor_profile={type='string',default='',max_length=16,
-        values={['']=true,balanced=true,full_auto=true,stable_26=true,balanced_27=true,fast_28=true,max_32=true}}}
+        values={['']=true,slower_27=true,balanced_28=true,max_32=true}}}
 local function config_text()
     local root=assert(os.getenv('LOCALAPPDATA'),'LOCALAPPDATA unavailable')
     local f,why,number=io.open(root..'/CowboyBingus/Helldivers2/HD2FullAutoAssist.ini','rb')
@@ -144,7 +146,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
         policy=Policy.new(settings.fire_rate_mode,settings.talon_mode,settings)
         state=AssistState.new(policy,IDENTITY_VALIDATED)
         state:set_enabled(settings.user_enabled)
-        if host.set_hud_provider then host:set_hud_provider(function()return state:hud_state()end)end
+        if host.set_hud_provider then host:set_hud_provider(function()return state:hud_state()end,settings)end
         if not policy.available then
             emit('warning','selective_assist_unavailable',{reason=policy.reason,
                 fallback='vanilla',required='known_current_build_policy'})
@@ -360,7 +362,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     trace:flush(false)
                 end
             end) end
-        local initialized={version='1.1.0-rc1',hotkey=settings.toggle_hotkey,
+        local initialized={version='1.1.0-rc2',hotkey=settings.toggle_hotkey,
             talon_mode=settings.talon_mode,
             active=state:is_enabled(),mechanism='selective_native_repeat_interval',identity_validated=IDENTITY_VALIDATED}
         if profiler then

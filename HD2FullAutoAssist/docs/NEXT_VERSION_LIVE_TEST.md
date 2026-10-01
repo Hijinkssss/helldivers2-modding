@@ -14,8 +14,8 @@
    and disappears on unsupported weapons. Check HUD scale/offset settings and
    whether it obstructs any native HUD element. Capture a screenshot for layout.
 4. Hold Eruptor Fire across several bolts; release and check immediate stop.
-   Repeat with Stable 26, Balanced 27 and Fast 28, using separate closed-game
-   Arsenal selections and redeployment. Optionally compare Max 32. Record shot
+   Repeat with Slower Cadence 27 and Balanced 28, using separate closed-game
+   Arsenal selections and redeployment. Compare Maximum Full Auto 32. Record shot
    count, intervals, sound/animation continuity and settling feel separately.
 5. Test supported -> supported, supported -> unsupported -> supported, death /
    respawn, and ship -> mission -> ship. Confirm glyph and Fire mapping recovery.

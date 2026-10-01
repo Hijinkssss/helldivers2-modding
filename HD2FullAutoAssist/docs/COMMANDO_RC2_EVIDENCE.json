@@ -1,0 +1,78 @@
+{
+  "supported_build": "25480438",
+  "exe_sha256": "F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06",
+  "resource_hash": "5990123d142b16cb",
+  "identity_resolution": "EXACT UNIQUE",
+  "owned_components": [
+    "ProjectileWeaponComponentData",
+    "WeaponMagazineComponentData",
+    "WeaponDataComponentData",
+    "WeaponLinkerComponentData"
+  ],
+  "charge_component_present": false,
+  "fire_mode_slots": [
+    2,
+    0,
+    0,
+    0
+  ],
+  "selector": "LaserGuide",
+  "native_mode_authoring_blocked": true,
+  "faa_changes": "ordinary Fire repeats only; no mode or guidance authoring",
+  "user_authorized_commando_support": true,
+  "live_commando_tested": false,
+  "cadence_evidence": {
+    "semanticFieldId": "weapon.fire_rate",
+    "supportWeapon": "MLS-4X Commando",
+    "value": {
+      "kind": "scalar",
+      "type": "number",
+      "baseline": 240,
+      "expected": 240,
+      "unit": "rpm",
+      "reference": null
+    },
+    "backing": {
+      "objectKey": "support-object/v1/projectileweaponcomponentdata/1e5db935823b8be4bc82",
+      "kind": "component",
+      "semanticType": "ProjectileWeaponComponentData",
+      "domain": "ProjectileWeaponComponentData",
+      "operationGroupingKey": "support-operation/v1/e078df9c54dcbd924d59",
+      "runtimeBackingScope": "component:ProjectileWeaponComponentData"
+    },
+    "resolution": {
+      "rootChain": [
+        "weapon_entity"
+      ],
+      "linkage": "owned_component",
+      "parentObjectKey": null,
+      "terminalPhase": null,
+      "planPhase": 1,
+      "planDependencies": [],
+      "requiresLaterPlanPhase": false,
+      "targetFrom": null
+    },
+    "provenance": {
+      "identity": "unique reviewed support-weapon runtime identity",
+      "semantics": "shared player/support field schema",
+      "ownership": "typed retained-snapshot ownership chain",
+      "baseline": "exact retained-snapshot value",
+      "validation": "production resolver guarded ALREADY_DESIRED no-op",
+      "evidenceArtifact": "support-weapon-authoring-validation-F5FEE03DCFDB.json"
+    }
+  },
+  "source_artifacts": [
+    {
+      "name": "SupportWeaponCapabilities.json",
+      "sha256": "04590260bbf3f2ab0497c04a7d3815093f41bedefd43eb4c834b32a660e87e19"
+    },
+    {
+      "name": "SupportWeaponAuthoringCapabilities.json",
+      "sha256": "0de869a2685f399e2569fd1b9cc3828d240522904417e8754da59981ba7fe5ea"
+    },
+    {
+      "name": "WeaponFireModeCapabilities.json",
+      "sha256": "545b3cb5e6ccd97d1ee95dd3454f5d60e27565e70a7afd4d6130caa6b133bf99"
+    }
+  ]
+}

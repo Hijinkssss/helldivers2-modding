@@ -39,15 +39,15 @@ for _,sequence in ipairs({{peace,cookout,verdict},{eruptor,talon,eruptor},
     assert(f.consumer:status().counters.errors==0 and f.host:diagnostics().scheduler.failures==0)
     assert(f.consumer:stop().ok and f:restored())
 end
--- All 30 assisted resources in both modes with the real native cadence guard.
+-- All 31 assisted resources in both modes with the real native cadence guard.
 local hashes={peace,'4d58c77087b774c5','c780bcd79547da0f',verdict,'03e67a19b07c6523',
  '4c786785c79d44e7','0f83639ab8c86165',talon,'89c5493e08ca4207',
  '7b75e5132ffd4ca6','e6d932be83729076','e5796355a8fd67e0','f0338468dcdb6a6c',
  '41eac4a03987faa0','4f749e2ee26f532d','4e310b1fe4c52b52',cookout,'90ddc374f4e3d756',
  'c12a34f375bd5a87',crossbow,eruptor,'05d8d8c073b9d502','1abbff60d26ba391',
  '80f1a156d9fa1e36','8d3d52a3b2f19402','d6b1fb05b9109353','2b28e17ffed05f7c',
- '0b882808c6f498e8','dbb6c961c59fadc1','cf8934ff6567a42d'}
-assert(#hashes==30) -- 29 weapons plus the AMR support weapon.
+ '0b882808c6f498e8','dbb6c961c59fadc1','cf8934ff6567a42d','5990123d142b16cb'}
+assert(#hashes==31) -- 29 weapons plus AMR and Commando support weapons.
 for _,mode in ipairs({'balanced','native_cap'})do
     local f=Fixture.new('fire_rate_mode='..mode)
     for i,hash in ipairs(hashes)do acquire(f,hash,0x100+i,0x64000000+i*4096)end
@@ -111,7 +111,7 @@ assert(row.raw_lmb_down and f.physical_samples==before+1 and row.held and row.ga
 f:fire(false);f:tick()
 f:fire(true);row=f.backend:sample(false)
 local writes=f.writes
-for _,seconds in ipairs({0,-1,60/900-0.00001,60/26+0.00001,math.huge,0/0,'1'})do
+for _,seconds in ipairs({0,-1,60/900-0.00001,60/27+0.00001,math.huge,0/0,'1'})do
     assert(not pcall(f.backend.begin,f.backend,row,seconds))
     assert(f.writes==writes and not f.backend.lease)
 end

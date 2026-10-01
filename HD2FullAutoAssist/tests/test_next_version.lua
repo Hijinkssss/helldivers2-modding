@@ -6,7 +6,7 @@ local Observer=require('charge_observer')
 NEXT_RESEARCH_BUDGETS={}
 -- Exact policy values, actual native lease and unchanged generic scheduler.
 local eruptor='b6aff2195568767f'
-for profile,rpm in pairs({stable_26=26,balanced_27=27,fast_28=28,max_32=32,balanced=26,full_auto=32})do
+for profile,rpm in pairs({slower_27=27,balanced_28=28,max_32=32})do
     for _,mode in ipairs({'balanced','native_cap'})do
         local policy=Policy.new(mode,'balanced',{eruptor_profile=profile})
         local decision=policy:classify(eruptor)
@@ -67,11 +67,11 @@ for _,behavior in ipairs({'release_at_ready','restart_after_beam'})do
 end
 -- Retained GUI, resize, world rebuild, cleanup and isolation from renderer faults.
 local created,destroyed,rects,updates=0,0,0,0
-local ui={};local main={};local worlds={main,ui};local width,height=1920,1080
+local ui={};local main={};local extra={};local worlds={main,ui,extra};local width,height=1920,1080
 local engine={Application={worlds=function()return worlds end,main_world=function()return main end},
     World={create_screen_gui=function(world)assert(world==ui);created=created+1;return {}end,
         destroy_gui=function(world)assert(world==ui);destroyed=destroyed+1 end},
-    Gui={resolution=function()return width,height end,
+    Gui={set_visible=function()end,resolution=function()return width,height end,
         rect=function(_,pos,size)assert(size[1]<=4 and size[2]<=9);rects=rects+1;return rects end,
         update_rect=function()updates=updates+1 end},
     Vector2=function(...)return {...}end,Vector3=function(...)return {...}end,Color=function(...)return {...}end}
@@ -80,7 +80,7 @@ local reads,queries=f.host.reads,#f.queries
 for _=1,1000 do hud:present(f.consumer:get_hud_state())end
 assert(f.host.reads==reads and #f.queries==queries and created==1 and rects==9 and updates==0)
 height=720;hud:present(f.consumer:get_hud_state());assert(updates==9)
-ui={};worlds={main,ui};hud:present(f.consumer:get_hud_state());assert(created==2)
+ui={};worlds={main,ui,extra};hud:present(f.consumer:get_hud_state());assert(created==2)
 f:weapon('968211c0033dce64');f:tick();hud:present(f.consumer:get_hud_state());assert(not hud.gui and destroyed==1)
 f:weapon(eruptor);f:tick();assert(f.consumer:get_hud_state().visible)
 f:game_state(1);f:tick();assert(not f.consumer:get_hud_state().visible)

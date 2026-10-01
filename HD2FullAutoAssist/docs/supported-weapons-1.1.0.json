@@ -142,7 +142,7 @@
   {
     "name": "R-36 Eruptor",
     "hash": "b6aff2195568767f",
-    "balanced_rpm": 26,
+    "balanced_rpm": 28,
     "category": "ASSIST",
     "native_cap_status": "RUNTIME_SNAPSHOT"
   },
@@ -206,6 +206,13 @@
     "name": "P-92 Warrant",
     "hash": "cf8934ff6567a42d",
     "balanced_rpm": 380,
+    "category": "ASSIST",
+    "native_cap_status": "RUNTIME_SNAPSHOT"
+  },
+  {
+    "name": "MLS-4X Commando",
+    "hash": "5990123d142b16cb",
+    "balanced_rpm": 240,
     "category": "ASSIST",
     "native_cap_status": "RUNTIME_SNAPSHOT"
   }

@@ -46,7 +46,7 @@ Meltagun beam lookup is absent for the held entity in every captured sample. Do 
 2. Semantic policies: Arc/Purifier/Loyalist release at the bound native full-charge state; Accelerator release at the native state and await completion of the full native burst; Meltagun await independently confirmed beam completion before re-press. Thresholds and permission come from native evidence, never duration guesses.
 3. One Fire-input adapter: only ordinary legal Fire edges. Establish the physical binding independently, preserve exact original mapping bytes, restore on every exit, retain originals for restoration retries, and preserve external edits. No weapon-state writes or synthetic startup keypress.
 4. Shared cancellation: physical release, swap, generation/identity loss, unsupported weapon, death/respawn, ship/mission, read failure, ammo denial and reload recovery invalidate charge state and restore Fire. Reacquisition must not reuse a previous weapon's state.
-5. HUD consumes the existing shared state; no independent native polling. Eruptor profiles remain 26/27/28/32.
+5. HUD consumes the existing shared state; no independent native polling. The ordinary RC2 candidate uses Eruptor profiles 27/28/32, default 28.
 
 ## Next work, in order
 

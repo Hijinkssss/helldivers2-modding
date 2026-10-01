@@ -81,7 +81,7 @@ KnowYourConstellation source demonstrates `stingray.Application.worlds`,
 `World.create_screen_gui` / `destroy_gui`, `Gui.rect` / `update_rect` and screen
 resolution. Use these exposed APIs for retained geometry, with native yellow
 and white coloring. No undocumented HUD-object writes or native function calls.
-GUI lifetime follows the unique UI world; ambiguous or missing worlds hide it.
+RC2 GUI lifetime follows the first non-main world, matching the exposed surface selection used by existing HUD mods. Missing worlds hide it; diagnostics record the chosen world.
 Normalized default position beside lower-left ammo requires visual validation;
 exact native ammo fade/offset binding remains unresolved. GUI errors hide the
 indicator without disabling gameplay. No animation or text.

@@ -1,6 +1,6 @@
 # v1.1.0 supported weapons
 
-30 explicit identities, preserved from main v1.0.1. Rates below are default input-attempt rates, not guaranteed shot rates. Existing validation records cover the base policy; not every weapon has a separately measured shot-rate test.
+31 explicit identities: the 30-weapon v1.0.1 roster plus Commando. Eruptor default is now 28 RPM; its selectable cadences are 27 / 28 / 32 RPM. Rates below are default input-attempt rates, not guaranteed shot rates. Existing validation records cover the base policy; not every weapon has a separately measured shot-rate test.
 
 | Weapon | Default RPM | Resource hash |
 |---|---:|---|
@@ -24,7 +24,7 @@
 | M90A Shotgun | 80 | `90ddc374f4e3d756` |
 | SG-225IE Breaker Incendiary | 300 | `c12a34f375bd5a87` |
 | CB-9 Exploding Crossbow | 50 | `f49227a0630a3f7f` |
-| R-36 Eruptor | 26 | `b6aff2195568767f` |
+| R-36 Eruptor | 28 | `b6aff2195568767f` |
 | SG-8P Punisher Plasma | 80 | `05d8d8c073b9d502` |
 | R/40-K Hot-Shot Marksman Rifle | 210 | `1abbff60d26ba391` |
 | JAR-5 Dominator | 250 | `80f1a156d9fa1e36` |
@@ -34,5 +34,9 @@
 | P-35 Re-Educator | 110 | `0b882808c6f498e8` |
 | P/40-K Bolt Pistol | 150 | `dbb6c961c59fadc1` |
 | P-92 Warrant | 380 | `cf8934ff6567a42d` |
+
+| MLS-4X Commando | 240 | `5990123d142b16cb` |
+
+Commando repeats ordinary Fire at the retained native 240 RPM input cadence (250 ms); guided/dumb-fire behavior, four-round expendable capacity and shot acceptance remain game-controlled. Exact identity, owned native cadence and offline input safety are checked; accepted live shot cadence and guidance continuity remain pending RC2 validation.
 
 Meltagun support is not included. I am actively researching how to implement it for a later update. Arc Thrower, Purifier, Loyalist and Accelerator also remain unassisted pending charge input validation. Native Full Auto and unknown/unlisted weapons stay under normal game control.

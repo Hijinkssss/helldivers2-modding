@@ -14,7 +14,7 @@ controller and native lifecycle checks require no installed game or Runtime.
 
 The B2 native-transition fixture connects the real lifecycle, guarded identity,
 controller, policy and native mapping backend over synthetic byte memory. It
-covers all 30 assisted resources in both modes and every selectable profile,
+covers all 31 assisted resources in both modes and every selectable profile,
 active A/B/C swaps, unsupported transitions, hash/entity/root changes, transient
 identity page/read failure, ship/mission and death/new-avatar respawn. Page-scope
 checks reject different and crossing addresses and verify error cleanup.
@@ -32,3 +32,5 @@ Research RC3 targets only Accelerator `30061f91af477f5e` and Meltagun
 `6cfcc7f8801a0266`. `test_charge_probe_targets.lua` exercises actual observer and
 recorder recognition for both, and verifies Arc/Purifier/Loyalist, conventional,
 and unknown resources consume zero probe reads or samples. Both suites run it.
+
+RC2 adds `test_rc2.lua`: legacy config and Arsenal migration, guarded Commando hold/release/swap/OFF/ship handling, HUD classification, multi-world GUI selection, explicit visibility, bounded diagnostics and opt-in force-probe/fault isolation. B3 enumerates all 31 identities plus every selectable profile (81 native threshold cases). These remain offline tests; no GUI fixture proves in-game pixels or accepted rockets.

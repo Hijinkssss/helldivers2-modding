@@ -59,7 +59,7 @@ local expansion={
     {'M90A Shotgun','90ddc374f4e3d756',80},
     {'SG-225IE Breaker Incendiary','c12a34f375bd5a87',300},
     {'CB-9 Exploding Crossbow','f49227a0630a3f7f',50},
-    {'R-36 Eruptor','b6aff2195568767f',32,26},
+    {'R-36 Eruptor','b6aff2195568767f',32,28},
     {'SG-8P Punisher Plasma','05d8d8c073b9d502',80},
     {'R/40-K Hot-Shot Marksman Rifle','1abbff60d26ba391',210},
     {'JAR-5 Dominator','80f1a156d9fa1e36',250},
@@ -69,6 +69,7 @@ local expansion={
     {'P-35 Re-Educator','0b882808c6f498e8',110},
     {'P/40-K Bolt Pistol','dbb6c961c59fadc1',150},
     {'P-92 Warrant','cf8934ff6567a42d',450,380},
+    {'MLS-4X Commando','5990123d142b16cb',240,240},
 }
 local baseline=Policy.new('balanced','balanced')
 for _,row in ipairs(expansion)do

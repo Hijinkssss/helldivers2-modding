@@ -3,18 +3,18 @@
 This is a partial next-version candidate based on public v1.0.1. Do not upload
 it to Nexus or treat it as a completed charge-weapon release.
 
-Implemented: Eruptor Stable 26, Balanced 27, Fast 28 and Max 32 RPM selections,
+Implemented: Eruptor Slower Cadence 27, Balanced / default 28 and Maximum Full Auto 32 RPM selections,
 and a small static three-cartridge indicator beside the lower-left weapon HUD.
 The indicator uses exposed Stingray screen-GUI rectangles, no text or animation,
 and reads only already-resolved FAA state. It hides when FAA is OFF, identity is
 unavailable, aboard ship, or the weapon is unsupported. Position, appearance,
-GUI-world selection and interaction with HUD scale/offsets need live validation.
+RC2 uses the first non-main GUI world; interaction with HUD scale/offsets needs live validation.
 It does not yet inherit the native ammo widget's fade.
 
 The v1.0.1 conventional roster and optimized native input path are preserved.
-Legacy Eruptor `balanced` and `full_auto` INI profiles still mean 26 and 32 RPM.
-New INI profiles: `stable_26`, `balanced_27`, `fast_28`, `max_32`.
-Arsenal selections take precedence. With no explicit selection Eruptor stays 26.
+Legacy Eruptor selections migrate safely to the three current options; Balanced uses the new 28 RPM default.
+New INI profiles: `slower_27`, `balanced_28`, `max_32`.
+Arsenal selections take precedence. With no explicit selection Eruptor uses 28 RPM.
 
 Arc Thrower, Purifier, Loyalist and Meltagun remain unsupported for automation.
 Shared semantic-cycle groundwork and a developer-only read-only observer exist,

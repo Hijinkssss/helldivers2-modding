@@ -4,7 +4,7 @@ import argparse,hashlib,json,struct,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-VERSION='1.1.0-rc1'
+VERSION='1.1.0-rc2'
 PACKAGE=f'Full-Auto-Assist-{VERSION}-Arsenal.zip'
 OUTPUT=ROOT/'build'/VERSION
 LUA_TYPE=0xA14E8DFA2CD117E2
@@ -108,10 +108,9 @@ OPTIONS=[
         ('Balanced','Deliberate slow cadence that avoids dumping the entire load immediately while Fire is held.','balanced',90),
         ('Full Auto',"Uses the Bushwhacker's native fire-rate ceiling.",'full_auto',650)]),
     ('eruptor_profile','R-36 Eruptor',[
-        ('Stable','Controlled cadence gives the long bolt animation additional time to settle.','stable_26',26),
-        ('Balanced','Slightly faster controlled cadence.','balanced_27',27),
-        ('Fast','Fast controlled cadence.','fast_28',28),
-        ('Max',"Retains the Eruptor's maximum native cadence; less settling time.",'max_32',32)]),
+        ('Balanced / default','Default assisted cadence.','balanced_28',28),
+        ('Slower Cadence','Deliberately slower assisted cadence.','slower_27',27),
+        ('Maximum Full Auto',"Retains the Eruptor's maximum native cadence.",'max_32',32)]),
 ]
 
 def option_module(setting: str, profile: str) -> str:
@@ -132,7 +131,7 @@ def main():
     out.mkdir(parents=True,exist_ok=True)
     (out/'hd2_full_auto_assist.lua').write_bytes(source);(out/ARCHIVE).write_bytes(archive)
     description=('Read-only RC4 charge and independent left-mouse probe: 40-K Meltagun only. Charge automation remains disabled.'
-        if args.research else 'Full Auto Assist 1.1.0 RC1: 30 supported weapons, active-assistance HUD indicator and Eruptor cadence choices. Meltagun support is not included; the author is actively researching it for a later update.')
+        if args.research else 'Full Auto Assist 1.1.0 RC2: 31 supported weapons, active-assistance HUD indicator and Eruptor cadence choices. Meltagun support is not included; the author is actively researching it for a later update.')
     groups=[{'Name':'Full Auto Assist','Description':'Required. The assistance feature and its supported-weapon policy.',
         'Include':['Core'],'Image':'thumbnail.png'}]
     files={'thumbnail.png':(ROOT/'thumbnail.png').read_bytes(),
@@ -141,12 +140,12 @@ def main():
         children=[]
         for label,help_text,profile,rpm in profiles:
             folder=f'Options/{setting.removesuffix("_profile")}/{profile}'
-            children.append({'Name':f'{label} ({rpm} RPM)','Description':help_text,'Include':[folder]})
+            children.append({'Name':(f'{rpm} RPM - {label}' if setting=='eruptor_profile' else f'{label} ({rpm} RPM)'),'Description':help_text,'Include':[folder]})
             packed=option_archives[(setting,profile)]
             files[folder+'/'+ARCHIVE]=packed
             files[folder+'/'+ARCHIVE+'.stream']=b''
             files[folder+'/'+ARCHIVE+'.gpu_resources']=b''
-        groups.append({'Name':title,'Description':'Select one assisted fire-rate profile. '+('Stable 26 RPM is the default.' if setting=='eruptor_profile' else 'Balanced is the default.'),
+        groups.append({'Name':title,'Description':'Select one assisted fire-rate profile. '+('Balanced 28 RPM is the default.' if setting=='eruptor_profile' else 'Balanced is the default.'),
             'SubOptions':children})
     files['manifest.json']=(json.dumps({'Version':1,'Guid':'cf368f5c-f686-453f-a566-435b4b7fcf26',
         'Name':'Full Auto Assist RC4 Meltagun Probe' if args.research else 'Full Auto Assist',
@@ -176,7 +175,7 @@ def main():
     next_path=ROOT/'build/next-version-checks.json'
     next_checks=json.loads(next_path.read_text()) if next_path.exists() else {}
     next_passed=next_checks.get('passed') is True and next_checks.get('source_sha256')==hashes
-    report={'version':VERSION,'target_release_version':'1.1.0','supported_weapon_count':30,'charge_factories_packaged':args.research,'supported_build':'25480438','name':'Full Auto Assist',
+    report={'version':VERSION,'target_release_version':'1.1.0','supported_weapon_count':31,'charge_factories_packaged':args.research,'supported_build':'25480438','name':'Full Auto Assist',
         'description':description,'configuration_precedence':'Arsenal selected profile > explicit per-weapon INI profile > legacy INI mode > built-in Balanced policy',
         'external_dependencies':['Bingus Shared Loader v18 / API 1'],
         'source_sha256':hashlib.sha256(source).hexdigest(),'archive_sha256':hashlib.sha256(archive).hexdigest(),
@@ -187,11 +186,12 @@ def main():
         'live_standalone_validated':False,'live_validation_source':None,
         'release_status':'unpublished release candidate; review required before merge or publication',
         'validated_base_commit':'2bba9ab85ab2f1264a310e9aa77168a9e22a5185',
-        'live_validation_scope':'v1.0.1 base has recorded live validation; new HUD appearance and Eruptor options remain pending live review',
+        'live_validation_scope':'v1.0.1 base has recorded live validation; RC2 HUD render path, Commando and Eruptor options remain pending live review',
         'charge_research_enabled':args.research,'charge_automation_enabled':False,
         'charge_probe_filename':'HD2FullAutoAssist-charge-probe.log' if args.research else None,
         'charge_probe_sampling':'each relevant stock update, capped at 6000 samples' if args.research else None,
         'charge_probe_targets':{'6cfcc7f8801a0266':'40-K Meltagun'} if args.research else None,
+        'hud_diagnostics_default':True,'hud_diagnostics_record_cap':120,'hud_force_visible_default':False,
         'profiling_default':False,'validation_logging_default':False,'debug_logging_default':False,
         'baseline_commit':'be04ea15359b505bf953ef22d747e8f5e2de013e',
         'rc8_diagnostic_cleanup':{'removed':['startup_diagnostic.lua','RC8_DIAGNOSTIC.md','test_startup_diagnostic.lua',

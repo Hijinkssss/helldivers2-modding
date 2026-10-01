@@ -209,9 +209,13 @@ function M.new(environment,options)
     function self:write_status()self:log('info','status',self:diagnostics())end
     local previous_update,previous_shutdown=environment.update,environment.shutdown
     local hud,hud_provider,charge_research
-    function self:set_hud_provider(provider)
+    function self:set_hud_provider(provider,settings)
         hud_provider=provider
-        hud=require('hud_indicator').new(environment.stingray)
+        hud=require('hud_indicator').new(environment.stingray,{
+            force_visible=settings and settings.hud_probe_visible==true,
+            log=(not settings or settings.hud_diagnostics~=false) and function(fields)
+                self:log('info','hud_rc2',fields)
+            end or nil})
     end
     function self:set_charge_research(provider)
         charge_research=require('charge_research').new(self,provider,loader)
@@ -348,7 +352,7 @@ function M.start(environment,options)
         amr_profile={'balanced','full_auto'},
         hyena_profile={'balanced','full_auto'},
         bushwhacker_profile={'balanced','full_auto'},
-        eruptor_profile={'balanced','full_auto','stable_26','balanced_27','fast_28','max_32'},
+        eruptor_profile={'slower_27','balanced_28','max_32','balanced','full_auto','stable_26','balanced_27','fast_28'},
     }
     local application=environment.stingray and environment.stingray.Application
     local global_require=rawget(_G,'require')

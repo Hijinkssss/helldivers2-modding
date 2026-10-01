@@ -113,7 +113,7 @@ def static_checks():
         except Exception:pass
         else:raise AssertionError('Invalid config accepted: '+text[:40])
     p=lua.eval("require('weapon_policy').new('balanced')")
-    assert p.available and p.status(p).mapped_resources==33
+    assert p.available and p.status(p).mapped_resources==34
     policy_for_talon=lua.eval("function(profile)return require('weapon_policy').new('native_cap',profile)end")
     for profile,rpm in (('balanced',210),('efficiency',60),('full_auto',380),('fuller_auto',750)):
         profile_policy=policy_for_talon(profile)
@@ -204,6 +204,7 @@ def main():
     check('known resource table matches pinned real Runtime metadata; no discovery',known_data_checks)
     check('opt-in performance profiler summaries and percentiles',lambda:lua_at(ROOT/'src').execute(
         (ROOT/'tests/test_performance_profile.lua').read_text(encoding='utf-8')))
+    check('RC2 migration, Commando and multi-world HUD diagnostics',lambda:native_transition_checks('test_rc2.lua'))
     check('next-version Eruptor profiles, semantic charge groundwork, HUD and read-only observer',
         lambda:native_transition_checks('test_next_version.lua'))
     check('targeted charge/beam/ammo probe and loader filename/cleanup safety',

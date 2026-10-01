@@ -29,7 +29,7 @@ local profiles={{'05e4e5c2db6e44a2','peacemaker_profile',{'balanced','full_auto'
  {'89c5493e08ca4207','amr_profile',{'balanced','full_auto'}},
  {'e5796355a8fd67e0','hyena_profile',{'balanced','full_auto'}},
  {'2b28e17ffed05f7c','bushwhacker_profile',{'balanced','full_auto'}},
- {'b6aff2195568767f','eruptor_profile',{'balanced','full_auto','stable_26','balanced_27','fast_28','max_32'}}}
+ {'b6aff2195568767f','eruptor_profile',{'slower_27','balanced_28','max_32'}}}
 local cases={}
 for _,mode in ipairs({'balanced','native_cap'})do
     local p=Policy.new(mode)
@@ -41,7 +41,7 @@ for _,mode in ipairs({'balanced','native_cap'})do
         '4e310b1fe4c52b52','d323de60855898ac','90ddc374f4e3d756','c12a34f375bd5a87',
         'f49227a0630a3f7f','b6aff2195568767f','05d8d8c073b9d502','1abbff60d26ba391',
         '80f1a156d9fa1e36','8d3d52a3b2f19402','d6b1fb05b9109353','2b28e17ffed05f7c',
-        '0b882808c6f498e8','dbb6c961c59fadc1','cf8934ff6567a42d'})do
+        '0b882808c6f498e8','dbb6c961c59fadc1','cf8934ff6567a42d','5990123d142b16cb'})do
         cases[#cases+1]={hash=hash,config='fire_rate_mode='..mode,seconds=p:classify(hash).repeat_seconds}
     end
 end
@@ -49,7 +49,7 @@ for _,entry in ipairs(profiles)do for _,profile in ipairs(entry[3])do
     cases[#cases+1]={hash=entry[1],config=entry[2]..'='..profile,
         seconds=Policy.new('balanced','balanced',{[entry[2]]=profile}):classify(entry[1]).repeat_seconds}
 end end
-assert(#cases==82)
+assert(#cases==81)
 for _,case in ipairs(cases)do
     local f=Fixture.new(case.config);f:weapon(case.hash);f:fire(true);f:tick()
     assert(f.backend.lease and f.backend.repeat_seconds==case.seconds)
@@ -93,7 +93,7 @@ assert(Native.native_period(60/32)==.9375 and Native.native_period(60/50)==.6)
 for _,mode in ipairs({'balanced','native_cap'})do
     local p=Policy.new(mode)
     local e=p:classify('b6aff2195568767f')
-    assert(e.max_repeat_rpm==26 and e.repeat_seconds==60/26 and e.repeat_ms==2308)
+    assert(e.max_repeat_rpm==28 and e.repeat_seconds==60/28 and e.repeat_ms==2143)
     assert(p:classify('7b75e5132ffd4ca6').max_repeat_rpm==60,'Constitution unchanged')
     assert(p:classify('f49227a0630a3f7f').max_repeat_rpm==50,'Crossbow unchanged')
     assert(p:classify('d323de60855898ac').max_repeat_rpm==80,'Cookout unchanged')
@@ -101,5 +101,5 @@ for _,mode in ipairs({'balanced','native_cap'})do
     assert(p:classify('1a437158e1b8d2a1').max_repeat_rpm==(mode=='balanced' and 380 or 450),'Verdict unchanged')
     assert(Policy.new(mode,'balanced',{eruptor_profile='full_auto'}):classify('b6aff2195568767f').max_repeat_rpm==32)
 end
-assert(math.abs(Native.native_period(60/26)-20/26)<1e-12,'Existing divided retry calculation retained')
+assert(math.abs(Native.native_period(60/27)-20/27)<1e-12,'Existing divided retry calculation retained')
 print('B3 native threshold replay: '..#cases..' policy/profile cases, long holds, release and boundary taps passed')

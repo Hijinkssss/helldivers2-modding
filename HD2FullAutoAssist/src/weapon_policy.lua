@@ -88,6 +88,7 @@ local KNOWN_HASHES={
     ['P-35 Re-Educator']='0b882808c6f498e8',
     ['P/40-K Bolt Pistol']='dbb6c961c59fadc1',
     ['P-92 Warrant']='cf8934ff6567a42d',
+    ['MLS-4X Commando']='5990123d142b16cb',
     ['ARC-12 Blitzer']='076dd5d4f4360204',
 }
 
@@ -163,8 +164,8 @@ local ENTRIES = {
       native_cap_status='RUNTIME_SNAPSHOT', notes='Burst/semi [3,2,0], conventional projectile. Repeated legal Fire chains native bursts like Amendment; Balanced 300 RPM.' },
     { kind='weapon', name='CB-9 Exploding Crossbow', category='ASSIST', native_cap_rpm=50,
       native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 50 RPM.' },
-    { kind='weapon', name='R-36 Eruptor', category='ASSIST', native_cap_rpm=32, balanced_rpm=26,
-      native_cap_status='RUNTIME_SNAPSHOT', notes='Controlled default 26 RPM gives the long bolt animation additional settling time. Optional Full Auto profile retains the 32 RPM native cap; game controls recovery.' },
+    { kind='weapon', name='R-36 Eruptor', category='ASSIST', native_cap_rpm=32, balanced_rpm=28,
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Default 28 RPM Balanced cadence. Slower Cadence 27 RPM and Maximum Full Auto 32 RPM; game controls recovery.' },
     { kind='weapon', name='SG-8P Punisher Plasma', category='ASSIST', native_cap_rpm=80,
       native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 80 RPM.' },
     { kind='weapon', name='R/40-K Hot-Shot Marksman Rifle', category='ASSIST', native_cap_rpm=210,
@@ -200,6 +201,10 @@ local ENTRIES = {
       notes='Pinned native mode vector [1,0,0] is Full Auto. Unsupported under current policy.' },
 
     -- ─── SUPPORT WEAPONS ─────────────────────────────────────────────────
+
+    { kind='support_weapon', name='MLS-4X Commando', category='ASSIST', native_cap_rpm=240,
+      native_cap_status='RUNTIME_SNAPSHOT',
+      notes='Exact retained identity and owned ProjectileWeapon fire_rate 240 RPM. Ordinary Fire only; guidance, selector, projectiles, ammo and expendable behavior remain game-controlled. RC2 live cadence pending.' },
 
     { kind = 'support_weapon', name = 'APW-1 Anti-Materiel Rifle',
       category = 'SPECIAL', native_cap_rpm = 400, native_cap_status = 'VERIFIED',
@@ -269,7 +274,7 @@ local PROFILE_RPMS={
     ['APW-1 Anti-Materiel Rifle']={balanced=AMR_BALANCED_RPM,full_auto=400},
     ['R-4 Hyena']={balanced=120,full_auto=190},
     ['SG-22 Bushwhacker']={balanced=90,full_auto=650},
-    ['R-36 Eruptor']={balanced=26,full_auto=32,stable_26=26,balanced_27=27,fast_28=28,max_32=32},
+    ['R-36 Eruptor']={slower_27=27,balanced_28=28,max_32=32},
 }
 
 function M.new(fire_rate_mode,talon_mode,profile_settings)
@@ -281,7 +286,10 @@ function M.new(fire_rate_mode,talon_mode,profile_settings)
     for name,key in pairs(PROFILE_KEYS)do
         local selected=profile_settings[key]
         -- Eruptor always defaults to controlled cadence, including legacy mode INIs.
-        if name=='R-36 Eruptor' and (selected==nil or selected=='') then selected='balanced' end
+        if name=='R-36 Eruptor' then
+            selected=require('config').eruptor_profile(selected)
+            if selected==nil or selected=='' then selected='balanced_28' end
+        end
         if PROFILE_RPMS[name][selected] then selected_profiles[name]=selected end
     end
     local by_hash, notes = {}, {}
