@@ -5,10 +5,10 @@ from lupa.luajit21 import LuaRuntime
 root=Path(__file__).resolve().parents[1]
 repo=root.parent
 out=root/'build'
-baseline=subprocess.check_output(['git','show','8fbe8d4:HD2FullAutoAssist/src/hud_anchor.lua'],cwd=repo,text=True)
+baseline=subprocess.check_output(['git','show','1a61089:HD2FullAutoAssist/src/hud_anchor.lua'],cwd=repo,text=True)
 current=(root/'src/hud_anchor.lua').read_text()
 results={}
-for label,source in [('rc3',baseline),('current',current)]:
+for label,source in [('final_rc_before',baseline),('candidate_after',current)]:
     lua=LuaRuntime(unpack_returned_tuples=True)
     lua.globals().package.path=f'{root.as_posix()}/src/?.lua;{root.as_posix()}/tests/?.lua;'+lua.globals().package.path
     lua.globals().Anchor=lua.execute(source)
@@ -39,7 +39,8 @@ for label,source in [('rc3',baseline),('current',current)]:
                         i+1<extra and first+(i+1)*256 or nil,7,true))
                 end
             end
-            f.platform.clock_us=function()return Windows:clock_us()end
+            local sample_clock=0
+            f.host.clock_us=function()sample_clock=sample_clock+8333;return sample_clock end
             f.platform.read=function(_,at,n)
                 local page=math.floor(at/4096)*4096
                 assert(pages[page] and at+n<=page+4096)
@@ -73,13 +74,14 @@ for label,source in [('rc3',baseline),('current',current)]:
     def plain(t):
         return {str(k):plain(v) if hasattr(v,'items') else v for k,v in t.items()}
     results[label]={}
-    for extra in (0,34):
+    for extra in (0,34,74):
         trials=list(plain(run(extra)).values())
         us=statistics.median(t['elapsed_us']/t['samples'] for t in trials)
         results[label][str(6+extra)]={'median_us_per_sample':us,
+            'equivalent_ms_per_second_at_90_hz':us*90/1000,
             'equivalent_ms_per_second_at_120_hz':us*120/1000,
             'reads_per_sample':trials[0]['reads']/2000,'trials':trials}
-report={'kind':'own-process Windows RPM, simulated HUD topology, real FAA lifecycle reads',
+report={'kind':'own-process Windows RPM, simulated HUD topology, FAA lifecycle reads; 120Hz simulated updates',
     'game_accessed':False,'live_watchdog_after':None,'source_sha256':hashlib.sha256(current.encode()).hexdigest(),
     'results':results}
 out.mkdir(exist_ok=True)

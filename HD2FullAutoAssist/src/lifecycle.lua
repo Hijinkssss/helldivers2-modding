@@ -34,7 +34,8 @@ function M.new(environment,options)
         'Unsupported build: exact EXE and game.dll fingerprints required')
     local base=assert(platform:module_address('game.dll'))
     local self={platform=platform,base=base,callbacks={},closed=false,reads=0,queries=0,
-        failures=0,slow=0,slow_by_kind={},log_errors=0,
+        failures=0,slow=0,slow_by_kind={},log_errors=0,live_region_last=nil,
+        force_performance_profile=options.force_performance_profile==true,
         startup_metrics={exe_hash_us=startup_exe_hash_us,game_dll_hash_us=startup_game_dll_hash_us}}
     local file
     function self:log(level,event,fields)
@@ -54,6 +55,7 @@ function M.new(environment,options)
     local observer
     function self:invalidate_native_cache()
         self.live_regions=nil
+        self.live_region_last=nil
         self.native_cache_revision=(self.native_cache_revision or 0)+1
         if observer then observer:invalidate()end
     end
@@ -93,17 +95,28 @@ function M.new(environment,options)
         if not platform.safe_cached_reads then return self:read(at,n)end
         assert(integer(at,0x10000,0x7fffffffffff) and integer(n,1,32768) and
             n-1<=0x7fffffffffff-at,'Read outside supported bounds')
+        local profiler=self.profiler
+        local validation_started=profiler and profiler:sample('memory_page_validation',profiler.memory_samples_every)
+            and profiler:start()
         local good,value=pcall(function()
             local now=platform:clock_us()
             if not self.live_regions or now>=self.live_regions_until then
-                self.live_regions={};self.live_regions_until=now+1000000
+                self.live_regions={};self.live_region_last=nil;self.live_regions_until=now+1000000
             end
             local cursor,last,walk=at,at+n,0
             while cursor<last do
                 walk=walk+1;assert(walk<=64,'Memory region walk budget exceeded')
-                local region
-                for _,r in ipairs(self.live_regions)do
-                    if cursor>=r.base and cursor<r.base+r.size then region=r;break end
+                local region=self.live_region_last
+                if profiler then profiler:increment('region_hint_checks')end
+                if region and cursor>=region.base and cursor<region.base+region.size then
+                    if profiler then profiler:increment('region_hint_hits')end
+                else
+                    region=nil
+                    if profiler then profiler:increment('region_cache_searches')end
+                    for _,r in ipairs(self.live_regions)do
+                        if profiler then profiler:increment('region_cache_entries_examined')end
+                        if cursor>=r.base and cursor<r.base+r.size then region=r;break end
+                    end
                 end
                 if not region then
                     self.queries=self.queries+1
@@ -116,17 +129,25 @@ function M.new(environment,options)
                         'Unreadable or guarded page')
                     if #self.live_regions<64 then self.live_regions[#self.live_regions+1]=region end
                 end
+                self.live_region_last=region
                 cursor=math.min(last,region.base+region.size)
             end
+            if profiler then profiler:finish('memory_page_validation',validation_started)end
             -- Current access is checked on EVERY reuse, including protection
             -- changes between metadata refreshes. Never dereference game memory
             -- with ffi.copy: RPM must return the full span or no value.
+            local read_started=profiler and profiler:sample('memory_platform_read',profiler.memory_samples_every)
+                and profiler:start()
             local bytes=platform:read(at,n);self.reads=self.reads+1
             if self.profiler then self.profiler:increment('memory_reads')end
+            if profiler then profiler:finish('memory_platform_read',read_started)end
             assert(type(bytes)=='string' and #bytes==n,'Short or failed memory read')
             return bytes
         end)
-        if not good then self:invalidate_native_cache();error(value,0)end
+        if not good then
+            if profiler then profiler:finish('memory_page_validation',validation_started)end
+            self:invalidate_native_cache();error(value,0)
+        end
         return value
     end
     function self:read_scope(fn)
@@ -214,9 +235,11 @@ function M.new(environment,options)
         local anchor=require('hud_anchor').new(self)
         hud=require('hud_indicator').new(environment.stingray,{
             force_visible=settings and settings.hud_probe_visible==true,
+            profiler=self.profiler,
+            clock_us=function()return self:clock_us()end,
             log=(settings and settings.hud_diagnostics==true) and function(fields)
                 self:log('info','hud_rc2',fields)
-            end or nil},function(width,height)return anchor:sample(width,height)end)
+            end or nil},function(width,height,weapon_key)return anchor:sample(width,height,weapon_key)end)
     end
     function self:set_charge_research(provider)
         charge_research=require('charge_research').new(self,provider,loader)

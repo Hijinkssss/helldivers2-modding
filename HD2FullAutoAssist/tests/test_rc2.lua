@@ -49,6 +49,43 @@ assert(h.x==246 and h.y==107 and h.scale==1 and h.on_screen)
 assert(logs[#logs].hud_visible and logs[#logs].gui_created and logs[#logs].rectangles==9)
 for _=1,1000 do h:present(model)end
 assert(h.created==1 and h.calls==1001 and #logs<10,'Per-frame GUI/log allocation')
+-- An unchanged HUD model skips native world/viewport/anchor work between bounded refreshes.
+local now_us,world_checks,resolution_checks,anchor_checks=0,0,0,0
+local timed_engine={Application={worlds=function()world_checks=world_checks+1;return worlds end,
+        main_world=function()return main end},
+    World=engine.World,
+    Gui={resolution=function()resolution_checks=resolution_checks+1;return width,height end,
+        set_visible=engine.Gui.set_visible,
+        rect=function(_,pos,size,color)positions[#positions+1]=pos;return #positions end,
+        update_rect=engine.Gui.update_rect},
+    Color=engine.Color,Vector2=engine.Vector2,Vector3=engine.Vector3}
+local timed_model={visible=true,enabled=false,resource_hash='weapon-a',category='ASSIST',revision=1}
+local timed=Hud.new(timed_engine,{clock_us=function()return now_us end},function(w,h)
+    anchor_checks=anchor_checks+1;return {x=246,y=107,scale=h/1080}
+end)
+timed:present(timed_model)
+for _=1,1000 do now_us=now_us+8333;timed:present(timed_model)end
+assert(world_checks>=30 and world_checks<=40 and resolution_checks==world_checks and anchor_checks==world_checks,
+    'Stable HUD state refresh counts: '..world_checks..'/'..resolution_checks..'/'..anchor_checks)
+local optimized_world_checks=world_checks
+world_checks,resolution_checks,anchor_checks=0,0,0
+local uncached=Hud.new(timed_engine,{},function(w,h)
+    anchor_checks=anchor_checks+1;return {x=246,y=107,scale=h/1080}
+end)
+for _=1,1001 do uncached:present(timed_model)end
+assert(world_checks==1001 and resolution_checks==1001 and anchor_checks==1001,
+    'Uncached reference path did not execute presentation work every call')
+print('HUD unchanged-state fixture: 1001 baseline world/resolution/anchor calls; '
+    ..optimized_world_checks..' with bounded refresh and immediate transitions')
+world_checks,resolution_checks,anchor_checks=0,0,0
+timed_model={visible=true,enabled=true,resource_hash='weapon-a',category='ASSIST',revision=2}
+timed:present(timed_model)
+assert(world_checks==1 and resolution_checks==1 and anchor_checks==1,
+    'FAA ON transition did not refresh HUD immediately')
+local before_hide=world_checks
+timed_model={visible=false,enabled=false,resource_hash=nil,category='REVIEW',revision=3}
+timed:present(timed_model)
+assert(not timed.gui and world_checks==before_hide+1,'Unsupported transition did not hide HUD immediately')
 h:present({visible=false});assert(not shown and not h.gui)
 worlds={main};h:present(model);assert(h.reason=='ui_world_missing' and not h.gui)
 worlds={main,ui,aux};h:present(model);assert(shown and h.gui)

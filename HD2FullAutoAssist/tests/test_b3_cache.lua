@@ -78,10 +78,15 @@ assert(f.consumer:stop().ok)
 
 -- Cached page metadata never replaces current-access checking by RPM.
 f=Fixture.new();local A=0x80000000;f:put(A,string.rep('a',8192))
-assert(f.host:read_live(A,1)=='a');local queries=#f.queries
+assert(f.host:read_live(A,1)=='a' and f.host.live_region_last,
+    'A guarded read should retain only its already-validated region as a lookup hint')
+local queries=#f.queries
 assert(f.host:read_live(A+20,1)=='a' and #f.queries==queries)
+assert(f.host.live_region_last.base<=A+20 and A+20<f.host.live_region_last.base+f.host.live_region_last.size,
+    'Same-region reads should reuse the bounded region hint')
 f:put(A,'b');assert(f.host:read_live(A,1)=='b','Cached metadata must not cache native bytes')
-f.bad_page=A;assert(not pcall(f.host.read_live,f.host,A,1) and not f.host.live_regions)
+f.bad_page=A;assert(not pcall(f.host.read_live,f.host,A,1) and not f.host.live_regions and
+    not f.host.live_region_last,'Read failure must invalidate region metadata and its fast-path hint')
 f.bad_page=nil;assert(f.host:read_live(A,1)=='b')
 queries=#f.queries;f.now=f.now+1000001;f.host:read_live(A,1)
 assert(#f.queries>queries,'Static page metadata must expire')

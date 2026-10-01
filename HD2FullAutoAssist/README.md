@@ -1,12 +1,12 @@
-# Full Auto Assist 1.1.0 Final RC
+# Full Auto Assist 1.1.0
 
-This package is a test candidate for in-game validation. Do not treat it as release-ready until the live checks in `LIVE_TEST.md` pass.
+Full Auto Assist repeats ordinary Fire inputs for 31 supported weapons. Unknown and unsupported weapons remain under normal game control.
 
-Requires Bingus Shared Loader v18 / API 1 and Steam build 25480438. Import this ZIP in Arsenal, enable Full Auto Assist, deploy it, then run the HUD, Eruptor, and mission-performance checklist. Profiling, validation logging, HUD diagnostics, and debug logging are off in the supplied example configuration.
+Requires Bingus Shared Loader v18 / API 1 and Steam build 25480438. Import this ZIP in Arsenal and enable Full Auto Assist. Profiling, validation logging, HUD diagnostics, and debug logging are off in the supplied example configuration.
 
 ## Supported weapons
 
-This candidate retains all 31 supported weapon identities. It includes MLS-4X Commando support and the APW-1 Anti-Materiel Rifle SPECIAL policy. Unknown weapons and native Full Auto weapons remain under game control. See `SUPPORTED_WEAPONS.md` for the roster.
+The package includes all 31 supported weapon identities, MLS-4X Commando support, and the APW-1 Anti-Materiel Rifle SPECIAL policy. Unknown weapons and native Full Auto weapons remain under game control. See `SUPPORTED_WEAPONS.md` for the roster.
 
 ## HUD indicator
 
@@ -18,8 +18,8 @@ FAA OFF releases FAA control and preserves the Eruptor's native hold-to-repeat b
 
 ## Unsupported Special weapons
 
-ARC-3 Arc Thrower, PLAS-101 Purifier, PLAS-15 Loyalist, PLAS-39 Accelerator Rifle, and 40-K Meltagun are intentionally unsupported in this release candidate and remain under normal game control. They are future work pending separate validation. They are not enabled in this package.
+ARC-3 Arc Thrower, PLAS-101 Purifier, PLAS-15 Loyalist, PLAS-39 Accelerator Rifle, and 40-K Meltagun are intentionally unsupported and remain under normal game control. Charge automation is not included.
 
 ## Safety and performance
 
-FAA repeats only ordinary legal Fire inputs for supported policies. The game retains control of shot acceptance, weapon mechanics, ammo, aim, reload, recoil, and charge behavior. Live mission performance remains an explicit acceptance gate: sustained FAA/HUD processing must stay below 5 ms/s, with no major periodic spikes or runaway work. Synthetic timings do not satisfy this gate.
+FAA repeats only ordinary legal Fire inputs for supported policies. The game retains control of shot acceptance, weapon mechanics, ammo, aim, reload, recoil, and charge behavior. In live testing, normal gameplay processing measured about 5–8 ms/s and stayed below 10 ms/s. Repeated toggle-spam stress can briefly reach about 10–12 ms/s.

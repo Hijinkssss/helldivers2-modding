@@ -271,3 +271,145 @@ itself adds. Unprofiled A/B Watchdog runs on the same build and mod stack are
 needed before claiming a live improvement. The patch has only offline coverage
 so far. The unchanged per-update native input sample likely leaves a material
 floor to FAA's sustained cost.
+
+## 2026-10-01 Final RC regression and focused fix
+
+The user reported a live Final RC result of 33–35 ms/s sustained, 37–40 ms/s
+at the high end, and about 2 ms for the worst individual callback. The prior
+5–6 ms/s result is user-reported; its Watchdog capture was not present in this
+checkout. The older diagnostic measurements above came from a different build
+and session and are not a substitute for that fast-build baseline.
+
+The source comparison identifies the recurring regression path. Commit
+`8fbe8d4` added `hud_anchor` and called it through `hud_indicator.present` from
+the post-stock segment of `lifecycle.update_wrapper`. `present` calls the
+anchor provider before checking whether its geometry signature changed. The
+provider recursively walks every visible native weapon-HUD widget, validates
+its geometry, then rereads the tree to verify links and flags. It ran once per
+game update while a supported weapon was shown, including frames where the
+position, visibility, and FAA state were unchanged. The anchor traversal is
+bounded at 192 nodes, but that bound is far too large for an every-frame
+operation. Its frequency explains sustained cost with a relatively small
+individual callback. The later typed-view optimization in `9fb95ce` reduced
+per-node work but did not change this call frequency.
+
+Other new paths are not a comparable recurring source in the delivered
+configuration: charge research is disabled by default, performance profiling
+is disabled, and configuration parsing/build fingerprints occur during
+startup. Native Fire sampling and identity safety retain their existing
+transition and per-update roles. The HUD tree scan is the new high-volume work
+introduced by this Final RC line.
+
+The focused fix retains cached native geometry for at most 250 ms. Every update
+still checks the native HUD owner and ammo-row visibility and geometry, then
+rechecks those observations to reject a race. A changed weapon identity,
+resolution, owner, or ammo row triggers a full traversal immediately. The HUD
+support gate and FAA ON/OFF color are still evaluated on every update. A
+descendant-only native layout change that does not alter the owner or ammo row
+can take up to 250 ms to move the marker; this short geometry refresh bound is
+the only intentional delay.
+
+The matched Windows own-process benchmark uses simulated six-, 40-, and
+80-node HUD trees and real FAA guarded-read code. At 120 simulated updates per
+second, the exact pre-fix Final RC (`1a61089`) measured 24.52 µs/update and
+16 guarded reads/update for six nodes, 148.68 µs/update and 84 reads/update
+for 40 nodes, and 318 µs/update and 164 reads/update for 80 nodes. The
+candidate measured 6.67 µs/update and 4.384 average reads for six nodes,
+10.99 µs/update and 6.56 average reads for 40 nodes, and 15.38 µs/update and
+9.12 average reads for 80 nodes. At 80 nodes, the estimate is 38.16 to 1.85
+synthetic ms/s at 120 Hz. That before-fix scenario is in the range of the
+reported sustained cost when updates run around 106 Hz, but the actual live
+node count and update rate were not captured, so this is not a measured
+attribution of the 33.7 ms/s Watchdog value. The benchmark isolates the HUD
+scanner only; it is not a full-mod benchmark or a live Watchdog result. The
+benchmark source is `tests/run_hud_performance.py` and its recorded output is
+`build/HUD-MEASUREMENTS.json`.
+
+The offline suite passes 32 groups, including the supported roster, Commando,
+charge gates, Eruptor profiles, HUD state projection and native race checks,
+Fire input/lease behavior, and cleanup. The deterministic package and actual
+Loader-discovery gates still need to be rerun for this candidate. Live
+acceptance remains open: compare the unprofiled package in a representative
+mission and require sustained cost below 10 ms/s, targeting 5–6 ms/s or lower,
+with Watchdog's worst callback recorded separately.
+
+## 2026-10-01 live profile and narrow follow-up
+
+The user supplied `HD2FullAutoAssist.log`; its `performance_profile_active`
+entry confirms `enabled=true` and
+`forced_by_private_diagnostic_build=true`. The matching shutdown summary ran
+for 726.051 seconds. Its update wrapper accumulated 8.524 seconds, or
+11.740 ms/s over 89.604 updates/s; the previously reported uninstrumented
+mission Watchdog result was about 15 ms/s. These are separate measurements.
+
+Profile phases overlap. The wrapper measured 11.740 ms/s; its immediate
+children were Fire callback 5.535 ms/s, identity callback 1.764 ms/s, HUD
+presentation 3.547 ms/s, and toggle polling 0.439 ms/s, with the remainder in
+wrapper work. HUD render update (3.285 ms/s) and anchor sampling (2.381 ms/s)
+are nested within HUD presentation. Native input sample (3.316 ms/s), guarded
+memory platform reads (4.142 ms/s), and page validation (2.039 ms/s) are
+cross-cutting child work inside those callbacks and must not be added to the
+parent totals. Wrapper worst observed call was 3.419 ms; Fire callback worst
+was 3.196 ms.
+
+The HUD wrote visibility 0.050 times/s and rectangles 0.446 times/s, while
+`hud_render_update` ran 89.604 times/s. The stable-state path was therefore
+repeating world, viewport, and anchor work between rare visual transitions.
+The HUD now checks its small state signature every update, refreshes world,
+resolution, and anchor state at most every 250 ms while unchanged, and bypasses
+that wait on identity/revision, visibility, enabled-state, category, or weapon
+changes. The existing 250 ms native geometry refresh bound remains in force;
+FAA ON/OFF and supported/unsupported transitions remain immediate. A new
+offline fixture checks 1,001 presentations over 8.33 simulated seconds and
+expects only about 34 world/resolution/anchor refreshes, with immediate
+ON/OFF and hide transitions.
+
+HUD anchor sampling fell from 61.438 calls/s to the stable-state refresh rate
+(about 2.9/s at the observed visible duty cycle), eliminating repeated
+owner/ammo checks on unchanged frames. The native region resolver also keeps
+the most recently validated region as a lookup hint. It still checks region
+bounds/protection and performs the guarded platform read for every request;
+the one-second region-metadata expiry and failure invalidation remain intact.
+This targets the observed 1,474.096 reads/s and 2.039 ms/s page-validation
+phase without reusing native bytes or weakening read guards.
+
+The 31-weapon roster, native Fire sampling cadence, identity freshness, charge
+gates, and lease/restore paths were not rate-limited. The above HUD frequency
+is a source-derived expectation, not a measured post-fix live profile. The
+synthetic transition fixture verifies call suppression and immediate state
+changes; it does not establish the new live Watchdog value. An unprofiled
+mission run remains required for acceptance.
+
+## 2026-10-01 toggle-spam follow-up
+
+The updated live log contains 142 alternating `assist_toggled` events after
+startup, but no shutdown record or performance summary. It establishes that
+rapid accepted toggles occurred; it does not give their elapsed duration,
+mapping write/restore counts, or callback cost.
+
+Source tracing found that every toggle called `restore('toggle')`, which
+invalidated the identity observer and Fire/native memory lookup caches even
+when no Fire lease existed. Those cache flushes are unnecessary when no
+mapping has been leased or modified. The toggle path now skips cache
+invalidation only in that no-lease case. Active-lease toggle-off still performs
+the guarded restore and invalidation. State changes and HUD revision changes
+remain immediate, and Fire sampling and identity guards are unchanged.
+
+The opt-in profile now adds `toggle_restore`, `toggle_cache_invalidation`, and
+`toggle_followup_first_fire` phases plus counters for lease presence, mapping
+writes/restores attributable to toggles, skipped/performed invalidations,
+pending first-Fire windows replaced/canceled, and HUD model changes. The
+first-Fire phase measures the first held-Fire callback within two seconds of an
+ON toggle once the release guard clears, starting after the native input
+sample. Existing callback, native Fire, identity, HUD, memory-read, and
+page-query metrics remain available. Forced-on
+diagnostic packages announce profiling at startup and must not be used for
+performance acceptance.
+
+Offline regression verifies that no-lease ON toggles preserve the observer
+certificate and native lookup revision, perform no mapping write or restore,
+and change the user toggle immediately. It also verifies that restoring an
+active lease still invalidates the caches. The 142-toggle log has no timing
+summary, so it cannot establish the size of the live performance improvement;
+the forced-on diagnostic is for attribution, followed by a normal unprofiled
+mission run for acceptance.

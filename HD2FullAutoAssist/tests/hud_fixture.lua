@@ -26,7 +26,8 @@ function M.populate(put,base,options)
     return {panel=panel,row=row,weapon=weapon,a=a,b=b,pack=pack,owner=owner,scale=s}
 end
 function M.host(options)
-    local bytes={};local host={base=M.BASE,reads=0,writes=0}
+    local bytes={};local host={base=M.BASE,reads=0,writes=0,now_us=0}
+    function host:clock_us()return self.now_us end
     function host:put(at,value)for i=1,#value do bytes[at+i-1]=value:sub(i,i)end end
     function host:read_live(at,n)
         self.reads=self.reads+1

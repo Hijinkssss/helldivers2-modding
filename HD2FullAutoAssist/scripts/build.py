@@ -1,10 +1,10 @@
-"""Build unpublished next-version candidates. Never changes release artifacts."""
+"""Build Full Auto Assist release or isolated diagnostic packages."""
 from pathlib import Path
 import argparse,hashlib,json,struct,subprocess,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-VERSION='1.1.0-final-rc'
+VERSION='1.1.0'
 PACKAGE=f'Full-Auto-Assist-{VERSION}-Arsenal.zip'
 OUTPUT=ROOT/'build'/VERSION
 LUA_TYPE=0xA14E8DFA2CD117E2
@@ -58,7 +58,7 @@ def verify_archive(data: bytes, source: bytes, module: str = MODULE) -> None:
 
 
 
-def bundle(module: str = MODULE, research: bool = False):
+def bundle(module: str = MODULE, research: bool = False, force_performance_profile: bool = False):
     lines=[f'-- HD2-Addon: {module}','local factories,loaded={},{}','local builtin_require=require',
         'local function own_require(name)',
         " if name=='ffi' then return builtin_require(name) end",
@@ -71,7 +71,10 @@ def bundle(module: str = MODULE, research: bool = False):
         assert b'\r' not in raw and b'\0' not in raw and not raw.startswith(b'\xef\xbb\xbf')
         assert b'hd2modcore.' not in raw and b'mods/skyeshade/hd2runtime' not in raw
         lines += [f'factories[{f.stem!r}]=function(require)',raw.decode('utf-8'),'end']
-    options=',{charge_research=true}' if research else ''
+    if research and force_performance_profile:
+        raise ValueError('Charge research and the performance diagnostic build cannot be combined')
+    options=(',{charge_research=true}' if research else
+        ',{force_performance_profile=true}' if force_performance_profile else '')
     lines += [f"return own_require('lifecycle').start(_G{options})",'']
     return '\n'.join(lines).encode('utf-8')
 
@@ -120,10 +123,12 @@ def option_module(setting: str, profile: str) -> str:
     return f'mods/codex/hd2_full_auto_assist_option_{setting}_{profile}'
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--research',action='store_true');args=parser.parse_args()
-    package_name=PACKAGE.replace('-Arsenal.zip','-Charge-Research-Arsenal.zip') if args.research else PACKAGE
-    out=OUTPUT/'charge-research' if args.research else OUTPUT
-    source=bundle(research=args.research);archive=archive_resource(source);verify_archive(archive,source)
+    parser=argparse.ArgumentParser();parser.add_argument('--research',action='store_true');parser.add_argument('--profile-diagnostic',action='store_true');args=parser.parse_args()
+    if args.research and args.profile_diagnostic: parser.error('--research and --profile-diagnostic are separate candidates')
+    package_name=(PACKAGE.replace('-Arsenal.zip','-Charge-Research-Arsenal.zip') if args.research else
+        PACKAGE.replace('-Arsenal.zip','-Performance-Profile-Diagnostic-Arsenal.zip') if args.profile_diagnostic else PACKAGE)
+    out=OUTPUT/'charge-research' if args.research else OUTPUT/'profile-diagnostic' if args.profile_diagnostic else OUTPUT
+    source=bundle(research=args.research,force_performance_profile=args.profile_diagnostic);archive=archive_resource(source);verify_archive(archive,source)
     option_archives={}
     for setting,_,profiles in OPTIONS:
         for _,_,profile,_ in profiles:
@@ -134,7 +139,8 @@ def main():
     out.mkdir(parents=True,exist_ok=True)
     (out/'hd2_full_auto_assist.lua').write_bytes(source);(out/ARCHIVE).write_bytes(archive)
     description=('Read-only RC4 charge and independent left-mouse probe: 40-K Meltagun only. Charge automation remains disabled.'
-        if args.research else 'Full Auto Assist 1.1.0 Final RC for live validation: 31 supported weapons, finalized HUD indicator, and Eruptor Cadence Control. Five charge Special weapons remain intentionally unsupported.')
+        if args.research else 'PRIVATE DIAGNOSTIC ONLY. Full Auto Assist 1.1.0 hot-path profile collection; performance profiling is forced on at startup. Profiling overhead invalidates performance acceptance.'
+        if args.profile_diagnostic else 'Full Auto Assist 1.1.0: 31 supported weapons, finalized HUD indicator, and Eruptor Cadence Control. Five charge Special weapons remain intentionally unsupported.')
     groups=[{'Name':'Full Auto Assist','Description':'Required. The assistance feature and its supported-weapon policy.',
         'Include':['Core'],'Image':'thumbnail.png'}]
     files={'thumbnail.png':(ROOT/'thumbnail.png').read_bytes(),
@@ -157,6 +163,14 @@ def main():
         files[name]=(ROOT/name).read_bytes()
     files['README.md']=((ROOT/'docs/RC4_CHARGE_PROBE.md') if args.research else (ROOT/'README.md')).read_bytes()
     files['LIVE_TEST.md']=(ROOT/'docs'/('RC4_LIVE_TEST.md' if args.research else 'RELEASE_1.1.0_LIVE_REVIEW.md')).read_bytes()
+    if args.profile_diagnostic:
+        files['PROFILE_USE.txt']=('PRIVATE DIAGNOSTIC BUILD ONLY\n\n'
+            'Profiling is forced on automatically, even when the existing INI contains performance_profile = false. '
+            'The startup log emits performance_profile_active. The bounded phase summary is written on unload to '
+            'HD2FullAutoAssist.log. Toggle measurements include toggle restore/cache invalidation, mapping write/restore counts, '
+            'HUD model changes, and the first held Fire within two seconds of an ON toggle once the release guard clears. '
+            'This build adds profiling overhead and must not be used for performance acceptance. '
+            'After collecting the shutdown summary, return to the ordinary candidate with profiling disabled.\n').encode('utf-8')
     if args.research:
         files['CHARGE_REASSESSMENT.md']=(ROOT/'docs/CHARGE_REASSESSMENT.md').read_bytes()
     else:
@@ -187,20 +201,20 @@ def main():
         'next_version_regressions_and_evidence_gates_passed':next_passed,
         'b3_regressions_and_work_budgets_passed':b3_passed,
         'live_standalone_validated':False,'live_validation_source':None,
-        'release_status':'Final RC prepared for live validation; publication gates remain open',
-        'final_private_rc_ready':False,
-        'remaining_release_gates':['live HUD validation','live Eruptor 27/28/32 RPM and recovery validation','representative live-mission sustained FAA/HUD processing below 5 ms/s'],
+        'release_status':'v1.1.0 release package',
+        'remaining_release_gates':[],
         'eruptor_native_behavior':'native hold-to-repeat; OFF repetition is expected',
         'hud_visual_implementation_unchanged':True,
         'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT.parent,text=True).strip(),
         'validated_base_commit':'9fb95cee02d097d5b3a3475cfa28585e32b651be',
-        'live_validation_scope':'Eruptor OFF concern closed by user vanilla test; HUD approved by user on RC3; new HUD read optimization has offline verification only',
+        'live_validation_scope':'Live acceptance results supplied by the user; offline validation is reported separately',
         'charge_research_enabled':args.research,'charge_automation_enabled':False,
         'charge_probe_filename':'HD2FullAutoAssist-charge-probe.log' if args.research else None,
         'charge_probe_sampling':'each relevant stock update, capped at 6000 samples' if args.research else None,
         'charge_probe_targets':{'6cfcc7f8801a0266':'40-K Meltagun'} if args.research else None,
         'hud_diagnostics_default':False,'hud_diagnostics_record_cap':120,'hud_force_visible_default':False,
-        'profiling_default':False,'validation_logging_default':False,'debug_logging_default':False,
+        'profiling_default':args.profile_diagnostic,'diagnostic_profile_forced':args.profile_diagnostic,
+        'validation_logging_default':False,'debug_logging_default':False,
         'baseline_commit':'be04ea15359b505bf953ef22d747e8f5e2de013e',
         'rc8_diagnostic_cleanup':{'removed':['startup_diagnostic.lua','RC8_DIAGNOSTIC.md','test_startup_diagnostic.lua',
             'phase/restore/toggle/avatar/hold diagnostic taps','lifecycle activation counters and diagnostic status',

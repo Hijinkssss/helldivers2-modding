@@ -23,14 +23,27 @@ for _,profile in ipairs({'slower_27','balanced_28','max_32'})do
     assert(f.writes==writes and restored() and not f.backend.lease)
     f:weapon('05e4e5c2db6e44a2');f:tick();f:weapon('b6aff2195568767f');f:tick()
     assert(f.writes==writes and not f.backend.lease)
-    toggle();f:tick();assert(not f.backend.lease,'ON while held must retain release guard')
+    local no_lease_revision=f.host.native_cache_revision or 0
+    local no_lease_invalidations=f.host:diagnostics().observer.invalidations
+    local no_lease_writes,no_lease_restores=f.backend.writes,f.backend.restored
+    toggle();assert(f.consumer:get_state().user_enabled,'ON toggle must take effect immediately')
+    assert((f.host.native_cache_revision or 0)==no_lease_revision and
+        f.host:diagnostics().observer.invalidations==no_lease_invalidations,
+        'Toggle without a lease must preserve valid identity/native caches')
+    assert(f.backend.writes==no_lease_writes and f.backend.restored==no_lease_restores,
+        'Toggle without a lease must not write or restore mappings')
+    assert(f.consumer:status().counters.toggle_cache_invalidation_skips>0)
+    f:tick();assert(not f.backend.lease,'ON while held must retain release guard')
     f:input(0,0,false,2);f:tick();f:input(1,.1,true,2);f:tick()
     assert(f.backend.lease)
     assert(f.backend.repeat_seconds==60/({slower_27=27,balanced_28=28,max_32=32})[profile])
     f:weapon('05e4e5c2db6e44a2');f:tick();assert(restored() and not f.backend.lease)
     f:weapon('b6aff2195568767f');f:tick();assert(not f.backend.lease)
     f:input(0,0,false,2);f:tick();f:input(1,.1,true,2);f:tick();assert(f.backend.lease)
+    local active_lease_revision=f.host.native_cache_revision or 0
     toggle();assert(restored() and not f.backend.lease)
+    assert((f.host.native_cache_revision or 0)>active_lease_revision,
+        'Restoring an active lease must still invalidate identity/native caches')
     assert(f.consumer:stop().ok)
 end
 -- Exact-build jump-table case 2 (0x12fc2b9): abs(new magnitude)>=parameter.

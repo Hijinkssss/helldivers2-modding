@@ -52,6 +52,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
     -- physical release. This lets delayed mission/player initialization settle
     -- while the user is already holding ordinary Fire.
     local wait_release,unit_ref,inspected=false,nil,false
+    local toggle_fire_pending,toggle_fire_pending_since=false,nil
     local lease_started,lease_repeat_start
     local trace,last_metrics_us,last_restore_error,last_restore_conflict
     local audit_records,next_audit_us,audit_held=0,0,false
@@ -59,17 +60,40 @@ function M.install(host,backend_factory,read_config,validation_factory)
     local counters={toggles=0,toggle_rejected=0,holds=0,releases=0,blocked=0,errors=0,
         idle_calls=0,held_calls=0,idle_us=0,held_us=0,max_us=0,repeat_frames=0,restore_conflicts=0,
         input_checks=0,repeat_calls=0,repeat_us=0,repeat_us_max=0,repeat_wall_us=0,
-        identity_lookups=0,identity_changes=0,identity_lookup_us=0,identity_lookup_us_max=0}
+        identity_lookups=0,identity_changes=0,identity_lookup_us=0,identity_lookup_us_max=0,
+        toggle_restore_calls=0,toggle_restore_with_lease=0,toggle_cache_invalidations=0,
+        toggle_cache_invalidation_skips=0,toggle_mapping_writes=0,toggle_mapping_restored=0,
+        toggle_followup_first_fire_calls=0,toggle_fire_pending_replaced=0,
+        toggle_fire_pending_canceled=0,toggle_fire_pending_expired=0}
     local consumer={name=OWNER}
     local function emit(level,event,fields)
         host:log(level,event,fields or {})
         if trace then trace:record(event,{level=level,data=fields or {},state=state and state:snapshot()}) end
     end
     local function restore(reason)
+        local had_lease=backend and backend.lease~=nil
+        if reason=='toggle' then
+            counters.toggle_restore_calls=counters.toggle_restore_calls+1
+            if had_lease then counters.toggle_restore_with_lease=counters.toggle_restore_with_lease+1 end
+            if profiler then profiler:increment('toggle_restore_calls')end
+        end
         if reason~='release' and ((backend and backend.lease) or
             (reason~='weapon_not_effective' and reason~='invalid_gameplay_state'))then
-            if host.invalidate_identity then host:invalidate_identity()end
-            if backend and backend.invalidate then backend:invalidate()end
+            if reason=='toggle' and not had_lease then
+                counters.toggle_cache_invalidation_skips=counters.toggle_cache_invalidation_skips+1
+                if profiler then profiler:increment('toggle_cache_invalidation_skips')end
+            else
+                local invalidation_started=profiler and reason=='toggle' and profiler:start()
+                if host.invalidate_identity then host:invalidate_identity()end
+                if backend and backend.invalidate then backend:invalidate()end
+                if reason=='toggle' then
+                    counters.toggle_cache_invalidations=counters.toggle_cache_invalidations+1
+                    if profiler then
+                        profiler:finish('toggle_cache_invalidation',invalidation_started)
+                        profiler:increment('toggle_cache_invalidations')
+                    end
+                end
+            end
         end
         if not backend or not backend.lease then
             if state then state:set_repeat(false)end
@@ -137,16 +161,22 @@ function M.install(host,backend_factory,read_config,validation_factory)
     end)
     local loaded,load_error=pcall(function()
         settings=host:config(schema,(read_config or config_text)(),rawget(_G,'FullAutoAssistArsenalOptions'))
+        if host.force_performance_profile then settings.performance_profile=true end
         if settings.performance_profile then
             assert(type(host.clock_us)=='function' and type(host.set_profiler)=='function',
                 'Performance profiling is unavailable on this host')
             profiler=PerformanceProfile.new(function()return host:clock_us()end,settings.performance_label)
+            profiler:increment('config_parse_calls')
             host:set_profiler(profiler)
             if type(host.startup_timing)=='function' then
                 local startup=host:startup_timing()
                 profiler:observe('startup_exe_hash',startup.exe_hash_us or 0)
                 profiler:observe('startup_game_dll_hash',startup.game_dll_hash_us or 0)
             end
+            emit('info','performance_profile_active',{enabled=true,
+                forced_by_private_diagnostic_build=host.force_performance_profile==true,
+                diagnostic_only=host.force_performance_profile==true,label=settings.performance_label,
+                summary_on='unload'})
         end
         assert(settings.fire_rate_mode=='balanced' or settings.fire_rate_mode=='native_cap',
             'fire_rate_mode must be balanced or native_cap')
@@ -157,7 +187,12 @@ function M.install(host,backend_factory,read_config,validation_factory)
         policy=Policy.new(settings.fire_rate_mode,settings.talon_mode,settings)
         state=AssistState.new(policy,IDENTITY_VALIDATED)
         state:set_enabled(settings.user_enabled)
-        if host.set_hud_provider then host:set_hud_provider(function()return state:hud_state()end,settings)end
+        if host.set_hud_provider then host:set_hud_provider(function()
+            local started=profiler and profiler:start()
+            local model=state:hud_state()
+            if profiler then profiler:finish('hud_state_project',started);profiler:increment('hud_state_project_calls')end
+            return model
+        end,settings)end
         if not policy.available then
             emit('warning','selective_assist_unavailable',{reason=policy.reason,
                 fallback='vanilla',required='known_current_build_policy'})
@@ -192,8 +227,29 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 -- Close the authoritative gate before attempting rollback.
                 -- Enabling is allowed only after rollback positively completes.
                 if not enabled then state:set_enabled(false)end
+                local writes_before=backend and backend.writes or 0
+                local restored_before=backend and backend.restored or 0
+                local toggle_restore_started=profiler and profiler:start()
                 wait_release=true;restore('toggle')
+                if profiler then
+                    profiler:finish('toggle_restore',toggle_restore_started)
+                    if backend then
+                        profiler:increment('toggle_mapping_writes',math.max(0,backend.writes-writes_before))
+                        profiler:increment('toggle_mapping_restored',math.max(0,backend.restored-restored_before))
+                    end
+                end
+                counters.toggle_mapping_writes=counters.toggle_mapping_writes+
+                    math.max(0,(backend and backend.writes or 0)-writes_before)
+                counters.toggle_mapping_restored=counters.toggle_mapping_restored+
+                    math.max(0,(backend and backend.restored or 0)-restored_before)
                 if enabled then state:set_enabled(true)end
+                if toggle_fire_pending then
+                    local counter=enabled and 'toggle_fire_pending_replaced' or 'toggle_fire_pending_canceled'
+                    counters[counter]=counters[counter]+1
+                    if profiler then profiler:increment(counter)end
+                end
+                toggle_fire_pending=profiler~=nil and enabled or false
+                toggle_fire_pending_since=toggle_fire_pending and host:clock_us() or nil
                 if trace and backend.audit and audit_records<96 then
                     audit_records=audit_records+1
                     local row=backend:sample(true)
@@ -282,11 +338,23 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 if profiler then profiler:finish('backend_initialize',init_started)end
             end
             local started=(profiler or trace) and backend.clock_us();local held=false;local leased_before=backend.lease~=nil
+            local toggle_followup_started
             local ok,why=pcall(function()
                 counters.input_checks=counters.input_checks+1
                 local sample_started=profiler and profiler:start()
                 local row=backend:sample(trace~=nil)
                 if profiler then profiler:finish('native_input_sample',sample_started);profiler:increment('native_input_samples')end
+                if toggle_fire_pending and row and row.held and not wait_release then
+                    if host:clock_us()-(toggle_fire_pending_since or host:clock_us())<=2000000 then
+                        toggle_fire_pending=false;toggle_fire_pending_since=nil
+                        counters.toggle_followup_first_fire_calls=counters.toggle_followup_first_fire_calls+1
+                        if profiler then toggle_followup_started=profiler:start()end
+                    else
+                        toggle_fire_pending=false;toggle_fire_pending_since=nil
+                        counters.toggle_fire_pending_expired=counters.toggle_fire_pending_expired+1
+                        if profiler then profiler:increment('toggle_fire_pending_expired')end
+                    end
+                end
                 if trace then trace:input(row,state:snapshot(),backend.lease~=nil)end
                 if trace and backend.audit then
                     local now=backend.clock_us()
@@ -357,6 +425,10 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     native_retry_ms=(backend.native_repeat_seconds or seconds)*1000,state=state:snapshot()})end
                 if settings.debug_logging then emit('info','hold_started',{mappings=changed,repeat_ms=backend.repeat_seconds*1000}) end
             end)
+            if profiler and toggle_followup_started then
+                profiler:finish('toggle_followup_first_fire',toggle_followup_started)
+                profiler:increment('toggle_followup_first_fire_calls')
+            end
             local elapsed=started and math.max(0,backend.clock_us()-started)
             if held then counters.held_calls=counters.held_calls+1
             else counters.idle_calls=counters.idle_calls+1 end

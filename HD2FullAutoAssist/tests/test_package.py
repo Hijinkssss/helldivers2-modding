@@ -5,16 +5,20 @@ from lupa.luajit21 import LuaRuntime
 ROOT=Path(__file__).resolve().parents[1]
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--loader-discovery',type=Path)
-    parser.add_argument('--research',action='store_true');args=parser.parse_args()
+    parser.add_argument('--research',action='store_true');parser.add_argument('--profile-diagnostic',action='store_true');args=parser.parse_args()
+    assert not (args.research and args.profile_diagnostic)
     spec=importlib.util.spec_from_file_location('faa_builder',ROOT/'scripts/build.py')
     builder=importlib.util.module_from_spec(spec);spec.loader.exec_module(builder)
     if args.research:
         builder.OUTPUT=builder.OUTPUT/'charge-research'
         builder.PACKAGE=builder.PACKAGE.replace('-Arsenal.zip','-Charge-Research-Arsenal.zip')
+    elif args.profile_diagnostic:
+        builder.OUTPUT=builder.OUTPUT/'profile-diagnostic'
+        builder.PACKAGE=builder.PACKAGE.replace('-Arsenal.zip','-Performance-Profile-Diagnostic-Arsenal.zip')
     archive=builder.OUTPUT/builder.ARCHIVE;package=builder.OUTPUT/builder.PACKAGE
     source=(builder.OUTPUT/'hd2_full_auto_assist.lua').read_bytes()
     builder.verify_archive(archive.read_bytes(),source)
-    assert source==builder.bundle(research=args.research)
+    assert source==builder.bundle(research=args.research,force_performance_profile=args.profile_diagnostic)
     assert b"mods/codex/hd2_mod_core" not in source and b"mods/skyeshade/hd2runtime" not in source
     lua=LuaRuntime(unpack_returned_tuples=True)
     assert lua.eval('loadstring')(source.decode('utf-8')) is not None
@@ -40,9 +44,12 @@ def main():
     report=json.loads((builder.OUTPUT/'build-report.json').read_text())
     assert report['external_dependencies']==['Bingus Shared Loader v18 / API 1']
     assert report['offline_tested'] and report['live_standalone_validated'] is False
-    assert report['final_private_rc_ready'] is False and report['remaining_release_gates']
+    assert report['release_status']=='v1.1.0 release package'
+    assert report['remaining_release_gates']==[]
     assert report['version']==builder.VERSION and report['supported_build']=='25480438'
     assert report['charge_automation_enabled'] is False and report['charge_research_enabled'] is args.research
+    assert report['diagnostic_profile_forced'] is args.profile_diagnostic
+    assert report['profiling_default'] is args.profile_diagnostic
     if args.research:
         # Execute only the packaged target factory, bypassing all native startup.
         tail="return own_require('lifecycle').start(_G,{charge_research=true})"
@@ -52,13 +59,24 @@ def main():
         targets={str(hash):str(name) for hash,name in packed_targets.items()}
         assert targets=={'6cfcc7f8801a0266':'40-K Meltagun'}
         assert targets==report['charge_probe_targets']
-    suffix='-Charge-Research-Arsenal.zip' if args.research else '-Arsenal.zip'
+    suffix=('-Charge-Research-Arsenal.zip' if args.research else
+        '-Performance-Profile-Diagnostic-Arsenal.zip' if args.profile_diagnostic else '-Arsenal.zip')
     assert package.name==f'Full-Auto-Assist-{builder.VERSION}'+suffix
     with zipfile.ZipFile(package) as z:
         names=z.namelist();manifest=json.loads(z.read('manifest.json'))
         assert {'README.md','LIVE_TEST.md','HD2FullAutoAssist.example.ini'} <= set(names)
         if not args.research:
             assert {'CHANGELOG.md','RELEASE_NOTES.md','SUPPORTED_WEAPONS.md'} <= set(names)
+        if args.profile_diagnostic:
+            assert 'PROFILE_USE.txt' in names
+            assert b'forced on automatically' in z.read('PROFILE_USE.txt')
+            assert b'first held Fire within two seconds of an ON toggle' in z.read('PROFILE_USE.txt')
+            assert report['profiling_default'] is True
+            assert 'PRIVATE DIAGNOSTIC ONLY' in manifest['Description']
+            assert b'forced_by_private_diagnostic_build' in source
+            assert b'performance_profile_active' in source
+            for phase in (b'toggle_restore',b'toggle_cache_invalidation',b'toggle_followup_first_fire'):
+                assert phase in source,phase
         assert not any('validation.ini' in name.lower() or '/docs/' in name.lower() or
             'diagnostic' in name.lower() or 'benchmark' in name.lower() or 'measurement' in name.lower()
             for name in names)
@@ -78,7 +96,8 @@ def main():
             assert report['target_release_version']=='1.1.0' and report['supported_weapon_count']==31
             assert report['charge_factories_packaged'] is False
             assert b"version='1.1.0-final-rc'" in source
-            tail="return own_require('lifecycle').start(_G)"
+            tail=("return own_require('lifecycle').start(_G,{force_performance_profile=true})"
+                if args.profile_diagnostic else "return own_require('lifecycle').start(_G)")
             assert source.decode().count(tail)==1
             packed_policy=LuaRuntime(unpack_returned_tuples=True).execute(source.decode().replace(tail,"return own_require('weapon_policy').new('balanced')"))
             roster=json.loads((ROOT/'docs/supported-weapons-1.1.0.json').read_text())
@@ -96,7 +115,7 @@ def main():
             for weapon in ('ARC-3 Arc Thrower','PLAS-101 Purifier','PLAS-15 Loyalist',
                            'PLAS-39 Accelerator Rifle','40-K Meltagun'):
                 assert weapon in readme and weapon in notes
-            assert 'intentionally unsupported' in readme and 'future work' in readme
+            assert 'intentionally unsupported' in readme and 'Charge automation is not included' in readme
             assert 'actively researching' not in readme+notes
         assert report['hud_force_visible_default'] is False and report['hud_diagnostics_record_cap']==120
         assert 'hud_probe_visible = false' in example and 'hud_diagnostics = false' in example
@@ -144,9 +163,13 @@ def main():
             'CHANGELOG.md':ROOT/'CHANGELOG.md',
             'RELEASE_NOTES.md':ROOT/'docs/RELEASE_1.1.0.md',
             'SUPPORTED_WEAPONS.md':ROOT/'docs/SUPPORTED_WEAPONS_1.1.0.md'}
+        if args.profile_diagnostic:
+            sources['PROFILE_USE.txt']=b'PRIVATE DIAGNOSTIC BUILD ONLY\n\nProfiling is forced on automatically, even when the existing INI contains performance_profile = false. The startup log emits performance_profile_active. The bounded phase summary is written on unload to HD2FullAutoAssist.log. Toggle measurements include toggle restore/cache invalidation, mapping write/restore counts, HUD model changes, and the first held Fire within two seconds of an ON toggle once the release guard clears. This build adds profiling overhead and must not be used for performance acceptance. After collecting the shutdown summary, return to the ordinary candidate with profiling disabled.\n'
         for name in names:
             if name not in ('manifest.json',) and not name.startswith(('Core/','Options/')):
-                assert z.read(name)==sources.get(name,ROOT/name).read_bytes(),name
+                expected_source=sources.get(name,ROOT/name)
+                if isinstance(expected_source,Path): expected_source=expected_source.read_bytes()
+                assert z.read(name)==expected_source,name
         for f in (ROOT/'src').glob('*.lua'):
             if not args.research and f.stem.startswith('charge_'):
                 assert ('factories['+repr(f.stem)+']').encode() not in source
@@ -170,7 +193,8 @@ def main():
             assert found=={builder.MODULE,*option_modules} and len(warnings)==0, (found,option_modules,list(warnings.values()))
         discovery=True
     before=hashlib.sha256(package.read_bytes()).hexdigest()
-    subprocess.run([sys.executable,str(ROOT/'scripts/build.py')]+(['--research'] if args.research else []),check=True)
+    build_args=(['--research'] if args.research else ['--profile-diagnostic'] if args.profile_diagnostic else [])
+    subprocess.run([sys.executable,str(ROOT/'scripts/build.py')]+build_args,check=True)
     assert hashlib.sha256(package.read_bytes()).hexdigest()==before,'Nondeterministic package'
     result={'package_file':package.name,'archive_source_zip_parity':True,'bundle_requires_only_builtin_ffi':True,
         'missing_loader_and_unsupported_process_fail_closed':True,'arsenal_profile_groups_and_empty_companions':True,

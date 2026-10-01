@@ -1,7 +1,10 @@
 -- Opt-in, in-memory runtime profiling. Summaries are emitted only on unload.
 local M={}
 local LIMITS={1,2,5,10,25,50,100,250,500,1000,2000,5000,10000,50000}
-local NAMES={'callback_fire','callback_identity','callback_toggle','toggle_poll','update_tick','update_wrapper','hud_present','hud_anchor',
+local NAMES={'callback_fire','callback_identity','callback_toggle','toggle_poll','toggle_restore',
+    'toggle_cache_invalidation','toggle_followup_first_fire','update_tick','update_wrapper','hud_present','hud_anchor',
+    'hud_owner_check','hud_ammo_row_check','hud_cached_verify','hud_tree_refresh','hud_tree_revalidate',
+    'hud_render_update','hud_render_write','hud_state_project',
     'backend_initialize','native_input_sample','input_eligibility','identity_snapshot',
     'policy_resolution','identity_fingerprint','cadence_logic','native_fire_begin','native_fire_refresh',
     'native_fire_restore','memory_page_validation','memory_platform_read','log_io',
@@ -54,8 +57,30 @@ function M.new(clock,label)
                     histogram=row.buckets}
             end
         end
-        return {label=self.label,clock=self.clock,profiled_duration_us=math.max(0,clock()-profile_started),
-            phases=phases,counters=counters,
+        local duration=math.max(0,clock()-profile_started)
+        local update_total=metrics.update_wrapper.total_us
+        local update_rate=duration>0 and update_total*1000000/duration or 0
+        for name,row in pairs(phases)do
+            local metric=metrics[name]
+            local calls=counters[name..'_calls'] or row.count
+            local rate=duration>0 and calls*1000000/duration or 0
+            local average=metric.total_us/metric.count
+            row.calls_per_second=rate
+            row.average_us=average
+            row.measured_total_us=metric.total_us
+            row.estimated_total_us_per_second=average*rate
+            -- Child phases are nested inside callback/wrapper measurements.
+            -- This share is an inclusive comparison against wrapper time and
+            -- must not be summed across phases.
+            row.percent_of_update_wrapper=update_rate>0 and row.estimated_total_us_per_second*100/update_rate or 0
+        end
+        local rates={}
+        for name,value in pairs(counters)do
+            if type(value)=='number' then rates[name..'_per_second']=duration>0 and value*1000000/duration or 0 end
+        end
+        return {label=self.label,clock=self.clock,profiled_duration_us=duration,
+            phases=phases,counters=counters,counter_rates=rates,
+            update_wrapper_total_us=update_total,
             memory_sampling_every=self.memory_samples_every}
     end
     return self

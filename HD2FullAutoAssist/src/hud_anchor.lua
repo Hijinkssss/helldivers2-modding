@@ -6,6 +6,7 @@ local ROOT=0x346d538
 local PANEL=0x24e340+0x60
 local AMMO=0x3220
 local LIMIT,DEPTH=192,16
+local FULL_SCAN_INTERVAL_US=250000
 local WORD=ffi.typeof('const uint32_t *')
 local FLOAT=ffi.typeof('const float *')
 local function number(bytes,offset,kind)
@@ -19,6 +20,11 @@ local function pointer(bytes,offset)
     local value=lo+hi*4294967296
     assert(value==0 or (value>=0x10000 and value<=0x7fffffffffff),'Invalid HUD pointer')
     return value
+end
+local function same_row(a,b)
+    return a:sub(1,4)==b:sub(1,4) and a:sub(85,88)==b:sub(85,88) and
+        a:sub(37,44)==b:sub(37,44) and a:sub(101,112)==b:sub(101,112) and
+        a:sub(133,160)==b:sub(133,160) and a:sub(225,248)==b:sub(225,248)
 end
 local function finite(value,lo,hi)
     return type(value)=='number' and value==value and value>=lo and value<=hi
@@ -38,12 +44,13 @@ local function rectangle(bytes,width,height)
     return {x=x,y=y,w=w,h=h,scale=sx}
 end
 function M.new(host)
-    local self={samples=0,unavailable=0,nodes=0}
-    function self:sample(width,height)
+    local self={samples=0,unavailable=0,nodes=0,cache=nil}
+    function self:sample(width,height,weapon_key)
         self.samples=self.samples+1
         local profiler=host.profiler
         local started=profiler and profiler:start()
         local reads=0
+        local cache_hit=false
         local good,result=pcall(function()
             local function read(at,n)
                 reads=reads+1
@@ -51,12 +58,37 @@ function M.new(host)
                 assert(type(bytes)=='string' and #bytes==n,'HUD read unavailable')
                 return bytes
             end
+            local now=host:clock_us()
+            local owner_started=profiler and profiler:start()
             local root_bytes=read(host.base+ROOT,8)
             local owner=pointer(root_bytes,0);assert(owner~=0,'Native HUD absent')
+            if profiler then profiler:finish('hud_owner_check',owner_started);profiler:increment('hud_owner_reads')end
             local panel=owner+PANEL
+            local row_started=profiler and profiler:start()
             local row_bytes=read(panel+AMMO,248)
             local row=rectangle(row_bytes,width,height)
             assert(row.w>0 and row.h>=14*height/1080,'Ammo row unavailable')
+            local row_flags=number(row_bytes,0,'uint32_t')
+            local row_opacity=number(row_bytes,84,'float')
+            assert(row_flags%32>=16 and finite(row_opacity,0,1.01) and row_opacity>0.001,
+                'Native ammo row hidden')
+            if profiler then profiler:finish('hud_ammo_row_check',row_started);profiler:increment('hud_ammo_row_reads')end
+            local cached=self.cache
+            if cached and cached.width==width and cached.height==height and
+                cached.weapon_key==weapon_key and cached.root_bytes==root_bytes and
+                same_row(cached.row_bytes,row_bytes) and now-cached.sampled_at<FULL_SCAN_INTERVAL_US then
+                local verify_started=profiler and profiler:start()
+                local verify_row=read(panel+AMMO,248)
+                assert(same_row(row_bytes,verify_row) and root_bytes==read(host.base+ROOT,8),
+                    'Native HUD changed during cached sample')
+                if profiler then
+                    profiler:finish('hud_cached_verify',verify_started)
+                    profiler:increment('hud_cached_verify_row_reads')
+                    profiler:increment('hud_cached_verify_owner_reads')
+                end
+                cache_hit=true
+                return cached.anchor
+            end
             local seen,count,right,row_seen={},0,nil,false
             local links={}
             local function walk(at,parent,depth)
@@ -86,9 +118,12 @@ function M.new(host)
                 end
                 return next_node
             end
+            local tree_started=profiler and profiler:start()
             walk(panel,nil,0)
+            if profiler then profiler:finish('hud_tree_refresh',tree_started)end
             assert(row_seen and right,'Native weapon HUD not visible')
             -- Recheck owner, row and topology; never return a partially sampled tree.
+            local revalidate_started=profiler and profiler:start()
             assert(read(host.base+ROOT,8)==root_bytes and read(panel+AMMO,248)==row_bytes,
                 'Native HUD changed during sample')
             for _,link in ipairs(links)do
@@ -99,20 +134,25 @@ function M.new(host)
                     current:sub(1,4)==link.bytes:sub(1,4),
                     'Native HUD tree changed during sample')
             end
+            if profiler then profiler:finish('hud_tree_revalidate',revalidate_started)end
             self.nodes=count
             local s=height/1080 -- Preserve RC1 cartridge size, independent of native scale.
             local x=right+6*row.scale
             local y=row.y+row.h/2-7*s
             assert(x+17*s<=width and y>=0 and y+14*s<=height,'No room after native HUD')
-            return {x=x,y=y,scale=s,right=right,gap=6*row.scale,nodes=count}
+            local anchor={x=x,y=y,scale=s,right=right,gap=6*row.scale,nodes=count}
+            self.cache={width=width,height=height,weapon_key=weapon_key,root_bytes=root_bytes,
+                row_bytes=row_bytes,sampled_at=now,anchor=anchor}
+            return anchor
         end)
         if profiler then
             profiler:finish('hud_anchor',started)
             profiler:increment('hud_anchor_reads',reads)
             profiler:increment(good and 'hud_anchor_successes' or 'hud_anchor_failures')
+            profiler:increment(cache_hit and 'hud_anchor_cache_hits' or 'hud_anchor_full_scans')
             if good then profiler:increment('hud_anchor_nodes',result.nodes)end
         end
-        if not good then self.unavailable=self.unavailable+1;self.nodes=0;return nil end
+        if not good then self.cache=nil;self.unavailable=self.unavailable+1;self.nodes=0;return nil end
         return result
     end
     return self
