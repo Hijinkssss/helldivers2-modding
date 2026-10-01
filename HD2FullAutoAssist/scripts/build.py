@@ -1,10 +1,10 @@
 """Build unpublished next-version candidates. Never changes release artifacts."""
 from pathlib import Path
-import argparse,hashlib,json,struct,zipfile
+import argparse,hashlib,json,struct,subprocess,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-VERSION='1.1.0-rc3-completion-checkpoint'
+VERSION='1.1.0-final-rc'
 PACKAGE=f'Full-Auto-Assist-{VERSION}-Arsenal.zip'
 OUTPUT=ROOT/'build'/VERSION
 LUA_TYPE=0xA14E8DFA2CD117E2
@@ -134,7 +134,7 @@ def main():
     out.mkdir(parents=True,exist_ok=True)
     (out/'hd2_full_auto_assist.lua').write_bytes(source);(out/ARCHIVE).write_bytes(archive)
     description=('Read-only RC4 charge and independent left-mouse probe: 40-K Meltagun only. Charge automation remains disabled.'
-        if args.research else 'Full Auto Assist 1.1.0 completion checkpoint, not final RC: 31 supported weapons, Eruptor native hold-to-repeat cadence control and measured offline HUD read-cost reduction. Charge input and live performance gates remain open. Meltagun support is not included.')
+        if args.research else 'Full Auto Assist 1.1.0 Final RC for live validation: 31 supported weapons, finalized HUD indicator, and Eruptor Cadence Control. Five charge Special weapons remain intentionally unsupported.')
     groups=[{'Name':'Full Auto Assist','Description':'Required. The assistance feature and its supported-weapon policy.',
         'Include':['Core'],'Image':'thumbnail.png'}]
     files={'thumbnail.png':(ROOT/'thumbnail.png').read_bytes(),
@@ -160,15 +160,9 @@ def main():
     if args.research:
         files['CHARGE_REASSESSMENT.md']=(ROOT/'docs/CHARGE_REASSESSMENT.md').read_bytes()
     else:
-        files['LIVE-VALIDATION.md']=(ROOT/'docs/LIVE-VALIDATION.md').read_bytes()
-        files['OFF-STATE-INVESTIGATION.md']=(ROOT/'docs/OFF_STATE_INVESTIGATION.md').read_bytes()
-        files['HUD_ANCHORING.md']=(ROOT/'docs/HUD_RC2_LAYOUT.md').read_bytes()
-        files['OFF-STATE-DIAGNOSTIC.ini']=(ROOT/'docs/OFF-STATE-DIAGNOSTIC.ini').read_bytes()
         files['CHANGELOG.md']=(ROOT/'CHANGELOG.md').read_bytes()
         files['RELEASE_NOTES.md']=(ROOT/'docs/RELEASE_1.1.0.md').read_bytes()
         files['SUPPORTED_WEAPONS.md']=(ROOT/'docs/SUPPORTED_WEAPONS_1.1.0.md').read_bytes()
-        files['REMAINING_WEAPON_AUDIT.md']=(ROOT/'docs/REMAINING_WEAPON_AUDIT.md').read_bytes()
-        files['COMPLETION_CHECKPOINT.md']=(ROOT/'docs/COMPLETION_CHECKPOINT.md').read_bytes()
     with zipfile.ZipFile(out/package_name,'w',zipfile.ZIP_DEFLATED) as z:
         for name,raw in sorted(files.items()):
             info=zipfile.ZipInfo(name,(1980,1,1,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED
@@ -193,12 +187,13 @@ def main():
         'next_version_regressions_and_evidence_gates_passed':next_passed,
         'b3_regressions_and_work_budgets_passed':b3_passed,
         'live_standalone_validated':False,'live_validation_source':None,
-        'release_status':'verification checkpoint; final private RC withheld',
+        'release_status':'Final RC prepared for live validation; publication gates remain open',
         'final_private_rc_ready':False,
-        'remaining_release_gates':['physical-release-safe charge adapter','bound readiness and completion for the five intended charge weapons','matched live RC3 performance attribution and after measurement'],
+        'remaining_release_gates':['live HUD validation','live Eruptor 27/28/32 RPM and recovery validation','representative live-mission sustained FAA/HUD processing below 5 ms/s'],
         'eruptor_native_behavior':'native hold-to-repeat; OFF repetition is expected',
         'hud_visual_implementation_unchanged':True,
-        'validated_base_commit':'735c1025f1b2c3d5f5cbb4dc6d4f4b7b875ce5e9',
+        'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT.parent,text=True).strip(),
+        'validated_base_commit':'9fb95cee02d097d5b3a3475cfa28585e32b651be',
         'live_validation_scope':'Eruptor OFF concern closed by user vanilla test; HUD approved by user on RC3; new HUD read optimization has offline verification only',
         'charge_research_enabled':args.research,'charge_automation_enabled':False,
         'charge_probe_filename':'HD2FullAutoAssist-charge-probe.log' if args.research else None,

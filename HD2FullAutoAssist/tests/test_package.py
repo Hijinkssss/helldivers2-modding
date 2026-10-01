@@ -58,11 +58,10 @@ def main():
         names=z.namelist();manifest=json.loads(z.read('manifest.json'))
         assert {'README.md','LIVE_TEST.md','HD2FullAutoAssist.example.ini'} <= set(names)
         if not args.research:
-            assert {'REMAINING_WEAPON_AUDIT.md','COMPLETION_CHECKPOINT.md'} <= set(names)
+            assert {'CHANGELOG.md','RELEASE_NOTES.md','SUPPORTED_WEAPONS.md'} <= set(names)
         assert not any('validation.ini' in name.lower() or '/docs/' in name.lower() or
-            ('diagnostic' in name.lower() and name!='OFF-STATE-DIAGNOSTIC.ini') for name in names)
-        assert z.read('OFF-STATE-DIAGNOSTIC.ini')==(ROOT/'docs/OFF-STATE-DIAGNOSTIC.ini').read_bytes()
-        assert b'validation_logging = true' in z.read('OFF-STATE-DIAGNOSTIC.ini')
+            'diagnostic' in name.lower() or 'benchmark' in name.lower() or 'measurement' in name.lower()
+            for name in names)
         assert b'validation_logging = false' in z.read('HD2FullAutoAssist.example.ini')
         example=z.read('HD2FullAutoAssist.example.ini').decode('utf-8')
         for setting in ('enabled = true','user_enabled = true','repeat_ms = 0','toggle_hotkey = =',
@@ -78,7 +77,7 @@ def main():
         if not args.research:
             assert report['target_release_version']=='1.1.0' and report['supported_weapon_count']==31
             assert report['charge_factories_packaged'] is False
-            assert b"version='1.1.0-rc3-completion-checkpoint'" in source
+            assert b"version='1.1.0-final-rc'" in source
             tail="return own_require('lifecycle').start(_G)"
             assert source.decode().count(tail)==1
             packed_policy=LuaRuntime(unpack_returned_tuples=True).execute(source.decode().replace(tail,"return own_require('weapon_policy').new('balanced')"))
@@ -92,8 +91,13 @@ def main():
                 assert not packed_policy.classify(packed_policy,key).allowed
 
             assert 'CHARGE_REASSESSMENT.md' not in names
-            assert b'Meltagun support is not included' in z.read('README.md')
-            assert b'actively researching how to implement it for a later update' in z.read('RELEASE_NOTES.md')
+            readme=z.read('README.md').decode()
+            notes=z.read('RELEASE_NOTES.md').decode()
+            for weapon in ('ARC-3 Arc Thrower','PLAS-101 Purifier','PLAS-15 Loyalist',
+                           'PLAS-39 Accelerator Rifle','40-K Meltagun'):
+                assert weapon in readme and weapon in notes
+            assert 'intentionally unsupported' in readme and 'future work' in readme
+            assert 'actively researching' not in readme+notes
         assert report['hud_force_visible_default'] is False and report['hud_diagnostics_record_cap']==120
         assert 'hud_probe_visible = false' in example and 'hud_diagnostics = false' in example
         assert not any('stable_26' in name for name in names)
@@ -102,7 +106,7 @@ def main():
                 text=z.read(name).decode()
                 assert '26 RPM' not in text and '26/27' not in text
                 assert '1.1.0-rc1-Arsenal.zip' not in text
-        assert '31 explicitly supported' in z.read('README.md').decode()
+        assert '31 supported weapon identities' in z.read('README.md').decode()
         assert 'MLS-4X Commando' in z.read('README.md').decode()
         assert z.read('Core/'+builder.ARCHIVE)==archive.read_bytes()
         for ext in ('.stream','.gpu_resources'):assert z.read('Core/'+builder.ARCHIVE+ext)==b''
@@ -137,13 +141,8 @@ def main():
         sources={'README.md':ROOT/'docs'/('RC4_CHARGE_PROBE.md' if args.research else '../README.md'),
             'LIVE_TEST.md':ROOT/'docs'/('RC4_LIVE_TEST.md' if args.research else 'RELEASE_1.1.0_LIVE_REVIEW.md'),
             'CHARGE_REASSESSMENT.md':ROOT/'docs/CHARGE_REASSESSMENT.md',
-            'LIVE-VALIDATION.md':ROOT/'docs/LIVE-VALIDATION.md',
-            'OFF-STATE-INVESTIGATION.md':ROOT/'docs/OFF_STATE_INVESTIGATION.md',
-            'OFF-STATE-DIAGNOSTIC.ini':ROOT/'docs/OFF-STATE-DIAGNOSTIC.ini',
-            'HUD_ANCHORING.md':ROOT/'docs/HUD_RC2_LAYOUT.md',
+            'CHANGELOG.md':ROOT/'CHANGELOG.md',
             'RELEASE_NOTES.md':ROOT/'docs/RELEASE_1.1.0.md',
-            'COMPLETION_CHECKPOINT.md':ROOT/'docs/COMPLETION_CHECKPOINT.md',
-            'REMAINING_WEAPON_AUDIT.md':ROOT/'docs/REMAINING_WEAPON_AUDIT.md',
             'SUPPORTED_WEAPONS.md':ROOT/'docs/SUPPORTED_WEAPONS_1.1.0.md'}
         for name in names:
             if name not in ('manifest.json',) and not name.startswith(('Core/','Options/')):

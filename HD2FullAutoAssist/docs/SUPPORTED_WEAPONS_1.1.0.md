@@ -1,6 +1,6 @@
 # v1.1.0 supported weapons
 
-31 explicit identities: the 30-weapon v1.0.1 roster plus Commando. Eruptor default is now 28 RPM; its selectable cadences are 27 / 28 / 32 RPM. Rates below are default input-attempt rates, not guaranteed shot rates. Existing validation records cover the base policy; not every weapon has a separately measured shot-rate test.
+**31 explicitly supported identities.** Listed RPM values are default attempted Fire input rates, not guaranteed shot rates. The game decides whether each input produces a shot.
 
 | Weapon | Default RPM | Resource hash |
 |---|---:|---|
@@ -36,16 +36,12 @@
 | P-92 Warrant | 380 | `cf8934ff6567a42d` |
 | MLS-4X Commando | 120 | `5990123d142b16cb` |
 
-Commando repeats ordinary Fire with Balanced at 120 RPM (500 ms) by default or Full Auto at the retained native 240 RPM ceiling (250 ms); guided/dumb-fire behavior, four-round expendable capacity and shot acceptance remain game-controlled. Exact identity, owned native cadence and offline input safety are checked; accepted live shot cadence and guidance continuity remain pending RC2 validation.
+MLS-4X Commando is supported at Balanced 120 RPM by default or Full Auto 240 RPM. APW-1 Anti-Materiel Rifle retains its SPECIAL policy and 120/400 RPM profiles.
 
-Meltagun, Arc Thrower, Purifier, Loyalist and Accelerator are audited Special candidates and currently unassisted. See REMAINING_WEAPON_AUDIT.md for specific evidence and blockers. Native Full Auto and unknown/unlisted weapons stay under normal game control.
+## Eruptor Cadence Control
 
-## Assistance roles and evidence limits
+R-36 Eruptor offers 27 RPM slower, 28 RPM balanced/default, and 32 RPM vanilla maximum cadence. FAA OFF relinquishes control and preserves native hold-to-repeat.
 
-**Cadence Control:** R-36 Eruptor. A fresh verified no-mod vanilla launch showed native hold-to-repeat through the bolt cycle near 32 RPM. FAA paces that existing behavior: 27 slower, 28 default/balanced, 32 maximum/native-speed. OFF releases control and vanilla repetition continues. The user observed more controlled follow-up shots at 28 RPM. This is observed input behavior, not official design intent or a weapon-stat modification.
+## Unsupported
 
-**Special:** APW-1 Anti-Materiel Rifle retains its existing validated SPECIAL policy, 120/400 RPM profiles and normal Fire lease. The five charge candidates are also Special, but are not enabled; their audit is separate below.
-
-**Repeat Assist policy:** the other 29 supported entries, including Commando, retain existing repeated ordinary Fire handling and profiles. This names FAA's current policy role; it does not claim a fresh vanilla held-trigger audit for all 29. Metadata/native mode vectors establish identity and configured modes, not whether holding Fire naturally repeats. If live vanilla behavior demonstrates native repetition, reclassify the role from evidence without silently changing eligibility or rates.
-
-**Unsupported:** native-auto exclusions, unknown identities and the five gated charge candidates receive no FAA input ownership. Gated Special candidates may add value once their release/completion gates are established; they are not classified as having no value.
+ARC-3 Arc Thrower, PLAS-101 Purifier, PLAS-15 Loyalist, PLAS-39 Accelerator Rifle, and 40-K Meltagun are intentionally unsupported and remain under normal game control. Unknown and native Full Auto weapons also remain vanilla.
