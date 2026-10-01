@@ -2,7 +2,7 @@
 
 RC2 fixes a HUD render-path blocker: RC1 refused every scene containing more than one non-main world. The renderer now uses the screen-GUI surface selection established by existing Loader HUD mods and explicitly makes the completed GUI visible. The original yellow three-cartridge geometry, normal position, scale and conditional visibility are preserved. RC1 was packaged and installed correctly; the installed archive matches RC1 exactly and Loader reported it loaded. The live world count and RC2 appearance still require confirmation.
 
-Adds MLS-4X Commando through ordinary repeated Fire at the retained native 240 RPM input cadence. Projectile behavior, guidance, selector, reload, ammo, damage and all other mechanics remain game-controlled. The existing 30-weapon roster is retained, with Eruptor tuning as the sole cadence change.
+Adds MLS-4X Commando through ordinary repeated Fire, with Balanced at 120 RPM by default and Full Auto at the retained native 240 RPM ceiling. Its Arsenal group follows the AMR profile setup; the optional INI setting is `commando_profile=balanced|full_auto`, with Arsenal taking precedence. Projectile behavior, guidance, selector, reload, ammo, damage and all other mechanics remain game-controlled. The existing 30-weapon roster is retained, with Eruptor tuning as the sole cadence change.
 
 Eruptor now offers exactly:
 

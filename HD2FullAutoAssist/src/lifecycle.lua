@@ -350,6 +350,7 @@ function M.start(environment,options)
         veto_profile={'balanced','full_auto'},
         talon_profile={'balanced','efficiency','full_auto','fuller_auto'},
         amr_profile={'balanced','full_auto'},
+        commando_profile={'balanced','full_auto'},
         hyena_profile={'balanced','full_auto'},
         bushwhacker_profile={'balanced','full_auto'},
         eruptor_profile={'slower_27','balanced_28','max_32','balanced','full_auto','stable_26','balanced_27','fast_28'},

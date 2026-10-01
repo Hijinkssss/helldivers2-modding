@@ -202,9 +202,9 @@ local ENTRIES = {
 
     -- ─── SUPPORT WEAPONS ─────────────────────────────────────────────────
 
-    { kind='support_weapon', name='MLS-4X Commando', category='ASSIST', native_cap_rpm=240,
+    { kind='support_weapon', name='MLS-4X Commando', category='ASSIST', native_cap_rpm=240, balanced_rpm=120,
       native_cap_status='RUNTIME_SNAPSHOT',
-      notes='Exact retained identity and owned ProjectileWeapon fire_rate 240 RPM. Ordinary Fire only; guidance, selector, projectiles, ammo and expendable behavior remain game-controlled. RC2 live cadence pending.' },
+      notes='Exact retained identity and owned ProjectileWeapon fire_rate 240 RPM. Balanced 120 RPM; Full Auto 240 RPM. Ordinary Fire only; guidance, selector, projectiles, ammo and expendable behavior remain game-controlled. RC2 live cadence pending.' },
 
     { kind = 'support_weapon', name = 'APW-1 Anti-Materiel Rifle',
       category = 'SPECIAL', native_cap_rpm = 400, native_cap_status = 'VERIFIED',
@@ -261,6 +261,7 @@ local PROFILE_KEYS={
     ['P-69 Veto']='veto_profile',
     ['LAS-58 Talon']='talon_profile',
     ['APW-1 Anti-Materiel Rifle']='amr_profile',
+    ['MLS-4X Commando']='commando_profile',
     ['R-4 Hyena']='hyena_profile',
     ['SG-22 Bushwhacker']='bushwhacker_profile',
     ['R-36 Eruptor']='eruptor_profile',
@@ -272,6 +273,7 @@ local PROFILE_RPMS={
     ['LAS-58 Talon']={balanced=TALON_BALANCED_RPM,efficiency=TALON_EFFICIENCY_RPM,
         full_auto=TALON_FULL_AUTO_RPM,fuller_auto=TALON_FULLER_AUTO_RPM},
     ['APW-1 Anti-Materiel Rifle']={balanced=AMR_BALANCED_RPM,full_auto=400},
+    ['MLS-4X Commando']={balanced=120,full_auto=240},
     ['R-4 Hyena']={balanced=120,full_auto=190},
     ['SG-22 Bushwhacker']={balanced=90,full_auto=650},
     ['R-36 Eruptor']={slower_27=27,balanced_28=28,max_32=32},

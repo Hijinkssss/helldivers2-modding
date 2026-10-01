@@ -10,7 +10,7 @@ Full Auto Assist is an accessibility-focused quality-of-life mod that repeats no
 
 1. Install Bingus Shared Loader v18 / API 1 and open Arsenal.
 2. Import `Full-Auto-Assist-1.1.0-rc2-Arsenal.zip`, enable Full Auto Assist and deploy it.
-3. Choose any desired options in Arsenal. Seven weapon profile groups default to Balanced. Eruptor defaults to Balanced at 28 RPM.
+3. Choose any desired options in Arsenal. Eight weapon profile groups default to Balanced. Eruptor defaults to Balanced at 28 RPM.
 
 The mod starts ON by default. Press `=` (or `+`, depending on keyboard layout) once to toggle it. If Mod Bindings Menu is installed and registers the optional action, that action uses the same toggle path and takes precedence over the fallback key.
 
@@ -32,7 +32,7 @@ Arc Thrower, Purifier, Loyalist, and Accelerator also remain unassisted in this 
 
 ## Arsenal profiles
 
-The eight configurable groups are Peacemaker, SOCOM, Veto, Talon, AMR, Hyena, Bushwhacker, and Eruptor. Existing profile values are preserved: Peacemaker 380/900 RPM; SOCOM 380/900; Veto 380/750; Talon Balanced 210, Efficiency 60, Full Auto 380, FULLER AUTO 750; AMR 120/400; Hyena 120/190; Bushwhacker 90/650. Eruptor offers Slower Cadence 27 RPM, Balanced / default 28 RPM, and Maximum Full Auto 32 RPM. Use `eruptor_profile=slower_27|balanced_28|max_32`. Old RC1 settings migrate safely to the corresponding new option; the retired slow option falls back to the new default. The default also applies to legacy `native_cap` INIs. Constitution remains 60 RPM. Other supported weapons use Balanced at `min(native cap, 380 RPM)`.
+The nine configurable groups are Peacemaker, SOCOM, Veto, Talon, AMR, Commando, Hyena, Bushwhacker, and Eruptor. Existing profile values are preserved: Peacemaker 380/900 RPM; SOCOM 380/900; Veto 380/750; Talon Balanced 210, Efficiency 60, Full Auto 380, FULLER AUTO 750; AMR 120/400; Commando 120/240; Hyena 120/190; Bushwhacker 90/650. Eruptor offers Slower Cadence 27 RPM, Balanced / default 28 RPM, and Maximum Full Auto 32 RPM. Use `eruptor_profile=slower_27|balanced_28|max_32`. Old RC1 settings migrate safely to the corresponding new option; the retired slow option falls back to the new default. The default also applies to legacy `native_cap` INIs. Constitution remains 60 RPM. Other supported weapons use Balanced at `min(native cap, 380 RPM)`.
 
 The P-92 Warrant uses Balanced at 380 RPM (authored fire-rate metadata: 450 RPM). The mod author live-tested RC1 in Guided and Unguided modes. In Guided mode, the game retains control of lock acquisition and whether each ordinary Fire input is accepted. FAA does not observe or change guidance, lock, mode, aim, or target selection.
 
@@ -68,6 +68,6 @@ If assistance unexpectedly starts OFF, inspect `%LOCALAPPDATA%\CowboyBingus\Hell
 
 See [CHANGELOG.md](CHANGELOG.md) for this release's changes.
 
-Commando uses ordinary repeated Fire at the retained native 240 RPM input cadence. Guidance, selector, projectile, ammo and expendable mechanics stay game-controlled; accepted live cadence remains pending.
+Commando offers Balanced at 120 RPM by default and Full Auto at its retained native 240 RPM input cadence. `commando_profile=balanced|full_auto` provides the optional INI fallback; Arsenal selections take precedence. Guidance, selector, projectile, ammo and expendable mechanics stay game-controlled; accepted live cadence remains pending.
 
 RC2 temporarily enables bounded HUD diagnostics (at most 120 records in HD2FullAutoAssist.log). `hud_diagnostics=false` disables them. `hud_probe_visible=false` is the normal default; the optional center-screen render probe must be restored to false before accepting the candidate. See LIVE_TEST.md.

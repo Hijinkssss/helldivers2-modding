@@ -44,7 +44,7 @@ P-2 Peacemaker, P-113 Verdict, M6C/SOCOM Pistol, P-69 Veto, R-63 Diligence, R-63
 
 ## Arsenal profiles
 
-Arsenal has eight configurable groups: Peacemaker, SOCOM, Veto, Talon, AMR, Hyena, Bushwhacker, and Eruptor. Eruptor offers Slower Cadence 27 RPM, Balanced / default 28 RPM and Maximum Full Auto 32 RPM. Constitution remains unchanged. The seven other groups retain Balanced and Full Auto profiles; Talon also offers Efficiency and FULLER AUTO. Existing profile values are documented in the included README. Other supported weapons use Balanced cadence capped at the lower of their native cap and 380 input attempts per minute. These values describe attempted Fire inputs, not guaranteed accepted shots.
+Arsenal has nine configurable groups: Peacemaker, SOCOM, Veto, Talon, AMR, Commando, Hyena, Bushwhacker, and Eruptor. Eruptor offers Slower Cadence 27 RPM, Balanced / default 28 RPM and Maximum Full Auto 32 RPM. Commando offers Balanced 120 RPM by default and Full Auto 240 RPM, following the AMR profile setup. Constitution remains unchanged. The eight other groups retain Balanced and Full Auto profiles; Talon also offers Efficiency and FULLER AUTO. Existing profile values are documented in the included README. Other supported weapons use Balanced cadence capped at the lower of their native cap and 380 input attempts per minute. These values describe attempted Fire inputs, not guaranteed accepted shots.
 
 Amendment, Breaker Incendiary, and Dominator can chain their normal burst behavior while Fire is held. The game controls burst internals, fire-mode selection, and legal shot acceptance.
 

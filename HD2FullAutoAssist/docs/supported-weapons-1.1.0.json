@@ -212,7 +212,7 @@
   {
     "name": "MLS-4X Commando",
     "hash": "5990123d142b16cb",
-    "balanced_rpm": 240,
+    "balanced_rpm": 120,
     "category": "ASSIST",
     "native_cap_status": "RUNTIME_SNAPSHOT"
   }

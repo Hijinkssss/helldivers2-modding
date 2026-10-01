@@ -33,4 +33,4 @@ Research RC3 targets only Accelerator `30061f91af477f5e` and Meltagun
 recorder recognition for both, and verifies Arc/Purifier/Loyalist, conventional,
 and unknown resources consume zero probe reads or samples. Both suites run it.
 
-RC2 adds `test_rc2.lua`: legacy config and Arsenal migration, guarded Commando hold/release/swap/OFF/ship handling, HUD classification, multi-world GUI selection, explicit visibility, bounded diagnostics and opt-in force-probe/fault isolation. B3 enumerates all 31 identities plus every selectable profile (81 native threshold cases). These remain offline tests; no GUI fixture proves in-game pixels or accepted rockets.
+RC2 adds `test_rc2.lua`: legacy config and Arsenal migration, guarded Commando hold/release/swap/OFF/ship handling, HUD classification, multi-world GUI selection, explicit visibility, bounded diagnostics and opt-in force-probe/fault isolation. B3 enumerates all 31 identities plus every selectable profile (83 native threshold cases). These remain offline tests; no GUI fixture proves in-game pixels or accepted rockets.

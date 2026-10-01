@@ -34,9 +34,8 @@
 | P-35 Re-Educator | 110 | `0b882808c6f498e8` |
 | P/40-K Bolt Pistol | 150 | `dbb6c961c59fadc1` |
 | P-92 Warrant | 380 | `cf8934ff6567a42d` |
+| MLS-4X Commando | 120 | `5990123d142b16cb` |
 
-| MLS-4X Commando | 240 | `5990123d142b16cb` |
-
-Commando repeats ordinary Fire at the retained native 240 RPM input cadence (250 ms); guided/dumb-fire behavior, four-round expendable capacity and shot acceptance remain game-controlled. Exact identity, owned native cadence and offline input safety are checked; accepted live shot cadence and guidance continuity remain pending RC2 validation.
+Commando repeats ordinary Fire with Balanced at 120 RPM (500 ms) by default or Full Auto at the retained native 240 RPM ceiling (250 ms); guided/dumb-fire behavior, four-round expendable capacity and shot acceptance remain game-controlled. Exact identity, owned native cadence and offline input safety are checked; accepted live shot cadence and guidance continuity remain pending RC2 validation.
 
 Meltagun support is not included. I am actively researching how to implement it for a later update. Arc Thrower, Purifier, Loyalist and Accelerator also remain unassisted pending charge input validation. Native Full Auto and unknown/unlisted weapons stay under normal game control.

@@ -2,7 +2,7 @@
 
 - Added the retained three-cartridge HUD glyph for effective FAA assistance on supported weapons.
 - Eruptor options are Slower Cadence 27, Balanced / default 28 and Maximum Full Auto 32 RPM; legacy config migration is safe.
-- Added Commando through the ordinary 240 RPM Fire-repeat policy.
+- Added Commando through ordinary repeated Fire, with Balanced 120 RPM by default and Full Auto 240 RPM Arsenal profiles, matching the AMR option setup.
 - Fixed multi-world HUD suppression and explicit GUI visibility; added bounded RC2 diagnostics.
 - Preserved the existing 30 supported weapons, for 31 total, Warrant support, validated caches, input restoration, startup/toggle behavior and v1.0.1 performance fixes.
 - Meltagun support is not included. I am actively researching how to implement it for a later update.

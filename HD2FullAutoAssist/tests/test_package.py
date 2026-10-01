@@ -64,7 +64,7 @@ def main():
             assert setting in example,setting
         assert manifest['Name']==('Full Auto Assist RC4 Meltagun Probe' if args.research else 'Full Auto Assist')
         assert manifest['Description']==report['description']
-        assert len(manifest['Options'])==9 and manifest['Options'][0]['Include']==['Core']
+        assert len(manifest['Options'])==10 and manifest['Options'][0]['Include']==['Core']
         assert z.read('thumbnail.png')==(ROOT/'thumbnail.png').read_bytes()
         assert 'SubOptions' not in manifest['Options'][0]
         assert manifest['Guid']=='cf368f5c-f686-453f-a566-435b4b7fcf26'
@@ -106,6 +106,7 @@ def main():
             'LAS-58 Talon':[('Balanced',210,'balanced'),('Efficiency',60,'efficiency'),
                 ('Full Auto',380,'full_auto'),('FULLER AUTO',750,'fuller_auto')],
             'APW-1 Anti-Materiel Rifle':[('Balanced',120,'balanced'),('Full Auto',400,'full_auto')],
+            'MLS-4X Commando':[('Balanced',120,'balanced'),('Full Auto',240,'full_auto')],
             'R-4 Hyena':[('Balanced',120,'balanced'),('Full Auto',190,'full_auto')],
             'SG-22 Bushwhacker':[('Balanced',90,'balanced'),('Full Auto',650,'full_auto')],
             'R-36 Eruptor':[('Balanced / default',28,'balanced_28'),('Slower Cadence',27,'slower_27'),('Maximum Full Auto',32,'max_32')],

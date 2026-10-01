@@ -60,6 +60,7 @@ for _,row in ipairs({{peace,'peacemaker_profile',{'balanced','full_auto'}},
  {'c780bcd79547da0f','veto_profile',{'balanced','full_auto'}},
  {talon,'talon_profile',{'balanced','efficiency','full_auto','fuller_auto'}},
  {'89c5493e08ca4207','amr_profile',{'balanced','full_auto'}},
+ {'5990123d142b16cb','commando_profile',{'balanced','full_auto'}},
  {'e5796355a8fd67e0','hyena_profile',{'balanced','full_auto'}},
  {'2b28e17ffed05f7c','bushwhacker_profile',{'balanced','full_auto'}}})do
     for _,profile in ipairs(row[3])do

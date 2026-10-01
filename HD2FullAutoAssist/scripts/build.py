@@ -101,6 +101,9 @@ OPTIONS=[
     ('amr_profile','APW-1 Anti-Materiel Rifle',[
         ('Balanced','Current validated assisted cadence with time for recoil recovery.','balanced',120),
         ('Full Auto',"Uses the AMR's native fire-rate ceiling.",'full_auto',400)]),
+    ('commando_profile','MLS-4X Commando',[
+        ('Balanced','Slower assisted cadence with time between rockets.','balanced',120),
+        ('Full Auto',"Uses the Commando's native fire-rate ceiling.",'full_auto',240)]),
     ('hyena_profile','R-4 Hyena',[
         ('Balanced','Slower assisted cadence intended to give the weapon time to settle between shots.','balanced',120),
         ('Full Auto',"Uses the Hyena's native fire-rate ceiling.",'full_auto',190)]),

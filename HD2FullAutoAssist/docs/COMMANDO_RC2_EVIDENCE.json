@@ -74,5 +74,9 @@
       "name": "WeaponFireModeCapabilities.json",
       "sha256": "545b3cb5e6ccd97d1ee95dd3454f5d60e27565e70a7afd4d6130caa6b133bf99"
     }
-  ]
+  ],
+  "balanced_rpm": 120,
+  "full_auto_rpm": 240,
+  "profile_setting": "commando_profile",
+  "profile_precedence": "Arsenal selection > explicit INI profile > legacy global mode > Balanced default"
 }

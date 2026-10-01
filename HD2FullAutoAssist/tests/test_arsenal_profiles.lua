@@ -9,6 +9,7 @@ local schema={fire_rate_mode={type='string',default='balanced',max_length=16,
     veto_profile={type='string',default='',max_length=16,values=profile_values},
     talon_profile={type='string',default='',max_length=16,values=profile_values},
     amr_profile={type='string',default='',max_length=16,values=profile_values},
+    commando_profile={type='string',default='',max_length=16,values=profile_values},
     hyena_profile={type='string',default='',max_length=16,values=profile_values},
     bushwhacker_profile={type='string',default='',max_length=16,values=profile_values}}
 
@@ -16,12 +17,12 @@ local ini=Config.load(schema,'fire_rate_mode=native_cap\npeacemaker_profile=full
 assert(ini.peacemaker_profile=='full_auto' and ini.veto_profile=='full_auto')
 local selected=Config.load(schema,'fire_rate_mode=native_cap\npeacemaker_profile=full_auto',
     {peacemaker_profile='balanced',socom_profile='balanced',veto_profile='balanced',
-        talon_profile='balanced',amr_profile='balanced',hyena_profile='balanced',bushwhacker_profile='balanced'})
+        talon_profile='balanced',amr_profile='balanced',commando_profile='balanced',hyena_profile='balanced',bushwhacker_profile='balanced'})
 assert(selected.peacemaker_profile=='balanced','Arsenal must override explicit INI fallback')
 local policy=Policy.new(selected.fire_rate_mode,selected.talon_mode,selected)
 local expected={
     ['05e4e5c2db6e44a2']=380,['4d58c77087b774c5']=380,['c780bcd79547da0f']=380,
-    ['416d053372c4e433']=210,['89c5493e08ca4207']=120,
+    ['416d053372c4e433']=210,['89c5493e08ca4207']=120,['5990123d142b16cb']=120,
     ['e5796355a8fd67e0']=120,['2b28e17ffed05f7c']=90}
 for hash,rpm in pairs(expected)do
     local row=policy:classify(hash);assert(row.allowed and row.max_repeat_rpm==rpm,hash..' selected default')
@@ -35,6 +36,8 @@ local choices={
     {talon_profile='full_auto',hash='416d053372c4e433',rpm=380},
     {talon_profile='fuller_auto',hash='416d053372c4e433',rpm=750},
     {amr_profile='full_auto',hash='89c5493e08ca4207',rpm=400},
+    {commando_profile='balanced',hash='5990123d142b16cb',rpm=120},
+    {commando_profile='full_auto',hash='5990123d142b16cb',rpm=240},
     {hyena_profile='full_auto',hash='e5796355a8fd67e0',rpm=190},
     {bushwhacker_profile='full_auto',hash='2b28e17ffed05f7c',rpm=650},
 }
@@ -69,7 +72,7 @@ local expansion={
     {'P-35 Re-Educator','0b882808c6f498e8',110},
     {'P/40-K Bolt Pistol','dbb6c961c59fadc1',150},
     {'P-92 Warrant','cf8934ff6567a42d',450,380},
-    {'MLS-4X Commando','5990123d142b16cb',240,240},
+    {'MLS-4X Commando','5990123d142b16cb',240,120},
 }
 local baseline=Policy.new('balanced','balanced')
 for _,row in ipairs(expansion)do
@@ -91,3 +94,8 @@ assert(warrant.native_cap_rpm==450 and warrant.max_repeat_rpm==380)
 assert(not Policy.new('balanced','balanced'):classify('cf8934ff6567a42e').allowed,
     'Incorrect Warrant identity remains fail-closed')
 print('test_arsenal_profiles: all checks passed')
+
+local commando_override=Config.load(schema,'commando_profile=full_auto',{commando_profile='balanced'})
+assert(Policy.new('native_cap','balanced',commando_override):classify('5990123d142b16cb').max_repeat_rpm==120)
+commando_override=Config.load(schema,'commando_profile=balanced',{commando_profile='full_auto'})
+assert(Policy.new('balanced','balanced',commando_override):classify('5990123d142b16cb').max_repeat_rpm==240)

@@ -13,11 +13,20 @@ for old,wanted in pairs({stable_26='balanced_28',['26']='balanced_28',balanced='
     assert(f.backend.lease and f.backend.repeat_seconds==60/({slower_27=27,balanced_28=28,max_32=32})[wanted])
     f:fire(false);f:tick();assert(f:restored() and f.consumer:stop().ok)
 end
+-- Both Commando profiles reach native input with unchanged HUD eligibility and release safety.
+for profile,rpm in pairs({balanced=120,full_auto=240})do
+    for _,mode in ipairs({'balanced','native_cap'})do
+        local c=Fixture.new('fire_rate_mode='..mode..'\ncommando_profile='..profile)
+        c:weapon('5990123d142b16cb');c:tick();assert(c.consumer:get_hud_state().visible)
+        c:fire(true);c:tick();assert(c.backend.lease and c.backend.repeat_seconds==60/rpm)
+        c:fire(false);c:tick();assert(c:restored() and c.consumer:stop().ok)
+    end
+end
 -- Commando reaches guarded native mapping, HUD state and release/swap/OFF/ship gates.
 local f=Fixture.new();f:weapon('5990123d142b16cb');f:tick()
 local model=f.consumer:get_hud_state()
 assert(model.visible and model.eligible and model.weapon=='MLS-4X Commando')
-f:fire(true);f:tick();assert(f.backend.lease and f.backend.repeat_seconds==.25)
+f:fire(true);f:tick();assert(f.backend.lease and f.backend.repeat_seconds==.5)
 f:fire(false);f:tick();assert(f:restored())
 f:fire(true);f:tick();f:weapon('968211c0033dce64');f:tick();assert(f:restored() and not f.consumer:get_hud_state().visible)
 f:fire(false);f:tick();f:weapon('5990123d142b16cb');f:tick();f:fire(true);f:tick();assert(f.backend.lease)

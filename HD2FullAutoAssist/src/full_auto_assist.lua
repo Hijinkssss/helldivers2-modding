@@ -30,6 +30,7 @@ local schema={enabled={type='boolean',default=true},user_enabled={type='boolean'
     talon_profile={type='string',default='',max_length=16,
         values={['']=true,balanced=true,efficiency=true,full_auto=true,fuller_auto=true}},
     amr_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
+    commando_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
     hyena_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
     bushwhacker_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
     eruptor_profile={type='string',default='',max_length=16,
