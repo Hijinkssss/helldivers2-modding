@@ -4,7 +4,7 @@ import argparse,hashlib,json,struct,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-VERSION='1.1.0-rc2'
+VERSION='1.1.0-rc3-private-off-audit'
 PACKAGE=f'Full-Auto-Assist-{VERSION}-Arsenal.zip'
 OUTPUT=ROOT/'build'/VERSION
 LUA_TYPE=0xA14E8DFA2CD117E2
@@ -134,7 +134,7 @@ def main():
     out.mkdir(parents=True,exist_ok=True)
     (out/'hd2_full_auto_assist.lua').write_bytes(source);(out/ARCHIVE).write_bytes(archive)
     description=('Read-only RC4 charge and independent left-mouse probe: 40-K Meltagun only. Charge automation remains disabled.'
-        if args.research else 'Full Auto Assist 1.1.0 RC2: 31 supported weapons, active-assistance HUD indicator and Eruptor cadence choices. Meltagun support is not included; the author is actively researching it for a later update.')
+        if args.research else 'Full Auto Assist 1.1.0 private RC3: restoration ownership fix and OFF-state diagnostics; persistent Eruptor OFF repetition remains under investigation. Preserves RC2 profiles and 31 supported weapons. Meltagun support is not included.')
     groups=[{'Name':'Full Auto Assist','Description':'Required. The assistance feature and its supported-weapon policy.',
         'Include':['Core'],'Image':'thumbnail.png'}]
     files={'thumbnail.png':(ROOT/'thumbnail.png').read_bytes(),
@@ -160,6 +160,10 @@ def main():
     if args.research:
         files['CHARGE_REASSESSMENT.md']=(ROOT/'docs/CHARGE_REASSESSMENT.md').read_bytes()
     else:
+        files['LIVE-VALIDATION.md']=(ROOT/'docs/LIVE-VALIDATION.md').read_bytes()
+        files['OFF-STATE-INVESTIGATION.md']=(ROOT/'docs/OFF_STATE_INVESTIGATION.md').read_bytes()
+        files['HUD_ANCHORING.md']=(ROOT/'docs/HUD_RC2_LAYOUT.md').read_bytes()
+        files['OFF-STATE-DIAGNOSTIC.ini']=(ROOT/'docs/OFF-STATE-DIAGNOSTIC.ini').read_bytes()
         files['CHANGELOG.md']=(ROOT/'CHANGELOG.md').read_bytes()
         files['RELEASE_NOTES.md']=(ROOT/'docs/RELEASE_1.1.0.md').read_bytes()
         files['SUPPORTED_WEAPONS.md']=(ROOT/'docs/SUPPORTED_WEAPONS_1.1.0.md').read_bytes()
@@ -187,14 +191,14 @@ def main():
         'next_version_regressions_and_evidence_gates_passed':next_passed,
         'b3_regressions_and_work_budgets_passed':b3_passed,
         'live_standalone_validated':False,'live_validation_source':None,
-        'release_status':'unpublished release candidate; review required before merge or publication',
-        'validated_base_commit':'2bba9ab85ab2f1264a310e9aa77168a9e22a5185',
-        'live_validation_scope':'v1.0.1 base has recorded live validation; RC2 HUD render path, Commando and Eruptor options remain pending live review',
+        'release_status':'private diagnostic candidate; Eruptor OFF release blocker unresolved',
+        'validated_base_commit':'735c1025f1b2c3d5f5cbb4dc6d4f4b7b875ce5e9',
+        'live_validation_scope':'RC2 lineage preserved; persistent Eruptor OFF root cause remains unresolved; private diagnostic candidate only',
         'charge_research_enabled':args.research,'charge_automation_enabled':False,
         'charge_probe_filename':'HD2FullAutoAssist-charge-probe.log' if args.research else None,
         'charge_probe_sampling':'each relevant stock update, capped at 6000 samples' if args.research else None,
         'charge_probe_targets':{'6cfcc7f8801a0266':'40-K Meltagun'} if args.research else None,
-        'hud_diagnostics_default':True,'hud_diagnostics_record_cap':120,'hud_force_visible_default':False,
+        'hud_diagnostics_default':False,'hud_diagnostics_record_cap':120,'hud_force_visible_default':False,
         'profiling_default':False,'validation_logging_default':False,'debug_logging_default':False,
         'baseline_commit':'be04ea15359b505bf953ef22d747e8f5e2de013e',
         'rc8_diagnostic_cleanup':{'removed':['startup_diagnostic.lua','RC8_DIAGNOSTIC.md','test_startup_diagnostic.lua',

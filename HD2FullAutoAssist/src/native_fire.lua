@@ -28,6 +28,7 @@ end
 local function packed(n)
     return string.char(n%256,math.floor(n/256)%256,math.floor(n/65536)%256,math.floor(n/16777216)%256)
 end
+local function hex(bytes)return (bytes:gsub('.',function(c)return string.format('%02x',c:byte())end))end
 local function adapter()
     local ffi=require('ffi')
     ffi.cdef[[
@@ -90,7 +91,10 @@ function M.new(host,make_adapter)
             seconds>=0 and seconds<86400 and trigger<=10 and pressed<=1,'Invalid Fire input layout')
         local row={owner=owner,held=math.abs(magnitude)>=0.5,pressed=pressed==1,
             trigger=trigger,held_seconds=seconds,mapping_index=u32(bytes,16),gameplay=false}
-        if capture_physical and a.raw_lmb_down then row.raw_lmb_down=a.raw_lmb_down()end
+        if capture_physical then
+            row.input_hex=hex(bytes)
+            if a.raw_lmb_down then row.raw_lmb_down=a.raw_lmb_down()end
+        end
         if not row.held then return row end
         local state=maybe_ptr(a.base+STATE);if not state then return row end
         row.game_state=word(state+0xac21c)
@@ -168,6 +172,35 @@ function M.new(host,make_adapter)
         return {mappings=count,button_mappings=button,axis_mappings=axis,triggers=table.concat(triggers,','),
             repeat_ms=self.repeat_seconds*1000,native_retry_ms=(self.native_repeat_seconds or self.repeat_seconds)*1000}
     end
+    -- Opt-in evidence only. Never mutates evaluator/input/weapon state.
+    -- Capture originals before the first lease; compare current, freshly read
+    -- mappings only while their full owning context still matches that baseline.
+    function self:audit(row)
+        if not row then return {input_available=false}end
+        local at,count,header=bucket(row.owner)
+        local bytes=read(at+8,count*20)
+        local baseline=self.audit_baseline
+        if not baseline and not self.lease then
+            baseline={owner=row.owner,at=at,header=header,count=count,bytes=bytes}
+            self.audit_baseline=baseline
+        end
+        local same=baseline and baseline.owner==row.owner and baseline.at==at and
+            baseline.header==header and baseline.count==count
+        local records={}
+        for i=0,count-1 do
+            local record=bytes:sub(i*20+1,i*20+20)
+            records[#records+1]={index=i,flags=u32(record,0),trigger=u32(record,8),
+                parameter=a.float(record,16),bytes=hex(record)}
+        end
+        assert(ptr(a.base+CONTROLS)==row.owner and read(row.owner+MAP,20)==header and
+            read(at,8)==packed(CODE)..packed(count),'Fire audit context changed')
+        return {owner=row.owner,bucket=at,header=hex(header),records=records,
+            same_as_initial_context=same==true,
+            mappings_equal_pre_assist=same and bytes==baseline.bytes or false,
+            active_lease=self.lease~=nil,input_hex=row.input_hex,held=row.held,
+            pressed=row.pressed,trigger=row.trigger,held_seconds=row.held_seconds,
+            observation='native_input_and_mapping_not_shot'}
+    end
     function self:restore()
         local l=self.lease;if not l then return true end
         local same,current_count=pcall(context,l,true)
@@ -176,7 +209,11 @@ function M.new(host,make_adapter)
             -- A failed read is not proof of detachment. Keep originals and the
             -- lease so the controller can retry restoration instead of losing it.
             if not tostring(current_count):match('^BindingContextChanged:')then error(current_count,0)end
-            self.conflicts=self.conflicts+1;self.lease=nil;return false,'binding_context_changed'
+            -- Detachment is not proof that our modified records were restored.
+            -- Keep the only original snapshots; never follow/write stale addresses.
+            if l.last_conflict~='binding_context_changed' then self.conflicts=self.conflicts+1 end
+            l.last_conflict='binding_context_changed'
+            return false,'binding_context_changed'
         end
         local clean=true
         for _,r in ipairs(l.records) do
@@ -187,11 +224,15 @@ function M.new(host,make_adapter)
                     a.write(r.at,r.original);self.writes=self.writes+1
                     assert(read(r.at,20)==r.original,'Fire mapping restoration did not verify')
                     self.restored=self.restored+1
-                elseif bytes~=r.original then clean=false;self.conflicts=self.conflicts+1 end
-            else clean=false;self.conflicts=self.conflicts+1 end
+                elseif bytes~=r.original then clean=false end
+            else clean=false end
         end
-        self.lease=nil
-        if not clean then self:invalidate()end
+        if clean then
+            self.lease=nil;self.repeat_seconds=REPEAT_SECONDS;self.native_repeat_seconds=nil
+        else
+            if l.last_conflict~='binding_edit_preserved' then self.conflicts=self.conflicts+1 end
+            l.last_conflict='binding_edit_preserved';self:invalidate()
+        end
         return clean,clean and 'restored' or 'binding_edit_preserved'
     end
     function self:begin(row,repeat_seconds)

@@ -4,7 +4,7 @@ function M.project(state)
     local eligibility=state and state.eligibility or {}
     local weapon=state and state.weapon or {}
     local category=eligibility.category
-    return {visible=state~=nil and state.user_enabled==true and state.effective==true and
+    return {enabled=state~=nil and state.user_enabled==true and state.effective==true,visible=state~=nil and
         state.identity_valid==true and state.identity_observed==true and
         (category=='ASSIST' or category=='SPECIAL' or category=='CHARGE'),
         weapon=weapon.name,resource_hash=weapon.resource_hash,category=category,
@@ -13,10 +13,11 @@ function M.project(state)
         effective=state and state.effective==true or false,
         identity_valid=state and state.identity_valid==true or false}
 end
-function M.new(engine,options)
+function M.new(engine,options,anchor_provider)
+    if type(options)=='function' then anchor_provider=options;options={} end
     options=options or {}
     local self={available=false,failures=0,created=0,destroyed=0,calls=0,emitted=0,
-        force_visible=options.force_visible==true,reason='engine_unavailable'}
+        force_visible=false,reason='engine_unavailable'}
     engine=type(engine)=='table' and engine or {}
     local A,W,G=engine.Application or {},engine.World or {},engine.Gui or {}
     self.available=type(A.worlds)=='function' and type(A.main_world)=='function' and
@@ -31,11 +32,11 @@ function M.new(engine,options)
     function self:report(model,force)
         if not options.log or self.emitted>=120 then return end
         model=model or {}
-        local key=table.concat({tostring(model.resource_hash),tostring(model.visible),tostring(model.category),
+        local key=table.concat({tostring(model.resource_hash),tostring(model.visible),tostring(model.enabled),tostring(model.category),
             self.reason,tostring(self.created),tostring(self.width),tostring(self.height)},':')
         if not force and key==self.report_key and self.calls~=60 and self.calls%600~=0 then return end
         self.report_key=key;self.emitted=self.emitted+1
-        pcall(options.log,{implementation='1.1.0-rc2',renderer_instantiated=true,
+        pcall(options.log,{implementation='1.1.0-rc3-private-off-audit',renderer_instantiated=true,
             renderer_available=self.available,gui_created=self.gui~=nil,draw_update_calls=self.calls,
             created=self.created,destroyed=self.destroyed,failures=self.failures,reason=self.reason,
             error=self.error,api={worlds=type(A.worlds)=='function',main_world=type(A.main_world)=='function',
@@ -45,8 +46,8 @@ function M.new(engine,options)
             category=model.category,hud_visible=model.visible==true,user_enabled=model.user_enabled,
             effective=model.effective,identity_valid=model.identity_valid,force_visible=self.force_visible,
             world_count=self.world_count,target_index=self.target_index,world=tostring(self.world),
-            width=self.width,height=self.height,x=self.x,y=self.y,scale=self.scale,alpha=230,
-            layer=900,anchor='screen-bottom-left',parent='independent-screen-gui',
+            width=self.width,height=self.height,x=self.x,y=self.y,scale=self.scale,alpha=model.enabled and 230 or 255,
+            layer=900,anchor='native-panel-right-extent-ammo-row',parent='independent-screen-gui',
             clipping='viewport-only; no native ammo parent',on_screen=self.on_screen,rectangles=self.ids and #self.ids or 0})
     end
     function self:clear()
@@ -88,15 +89,17 @@ function M.new(engine,options)
                 G.set_visible(self.gui,false)
                 self.ids={};self.created=self.created+1
             end
-            local signature=tostring(width)..':'..tostring(height)
+            local anchor=anchor_provider and anchor_provider(width,height)
+            if not anchor then self:clear();self.reason='native_geometry_unavailable';return end
+            local s,x,y=anchor.scale,anchor.x,anchor.y
+            local signature=table.concat({width,height,x,y,s,tostring(model.enabled==true)},':')
             self.reason=self.force_visible and 'forced_probe' or 'visible'
             if signature==self.signature then return end
             -- Original static yellow 17 by 14 three-cartridge glyph, unchanged.
-            local s=height/1080;local x,y=width*.17,height*.09
-            if self.force_visible then s=s*4;x=width*.5;y=height*.5 end
+            -- Native extent and ammo-row center were sampled above.
             self.x,self.y,self.scale=x,y,s
             self.on_screen=x>=0 and y>=0 and x+17*s<=width and y+14*s<=height
-            local ink=engine.Color(230,255,213,0)
+            local ink=model.enabled==true and engine.Color(230,255,213,0) or engine.Color(255,255,255,255)
             for bullet=0,2 do
                 for part,shape in ipairs({{1,0,2,2},{0,2,4,9},{1,11,2,3}})do
                     local index=bullet*3+part

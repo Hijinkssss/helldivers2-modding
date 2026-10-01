@@ -1,0 +1,117 @@
+{
+  "passed": true,
+  "steam_build": "25480438",
+  "image_sha256": "e27989fe7a2c0e2184ef64d4d587828f3ba5bc79f09a2d95c29f0724b8ab1969",
+  "game_dll_sha256": "2e2c3b7c2500646dadd5f2b4c6e0504dbb7e7896139f64cddc0d1813c718f51e",
+  "fields": [
+    {
+      "name": "hud_owner",
+      "pattern": "c780........01000000488b0d........4885c9",
+      "rva": "0x3a288c",
+      "field": 54973752
+    },
+    {
+      "name": "mission_hud",
+      "pattern": "83fa0674..498d8a........e8........83ff06",
+      "rva": "0x12a984b",
+      "field": 2417472
+    },
+    {
+      "name": "self_panel",
+      "pattern": "498d57..498bcce8........498bcce8........f30f1005........498d8f........",
+      "rva": "0x12e97cb",
+      "field": 96
+    },
+    {
+      "name": "weapon_widget",
+      "pattern": "488bcfe8........4d8daf........ba01000000498bcd",
+      "rva": "0x1816e70",
+      "field": 1968
+    },
+    {
+      "name": "screen_x",
+      "pattern": "f30f58f0f30f1080........f30f59c3",
+      "rva": "0x144a67c",
+      "field": 148
+    },
+    {
+      "name": "screen_y",
+      "pattern": "f3440f10a0........f30f10b8........",
+      "rva": "0x144a656",
+      "field": 156
+    },
+    {
+      "name": "opacity",
+      "pattern": "0f84........f30f1048..f30f1050..",
+      "rva": "0x143b5af",
+      "field": 84
+    },
+    {
+      "name": "scale_x",
+      "pattern": "f30f1070..f3440f1078..",
+      "rva": "0x144a618",
+      "field": 100
+    },
+    {
+      "name": "size_x",
+      "pattern": "f30f1051..0f5715........f30f1049..",
+      "rva": "0x144a416",
+      "field": 36
+    },
+    {
+      "name": "size_y",
+      "pattern": "f30f1051..0f5715........f30f1049..",
+      "rva": "0x144a416",
+      "field": 40
+    }
+  ],
+  "instructions": [
+    {
+      "name": "ammo_container_at_0x3220",
+      "rva": "0x181857c",
+      "bytes": "498dbf20320000"
+    },
+    {
+      "name": "ammo_container_attached_to_weapon_widget",
+      "rva": "0x1818617",
+      "bytes": "488bd7498bcd"
+    },
+    {
+      "name": "reserve_text_at_0x3a60",
+      "rva": "0x1818921",
+      "bytes": "498d9f603a0000"
+    },
+    {
+      "name": "reserve_text_attached_to_ammo_container",
+      "rva": "0x1818aba",
+      "bytes": "488bd3488bcf"
+    },
+    {
+      "name": "first_child_0xe0",
+      "rva": "0x144c5cc",
+      "bytes": "488b91e0000000"
+    },
+    {
+      "name": "next_sibling_0xe8",
+      "rva": "0x144c5ea",
+      "bytes": "488b80e8000000"
+    },
+    {
+      "name": "child_parent_0xf0",
+      "rva": "0x144c640",
+      "bytes": "498999f0000000"
+    },
+    {
+      "name": "widget_type_shift_18",
+      "rva": "0x1446926",
+      "bytes": "c1e212"
+    },
+    {
+      "name": "scale_y_140",
+      "rva": "0x144a64d",
+      "bytes": "f3440f10908c000000"
+    }
+  ],
+  "game_process_accessed": false,
+  "scope": "Static field/tree/constructor proof; live backpack bounds and visual alignment pending"
+}

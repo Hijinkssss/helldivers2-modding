@@ -1,6 +1,6 @@
 # Full Auto Assist 1.1.0 release candidate
 
-**v1.1.0 RC2, unpublished and awaiting review.** Preserves the validated v1.0.1 performance and reliability architecture and all 31 supported weapons. Fixes the existing HUD render path, adds Commando support, and provides Eruptor 27/28/32 RPM options. The new HUD appearance and optional cadences still need in-game review.
+**v1.1.0 private RC3 diagnostic candidate.** Continues current RC2 with all 31 supported weapons and unchanged Commando/Eruptor profiles. Fixes a proven restoration-ownership defect and HUD OFF/anchoring issues. Persistent Eruptor fresh-hold OFF repetition remains release blocking and requires the included native-state trace. See OFF-STATE-INVESTIGATION.md and LIVE-VALIDATION.md.
 
 Full Auto Assist is an accessibility-focused quality-of-life mod that repeats normal Fire input while Fire is held for 31 explicitly supported semi-auto, burst, and game-cycled weapons. The game decides whether each input produces a shot. The mod does not change weapon statistics or automate aim, reload, recoil compensation, or charge behavior.
 
@@ -22,7 +22,7 @@ ARC-12 Blitzer is excluded because it has native Full Auto. Unknown and unlisted
 
 ## Active-assistance indicator
 
-A small yellow three-cartridge glyph appears near the lower-left ammo area when FAA is ON and the equipped weapon is supported with valid, effective assistance state. It remains visible between shots; it does not claim that a shot was accepted. It hides when FAA is OFF, on unsupported weapons, or when eligibility/identity is unavailable. Missing UI worlds and renderer faults hide the glyph. RC2 accepts scenes with multiple non-main worlds and explicitly makes the completed GUI visible. Placement, HUD scale and fade interaction still need in-game review.
+The approved three-cartridge glyph stays yellow for supported FAA ON and visible opaque white for supported FAA OFF. Unsupported or invalid identities stay hidden. It follows the current native lower-left panel's rightmost rendered extent with a six-unit gap and ammo-row alignment, including backpack expansion. ON and OFF have identical positioning and size. Invalid native geometry clears drawing without a fixed-offset fallback. HUD_ANCHORING.md documents exact fields, guards and live assumptions.
 
 ## Charge weapons and Meltagun
 
@@ -70,4 +70,4 @@ See [CHANGELOG.md](CHANGELOG.md) for this release's changes.
 
 Commando offers Balanced at 120 RPM by default and Full Auto at its retained native 240 RPM input cadence. `commando_profile=balanced|full_auto` provides the optional INI fallback; Arsenal selections take precedence. Guidance, selector, projectile, ammo and expendable mechanics stay game-controlled; accepted live cadence remains pending.
 
-RC2 temporarily enables bounded HUD diagnostics (at most 120 records in HD2FullAutoAssist.log). `hud_diagnostics=false` disables them. `hud_probe_visible=false` is the normal default; the optional center-screen render probe must be restored to false before accepting the candidate. See LIVE_TEST.md.
+HUD diagnostics now default OFF. Optional validation/profile logging uses synchronous disk I/O and must stay OFF for production Watchdog comparison. The short OFF-STATE-DIAGNOSTIC.ini run captures current/original mappings and native Fire state, with 96 mapping snapshots per load. The legacy hud_probe_visible setting is parsed for compatibility but does not enlarge or force the glyph. See LIVE-VALIDATION.md.

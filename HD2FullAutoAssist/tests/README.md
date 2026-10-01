@@ -34,3 +34,5 @@ recorder recognition for both, and verifies Arc/Purifier/Loyalist, conventional,
 and unknown resources consume zero probe reads or samples. Both suites run it.
 
 RC2 adds `test_rc2.lua`: legacy config and Arsenal migration, guarded Commando hold/release/swap/OFF/ship handling, HUD classification, multi-world GUI selection, explicit visibility, bounded diagnostics and opt-in force-probe/fault isolation. B3 enumerates all 31 identities plus every selectable profile (83 native threshold cases). These remain offline tests; no GUI fixture proves in-game pixels or accepted rockets.
+
+Private RC3 adds actual live-type-2 fresh OFF holds and three-row restoration, changed-context/edited-row ownership retention and retry, failed-toggle rollback rejection, bounded error/audit records, read-only current/baseline mapping evidence, existing AMR SPECIAL gates, native HUD expansion/contraction and opaque OFF recoloring. Package delivery runs the same new tests against bundled factories. These are offline input/ownership/geometry checks, not an Eruptor native weapon-controller emulator or live acceptance.

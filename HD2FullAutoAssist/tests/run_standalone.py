@@ -204,6 +204,11 @@ def main():
     check('known resource table matches pinned real Runtime metadata; no discovery',known_data_checks)
     check('opt-in performance profiler summaries and percentiles',lambda:lua_at(ROOT/'src').execute(
         (ROOT/'tests/test_performance_profile.lua').read_text(encoding='utf-8')))
+    check('bounded OFF validation trace and level input deduplication',lambda:native_transition_checks('test_off_trace.lua'))
+    check('restoration ownership retained and failed OFF restoration rejected',lambda:native_transition_checks('test_restore_ownership.lua'))
+    check('read-only mapping audit and existing SPECIAL AMR eligibility',lambda:native_transition_checks('test_fire_audit.lua'))
+    check('Eruptor OFF with live type-2 mappings and held transitions',lambda:native_transition_checks('test_off_native.lua'))
+    check('HUD three states and guarded native extents',lambda:native_transition_checks('test_hud_anchor.lua'))
     check('RC2 migration, Commando and multi-world HUD diagnostics',lambda:native_transition_checks('test_rc2.lua'))
     check('next-version Eruptor profiles, semantic charge groundwork, HUD and read-only observer',
         lambda:native_transition_checks('test_next_version.lua'))

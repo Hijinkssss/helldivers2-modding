@@ -211,11 +211,12 @@ function M.new(environment,options)
     local hud,hud_provider,charge_research
     function self:set_hud_provider(provider,settings)
         hud_provider=provider
+        local anchor=require('hud_anchor').new(self)
         hud=require('hud_indicator').new(environment.stingray,{
             force_visible=settings and settings.hud_probe_visible==true,
-            log=(not settings or settings.hud_diagnostics~=false) and function(fields)
+            log=(settings and settings.hud_diagnostics==true) and function(fields)
                 self:log('info','hud_rc2',fields)
-            end or nil})
+            end or nil},function(width,height)return anchor:sample(width,height)end)
     end
     function self:set_charge_research(provider)
         charge_research=require('charge_research').new(self,provider,loader)
@@ -315,7 +316,11 @@ function M.new(environment,options)
             end
             local after_started=self.profiler and self.profiler:start()
             local good,why=pcall(toggle_tick)
-            if hud and hud_provider then hud:present(hud_provider())end
+            if hud and hud_provider then
+                local hud_started=self.profiler and self.profiler:start()
+                hud:present(hud_provider())
+                if self.profiler then self.profiler:finish('hud_present',hud_started)end
+            end
             if charge_research then
                 local ok,reason=pcall(charge_research.tick,charge_research)
                 if not ok then

@@ -37,7 +37,14 @@ for _,line in ipairs(f.logs)do
     assert(not line:find('"event":"held_identity_changed"',1,true))
 end
 ''')
-result={'actual_delivered_bundle_exercised':True,'delivered_ini_used':True,
+lua=LuaRuntime(unpack_returned_tuples=True)
+lua.globals().package.path=(ROOT/'tests').as_posix()+'/?.lua;'+lua.globals().package.path
+lua.globals().bundled_require=lua.execute(source.decode().replace(entry,'return own_require'))
+for name in ('lifecycle','native_fire','full_auto_assist','hud_anchor','hud_indicator','validation_trace','assist_state','weapon_policy'):
+    lua.globals().package.preload[name]=lua.eval('function(name)return function()return bundled_require(name)end end')(name)
+for name in ('test_hud_anchor.lua','test_off_native.lua','test_restore_ownership.lua','test_fire_audit.lua','test_off_trace.lua'):
+    lua.execute((ROOT/'tests'/name).read_text())
+result={'packaged_hud_off_ownership_audit_and_trace_tests_passed':True,'actual_delivered_bundle_exercised':True,'delivered_ini_used':True,
     'profiling_off':True,'validation_logging_off':True,'debug_logging_off':True,
     'forbidden_profiler_and_trace_constructors_not_called':True,
     'Eruptor_Talon_Verdict_Cookout_native_leases_and_exact_restoration':True,

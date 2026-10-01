@@ -40,7 +40,8 @@ put(bucket+4,packed(2))
 b:begin(row);local user_edit=original:sub(1,4)..'\2\0\0\0'..original:sub(9)
 put(bucket+8,user_edit);assert(not pcall(b.refresh,b,row),'Edited leased mapping rejected during hold')
 assert(not b:restore());assert(read(bucket+8,20)==user_edit and read(bucket+28,20)==original)
-put(bucket+8,original);write_count=0;fail_write=true
+assert(b.lease,'External conflict must not discard original snapshots')
+put(bucket+8,original);assert(b:restore());write_count=0;fail_write=true
 assert(not pcall(b.begin,b,row));assert(b.lease,'Failure retains rollback state')
 fail_write=false;assert(b:restore());assert(read(bucket+8,40)==original..original,'Partial write rollback')
 -- Unknown mapping refuses before either write.

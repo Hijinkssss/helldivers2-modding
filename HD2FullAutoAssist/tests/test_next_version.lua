@@ -67,7 +67,7 @@ for _,behavior in ipairs({'release_at_ready','restart_after_beam'})do
 end
 -- Retained GUI, resize, world rebuild, cleanup and isolation from renderer faults.
 local created,destroyed,rects,updates=0,0,0,0
-local ui={};local main={};local extra={};local worlds={main,ui,extra};local width,height=1920,1080
+local ui={};local main={};local worlds={main,ui};local width,height=1920,1080
 local engine={Application={worlds=function()return worlds end,main_world=function()return main end},
     World={create_screen_gui=function(world)assert(world==ui);created=created+1;return {}end,
         destroy_gui=function(world)assert(world==ui);destroyed=destroyed+1 end},
@@ -75,29 +75,34 @@ local engine={Application={worlds=function()return worlds end,main_world=functio
         rect=function(_,pos,size)assert(size[1]<=4 and size[2]<=9);rects=rects+1;return rects end,
         update_rect=function()updates=updates+1 end},
     Vector2=function(...)return {...}end,Vector3=function(...)return {...}end,Color=function(...)return {...}end}
-local hud=Hud.new(engine);local f=Fixture.new();f:tick()
+local function anchor(width,height)return {x=246,y=100,scale=height/1080}end
+local hud=Hud.new(engine,anchor);local f=Fixture.new();f:tick()
 local reads,queries=f.host.reads,#f.queries
 for _=1,1000 do hud:present(f.consumer:get_hud_state())end
 assert(f.host.reads==reads and #f.queries==queries and created==1 and rects==9 and updates==0)
 height=720;hud:present(f.consumer:get_hud_state());assert(updates==9)
-ui={};worlds={main,ui,extra};hud:present(f.consumer:get_hud_state());assert(created==2)
+ui={};worlds={main,ui};hud:present(f.consumer:get_hud_state());assert(created==2)
 f:weapon('968211c0033dce64');f:tick();hud:present(f.consumer:get_hud_state());assert(not hud.gui and destroyed==1)
 f:weapon(eruptor);f:tick();assert(f.consumer:get_hud_state().visible)
 f:game_state(1);f:tick();assert(not f.consumer:get_hud_state().visible)
 f:game_state(4);f:respawn(0x44,0x99);f:tick();assert(f.consumer:get_hud_state().visible)
 hud:present(f.consumer:get_hud_state());hud:clear();assert(not hud.gui)
 local view={user_enabled=true,effective=true,identity_valid=true,identity_observed=true,eligibility={category='CHARGE'}}
-assert(Hud.project(view).visible);view.user_enabled=false;assert(not Hud.project(view).visible)
+assert(Hud.project(view).visible);view.user_enabled=false;assert(Hud.project(view).visible and not Hud.project(view).enabled)
 assert(not Hud.project(nil).visible)
 -- Actual lifecycle callback wiring preserves stock return values and cleans GUI on stop.
 local wired=Fixture.new();engine.Window=wired.env.stingray.Window;wired.env.stingray=engine
+require('hud_fixture').populate(function(at,bytes)wired:put(at,bytes)end,wired.G)
 wired.host:set_hud_provider(function()return wired.consumer:get_hud_state()end)
 local initial_created=created;wired:tick();assert(created==initial_created+1)
+wired.host.callbacks.toggle.callback();wired:tick()
+assert(wired.consumer:get_hud_state().visible and not wired.consumer:get_hud_state().enabled)
+wired.host.callbacks.toggle.callback();wired:tick();assert(wired.consumer:get_hud_state().enabled)
 wired:game_state(1);wired:tick();assert(destroyed>=2)
 wired:game_state(4);wired:tick();assert(wired.consumer:get_hud_state().visible)
 assert(wired.consumer:stop().ok)
 engine.Gui.rect=function()error('GUI fault')end
-hud=Hud.new(engine);hud:present({visible=true});assert(hud.failures==1 and not hud.gui)
+hud=Hud.new(engine,anchor);hud:present({visible=true});assert(hud.failures==1 and not hud.gui)
 f:fire(true);f:tick();f:healthy();assert(f.backend.lease,'HUD failure disabled assistance')
 f:fire(false);f:tick();assert(f:restored() and f.consumer:stop().ok)
 -- Read-only observer cache, native-work bounds and failure before stale access.

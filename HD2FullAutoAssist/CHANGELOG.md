@@ -1,3 +1,12 @@
+## Private RC3 investigation
+
+- Retain original Fire mappings on context/conflict failure; reject incomplete rollback and close enable gate before OFF restoration.
+- Retry rollback without repeated identical error logging; preserve cadence/ownership evidence until restoration verifies.
+- Supported OFF remains opaque white; original yellow ON and three-cartridge geometry unchanged. Place after current native HUD extent, including backpack expansion.
+- Preserve current RC2 roster, Commando and all profile archives; SPECIAL was already enabled correctly.
+- HUD diagnostics default OFF; bounded read-only OFF mapping audit and level-edge trace deduplication support live debugging.
+- Persistent Eruptor OFF repetition remains unresolved and release blocking.
+
 # 1.1.0 (release candidate, unpublished)
 
 - Added the retained three-cartridge HUD glyph for effective FAA assistance on supported weapons.

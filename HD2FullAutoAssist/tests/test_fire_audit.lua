@@ -1,0 +1,25 @@
+local Fixture=require('native_transition_fixture')
+local State=require('assist_state')
+local Policy=require('weapon_policy')
+local f=Fixture.new();f:weapon('b6aff2195568767f');f:tick()
+local row=f.backend:sample(true);local writes=f.writes
+local before=f.backend:audit(row)
+assert(before.mappings_equal_pre_assist and before.same_as_initial_context and #before.records==2)
+assert(#before.input_hex==64 and before.records[1].trigger==0)
+f:fire(true);f:tick();local active=f.backend:audit(f.backend:sample(true))
+assert(not active.mappings_equal_pre_assist and active.active_lease and active.records[1].trigger==8)
+f.host.callbacks.toggle.callback();local off=f.backend:audit(f.backend:sample(true))
+assert(off.mappings_equal_pre_assist and not off.active_lease and off.records[1].trigger==0)
+local restored_writes=f.writes
+for _=1,100 do f.backend:audit(f.backend:sample(true))end
+assert(f.writes==restored_writes,'Audit mutated input')
+assert(f.consumer:stop().ok)
+-- SPECIAL was already enabled in real RC2; prove AMR and unsupported gates.
+f=Fixture.new();f:weapon('89c5493e08ca4207');f:tick()
+assert(f.consumer:get_state().eligibility.category=='SPECIAL' and f.consumer:get_state().effective)
+f:fire(true);f:tick();assert(f.backend.lease and f.backend.repeat_seconds==.5)
+f.host.callbacks.toggle.callback();assert(f:restored() and not f.backend.lease)
+assert(f.consumer:get_hud_state().visible and not f.consumer:get_hud_state().enabled)
+f:weapon('968211c0033dce64');f:tick();assert(not f.consumer:get_state().effective and not f.consumer:get_hud_state().visible)
+assert(f.consumer:stop().ok)
+print('PASS read-only current/baseline mapping audit, no audit writes, SPECIAL AMR and unsupported/OFF gates')
