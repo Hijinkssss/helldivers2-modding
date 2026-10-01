@@ -1,3 +1,12 @@
+# 1.1.0 (release candidate, unpublished)
+
+- Added the retained three-cartridge HUD glyph for effective FAA assistance on supported weapons.
+- Added Eruptor Stable 26, Balanced 27, Fast 28 and Max 32 RPM choices; default and legacy cadence behavior preserved.
+- Preserved all 30 supported weapons, Warrant support, validated caches, input restoration, startup/toggle behavior and v1.0.1 performance fixes.
+- Meltagun support is not included. I am actively researching how to implement it for a later update.
+- Arc Thrower, Purifier, Loyalist and Accelerator remain unassisted pending charge input validation.
+- Candidate requires offline verification and in-game HUD/new-option review before final release.
+
 # Changelog
 
 ## 1.0.1

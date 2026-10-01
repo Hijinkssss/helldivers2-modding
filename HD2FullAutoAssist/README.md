@@ -1,6 +1,6 @@
-# Full Auto Assist 1.0.1
+# Full Auto Assist 1.1.0 release candidate
 
-**v1.0.1 performance and reliability release.** The mod author successfully live-tested the performance candidate, including Talon, Verdict, Cookout, Eruptor, weapon swaps and mission transitions. This release preserves that architecture and sets the Eruptor default to a controlled 26 RPM; the final tuning is regression-tested offline.
+**v1.1.0 RC1, unpublished and awaiting review.** Preserves the validated v1.0.1 performance and reliability architecture and all 30 supported weapons. Adds the previously designed active-assistance HUD glyph and Eruptor 26/27/28/32 RPM options. The new HUD appearance and optional cadences still need in-game review.
 
 Full Auto Assist is an accessibility-focused quality-of-life mod that repeats normal Fire input while Fire is held for 30 explicitly supported semi-auto, burst, and game-cycled weapons. The game decides whether each input produces a shot. The mod does not change weapon statistics or automate aim, reload, recoil compensation, or charge behavior.
 
@@ -9,8 +9,8 @@ Full Auto Assist is an accessibility-focused quality-of-life mod that repeats no
 ## Install
 
 1. Install Bingus Shared Loader v18 / API 1 and open Arsenal.
-2. Import `Full-Auto-Assist-1.0.1-Arsenal.zip`, enable Full Auto Assist and deploy it.
-3. Choose any desired options in Arsenal. All eight weapon profile groups default to Balanced.
+2. Import `Full-Auto-Assist-1.1.0-rc1-Arsenal.zip`, enable Full Auto Assist and deploy it.
+3. Choose any desired options in Arsenal. Seven weapon profile groups default to Balanced. Eruptor defaults to Stable at 26 RPM.
 
 The mod starts ON by default. Press `=` (or `+`, depending on keyboard layout) once to toggle it. If Mod Bindings Menu is installed and registers the optional action, that action uses the same toggle path and takes precedence over the fallback key.
 
@@ -20,9 +20,19 @@ P-2 Peacemaker; P-113 Verdict; M6C/SOCOM Pistol; P-69 Veto; R-63 Diligence; R-63
 
 ARC-12 Blitzer is excluded because it has native Full Auto. Unknown and unlisted weapons remain vanilla.
 
+## Active-assistance indicator
+
+A small yellow three-cartridge glyph appears near the lower-left ammo area when FAA is ON and the equipped weapon is supported with valid, effective assistance state. It remains visible between shots; it does not claim that a shot was accepted. It hides when FAA is OFF, on unsupported weapons, or when eligibility/identity is unavailable. Missing or ambiguous UI worlds and renderer faults hide the glyph. Placement, HUD scale and fade interaction still need in-game review.
+
+## Charge weapons and Meltagun
+
+**Meltagun support is not included in v1.1.0. I am actively researching how to implement it for a later update.**
+
+Arc Thrower, Purifier, Loyalist, and Accelerator also remain unassisted in this candidate: the existing charge research has not validated a physical-release-safe input adapter. Research progress does not establish support. These weapons remain under normal game control, and no charge probe runs in this package.
+
 ## Arsenal profiles
 
-The eight configurable groups are Peacemaker, SOCOM, Veto, Talon, AMR, Hyena, Bushwhacker, and Eruptor. Existing profile values are preserved: Peacemaker 380/900 RPM; SOCOM 380/900; Veto 380/750; Talon Balanced 210, Efficiency 60, Full Auto 380, FULLER AUTO 750; AMR 120/400; Hyena 120/190; Bushwhacker 90/650. Eruptor defaults to Balanced at 26 RPM (60/26 = about 2.3077 seconds), allowing additional bolt-animation settling time; Full Auto retains the 32 RPM maximum option. The controlled default also applies to legacy `native_cap` INIs unless an explicit Eruptor profile is selected. Constitution remains 60 RPM. Other supported weapons use Balanced at `min(native cap, 380 RPM)`.
+The eight configurable groups are Peacemaker, SOCOM, Veto, Talon, AMR, Hyena, Bushwhacker, and Eruptor. Existing profile values are preserved: Peacemaker 380/900 RPM; SOCOM 380/900; Veto 380/750; Talon Balanced 210, Efficiency 60, Full Auto 380, FULLER AUTO 750; AMR 120/400; Hyena 120/190; Bushwhacker 90/650. Eruptor defaults to Stable at 26 RPM (60/26 = about 2.3077 seconds), allowing additional bolt-animation settling time; The other choices are Balanced 27 RPM, Fast 28 RPM, and Max 32 RPM. Legacy Balanced/Full Auto INI values still mean 26/32 RPM. The controlled default also applies to legacy `native_cap` INIs unless an explicit Eruptor profile is selected. Constitution remains 60 RPM. Other supported weapons use Balanced at `min(native cap, 380 RPM)`.
 
 The P-92 Warrant uses Balanced at 380 RPM (authored fire-rate metadata: 450 RPM). The mod author live-tested RC1 in Guided and Unguided modes. In Guided mode, the game retains control of lock acquisition and whether each ordinary Fire input is accepted. FAA does not observe or change guidance, lock, mode, aim, or target selection.
 

@@ -4,7 +4,7 @@ import argparse,hashlib,json,struct,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-VERSION='1.1.0-research-rc4'
+VERSION='1.1.0-rc1'
 PACKAGE=f'Full-Auto-Assist-{VERSION}-Arsenal.zip'
 OUTPUT=ROOT/'build'/VERSION
 LUA_TYPE=0xA14E8DFA2CD117E2
@@ -66,6 +66,7 @@ def bundle(module: str = MODULE, research: bool = False):
         ' if not loaded[name] then loaded[name]=factory(own_require) end',
         ' return loaded[name]','end']
     for f in sorted((ROOT/'src').glob('*.lua')):
+        if not research and f.stem.startswith('charge_'): continue
         raw=f.read_bytes().replace(b'\r\n',b'\n')
         assert b'\r' not in raw and b'\0' not in raw and not raw.startswith(b'\xef\xbb\xbf')
         assert b'hd2modcore.' not in raw and b'mods/skyeshade/hd2runtime' not in raw
@@ -131,7 +132,7 @@ def main():
     out.mkdir(parents=True,exist_ok=True)
     (out/'hd2_full_auto_assist.lua').write_bytes(source);(out/ARCHIVE).write_bytes(archive)
     description=('Read-only RC4 charge and independent left-mouse probe: 40-K Meltagun only. Charge automation remains disabled.'
-        if args.research else 'Unpublished test candidate: existing FAA assistance, Eruptor cadence choices and a small HUD indicator. Charge weapons await native evidence.')
+        if args.research else 'Full Auto Assist 1.1.0 RC1: 30 supported weapons, active-assistance HUD indicator and Eruptor cadence choices. Meltagun support is not included; the author is actively researching it for a later update.')
     groups=[{'Name':'Full Auto Assist','Description':'Required. The assistance feature and its supported-weapon policy.',
         'Include':['Core'],'Image':'thumbnail.png'}]
     files={'thumbnail.png':(ROOT/'thumbnail.png').read_bytes(),
@@ -152,9 +153,14 @@ def main():
         'Description':description,'Options':groups},indent=2)+'\n').encode()
     for name in ('HD2FullAutoAssist.example.ini',):
         files[name]=(ROOT/name).read_bytes()
-    files['README.md']=(ROOT/'docs'/('RC4_CHARGE_PROBE.md' if args.research else 'NEXT_VERSION_CANDIDATE.md')).read_bytes()
-    files['LIVE_TEST.md']=(ROOT/'docs'/('RC4_LIVE_TEST.md' if args.research else 'NEXT_VERSION_LIVE_TEST.md')).read_bytes()
-    files['CHARGE_REASSESSMENT.md']=(ROOT/'docs/CHARGE_REASSESSMENT.md').read_bytes()
+    files['README.md']=((ROOT/'docs/RC4_CHARGE_PROBE.md') if args.research else (ROOT/'README.md')).read_bytes()
+    files['LIVE_TEST.md']=(ROOT/'docs'/('RC4_LIVE_TEST.md' if args.research else 'RELEASE_1.1.0_LIVE_REVIEW.md')).read_bytes()
+    if args.research:
+        files['CHARGE_REASSESSMENT.md']=(ROOT/'docs/CHARGE_REASSESSMENT.md').read_bytes()
+    else:
+        files['CHANGELOG.md']=(ROOT/'CHANGELOG.md').read_bytes()
+        files['RELEASE_NOTES.md']=(ROOT/'docs/RELEASE_1.1.0.md').read_bytes()
+        files['SUPPORTED_WEAPONS.md']=(ROOT/'docs/SUPPORTED_WEAPONS_1.1.0.md').read_bytes()
     with zipfile.ZipFile(out/package_name,'w',zipfile.ZIP_DEFLATED) as z:
         for name,raw in sorted(files.items()):
             info=zipfile.ZipInfo(name,(1980,1,1,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED
@@ -170,7 +176,7 @@ def main():
     next_path=ROOT/'build/next-version-checks.json'
     next_checks=json.loads(next_path.read_text()) if next_path.exists() else {}
     next_passed=next_checks.get('passed') is True and next_checks.get('source_sha256')==hashes
-    report={'version':VERSION,'supported_build':'25480438','name':'Full Auto Assist',
+    report={'version':VERSION,'target_release_version':'1.1.0','supported_weapon_count':30,'charge_factories_packaged':args.research,'supported_build':'25480438','name':'Full Auto Assist',
         'description':description,'configuration_precedence':'Arsenal selected profile > explicit per-weapon INI profile > legacy INI mode > built-in Balanced policy',
         'external_dependencies':['Bingus Shared Loader v18 / API 1'],
         'source_sha256':hashlib.sha256(source).hexdigest(),'archive_sha256':hashlib.sha256(archive).hexdigest(),
@@ -179,9 +185,9 @@ def main():
         'next_version_regressions_and_evidence_gates_passed':next_passed,
         'b3_regressions_and_work_budgets_passed':b3_passed,
         'live_standalone_validated':False,'live_validation_source':None,
-        'release_status':'unpublished partial candidate; charge automation gated',
+        'release_status':'unpublished release candidate; review required before merge or publication',
         'validated_base_commit':'2bba9ab85ab2f1264a310e9aa77168a9e22a5185',
-        'live_validation_scope':'pending Eruptor/HUD gameplay and read-only charge research',
+        'live_validation_scope':'v1.0.1 base has recorded live validation; new HUD appearance and Eruptor options remain pending live review',
         'charge_research_enabled':args.research,'charge_automation_enabled':False,
         'charge_probe_filename':'HD2FullAutoAssist-charge-probe.log' if args.research else None,
         'charge_probe_sampling':'each relevant stock update, capped at 6000 samples' if args.research else None,

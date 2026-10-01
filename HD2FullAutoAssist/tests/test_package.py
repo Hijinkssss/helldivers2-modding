@@ -68,6 +68,25 @@ def main():
         assert z.read('thumbnail.png')==(ROOT/'thumbnail.png').read_bytes()
         assert 'SubOptions' not in manifest['Options'][0]
         assert manifest['Guid']=='cf368f5c-f686-453f-a566-435b4b7fcf26'
+        if not args.research:
+            assert report['target_release_version']=='1.1.0' and report['supported_weapon_count']==30
+            assert report['charge_factories_packaged'] is False
+            assert b"version='1.1.0-rc1'" in source
+            tail="return own_require('lifecycle').start(_G)"
+            assert source.decode().count(tail)==1
+            packed_policy=LuaRuntime(unpack_returned_tuples=True).execute(source.decode().replace(tail,"return own_require('weapon_policy').new('balanced')"))
+            roster=json.loads((ROOT/'docs/supported-weapons-1.1.0.json').read_text())
+            assert len(roster)==30 and len({r['hash'] for r in roster})==30
+            for row in roster:
+                decision=packed_policy.classify(packed_policy,row['hash'])
+                assert decision.allowed and decision.name==row['name']
+                assert decision.max_repeat_rpm==row['balanced_rpm']
+            for key in ('96de9cd50f7306e6','fb3a19078694708a','aa69a60d74a3ec54','30061f91af477f5e','6cfcc7f8801a0266','ffffffffffffffff'):
+                assert not packed_policy.classify(packed_policy,key).allowed
+
+            assert 'CHARGE_REASSESSMENT.md' not in names
+            assert b'Meltagun support is not included' in z.read('README.md')
+            assert b'actively researching how to implement it for a later update' in z.read('RELEASE_NOTES.md')
         assert z.read('Core/'+builder.ARCHIVE)==archive.read_bytes()
         for ext in ('.stream','.gpu_resources'):assert z.read('Core/'+builder.ARCHIVE+ext)==b''
         expected={
@@ -97,13 +116,19 @@ def main():
         assert len(option_modules)==len(set(option_modules))
         assert len(option_keys)==len(set(option_keys))
         assert not any('hd2modcore' in name.lower() or 'hd2runtime' in name.lower() for name in names)
-        sources={'README.md':ROOT/'docs'/('RC4_CHARGE_PROBE.md' if args.research else 'NEXT_VERSION_CANDIDATE.md'),
-            'LIVE_TEST.md':ROOT/'docs'/('RC4_LIVE_TEST.md' if args.research else 'NEXT_VERSION_LIVE_TEST.md'),
-            'CHARGE_REASSESSMENT.md':ROOT/'docs/CHARGE_REASSESSMENT.md'}
+        sources={'README.md':ROOT/'docs'/('RC4_CHARGE_PROBE.md' if args.research else '../README.md'),
+            'LIVE_TEST.md':ROOT/'docs'/('RC4_LIVE_TEST.md' if args.research else 'RELEASE_1.1.0_LIVE_REVIEW.md'),
+            'CHARGE_REASSESSMENT.md':ROOT/'docs/CHARGE_REASSESSMENT.md',
+            'RELEASE_NOTES.md':ROOT/'docs/RELEASE_1.1.0.md',
+            'SUPPORTED_WEAPONS.md':ROOT/'docs/SUPPORTED_WEAPONS_1.1.0.md'}
         for name in names:
             if name not in ('manifest.json',) and not name.startswith(('Core/','Options/')):
                 assert z.read(name)==sources.get(name,ROOT/name).read_bytes(),name
-        for f in (ROOT/'src').glob('*.lua'):assert f.read_bytes().replace(b'\r\n',b'\n') in source
+        for f in (ROOT/'src').glob('*.lua'):
+            if not args.research and f.stem.startswith('charge_'):
+                assert ('factories['+repr(f.stem)+']').encode() not in source
+                continue
+            assert f.read_bytes().replace(b'\r\n',b'\n') in source
     discovery=False
     if args.loader_discovery:
         lua=LuaRuntime(unpack_returned_tuples=True)
