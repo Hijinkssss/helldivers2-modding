@@ -1,5 +1,10 @@
 -- Single Full Auto Assist INI; no namespaces or runtime reconfiguration service.
 local M={}
+-- Only compatibility parsing retains RC1 names; there is no old cadence option.
+function M.eruptor_profile(value)
+    return ({stable_26='balanced_28',['26']='balanced_28',balanced='balanced_28',
+        balanced_27='slower_27',fast_28='balanced_28',full_auto='max_32'})[value] or value
+end
 function M.load(schema,text,arsenal_options)
     assert(type(text)=='string' and #text<=8192,'Configuration exceeds 8192 bytes')
     local values,seen={},{}
@@ -9,6 +14,7 @@ function M.load(schema,text,arsenal_options)
             local key,raw=line:match('^%s*([%a][%w_]*)%s*=%s*(.-)%s*$')
             assert(key and schema[key] and not seen[key],'Unknown, duplicate or malformed setting')
             seen[key]=true;local rule=schema[key];local value
+            if key=='eruptor_profile' then raw=M.eruptor_profile(raw) end
             if rule.type=='boolean'then
                 if raw=='true' or raw=='1'then value=true elseif raw=='false' or raw=='0'then value=false end
             elseif rule.type=='integer'then
@@ -20,6 +26,7 @@ function M.load(schema,text,arsenal_options)
         end
     end
     for key,value in pairs(arsenal_options or {}) do
+        if key=='eruptor_profile' then value=M.eruptor_profile(value) end
         local rule=schema[key]
         assert(rule and rule.type=='string' and rule.values and rule.values[value],
             'Invalid Arsenal option: '..tostring(key))

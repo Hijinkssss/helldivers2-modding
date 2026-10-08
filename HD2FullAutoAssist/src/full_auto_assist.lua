@@ -3,6 +3,8 @@ local Policy=require('weapon_policy')
 local AssistState=require('assist_state')
 local Validation=require('validation_trace')
 local PerformanceProfile=require('performance_profile')
+local Hud=require('hud_indicator')
+local ModOptionsMenu=require('mod_options_menu')
 -- Enabled only after recorded idle swaps and player invalidation were reviewed.
 -- See docs/identity-validation.json. This is not a selective gameplay pass.
 local IDENTITY_VALIDATED=true
@@ -13,6 +15,8 @@ local schema={enabled={type='boolean',default=true},user_enabled={type='boolean'
     repeat_ms={type='integer',default=0,min=0,max=1000},
     toggle_hotkey={type='string',default='=',max_length=16},debug_logging={type='boolean',default=false},
     validation_logging={type='boolean',default=false},
+    hud_diagnostics={type='boolean',default=false},
+    hud_probe_visible={type='boolean',default=false},
     performance_profile={type='boolean',default=false},
     performance_label={type='string',default='unlabeled',max_length=48},
     -- Fire-rate mode:
@@ -27,9 +31,11 @@ local schema={enabled={type='boolean',default=true},user_enabled={type='boolean'
     talon_profile={type='string',default='',max_length=16,
         values={['']=true,balanced=true,efficiency=true,full_auto=true,fuller_auto=true}},
     amr_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
+    commando_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
     hyena_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
     bushwhacker_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
-    eruptor_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}}}
+    eruptor_profile={type='string',default='',max_length=16,
+        values={['']=true,slower_27=true,balanced_28=true,max_32=true}}}
 local function config_text()
     local root=assert(os.getenv('LOCALAPPDATA'),'LOCALAPPDATA unavailable')
     local f,why,number=io.open(root..'/CowboyBingus/Helldivers2/HD2FullAutoAssist.ini','rb')
@@ -40,47 +46,79 @@ end
 function M.install(host,backend_factory,read_config,validation_factory)
     assert(type(host)=='table' and host.read and host.eligibility,'Full Auto Assist host required')
     if installed[host] then return installed[host] end
-    local input_token,hook_token,identity_token,backend,settings,closed,failed,policy,state,profiler
+    local input_token,hook_token,identity_token,backend,settings,closed,failed,policy,state,profiler,menu_bridge
     local leased_entity_id,leased_resource_hash,leased_avatar_id,leased_identity_token
     -- A new controller has no outstanding Fire lease to release. Start armed;
     -- only safety guards after an observed eligible/leased state may require a
     -- physical release. This lets delayed mission/player initialization settle
     -- while the user is already holding ordinary Fire.
     local wait_release,unit_ref,inspected=false,nil,false
+    local menu_profile_changed=false
+    local toggle_fire_pending,toggle_fire_pending_since=false,nil
     local lease_started,lease_repeat_start
-    local trace,last_metrics_us
+    local trace,last_metrics_us,last_restore_error,last_restore_conflict
+    local audit_records,next_audit_us,audit_held=0,0,false
 
     local counters={toggles=0,toggle_rejected=0,holds=0,releases=0,blocked=0,errors=0,
         idle_calls=0,held_calls=0,idle_us=0,held_us=0,max_us=0,repeat_frames=0,restore_conflicts=0,
         input_checks=0,repeat_calls=0,repeat_us=0,repeat_us_max=0,repeat_wall_us=0,
-        identity_lookups=0,identity_changes=0,identity_lookup_us=0,identity_lookup_us_max=0}
+        identity_lookups=0,identity_changes=0,identity_lookup_us=0,identity_lookup_us_max=0,
+        toggle_restore_calls=0,toggle_restore_with_lease=0,toggle_cache_invalidations=0,
+        toggle_cache_invalidation_skips=0,toggle_mapping_writes=0,toggle_mapping_restored=0,
+        toggle_followup_first_fire_calls=0,toggle_fire_pending_replaced=0,
+        toggle_fire_pending_canceled=0,toggle_fire_pending_expired=0}
     local consumer={name=OWNER}
     local function emit(level,event,fields)
         host:log(level,event,fields or {})
         if trace then trace:record(event,{level=level,data=fields or {},state=state and state:snapshot()}) end
     end
     local function restore(reason)
+        local had_lease=backend and backend.lease~=nil
+        if reason=='toggle' then
+            counters.toggle_restore_calls=counters.toggle_restore_calls+1
+            if had_lease then counters.toggle_restore_with_lease=counters.toggle_restore_with_lease+1 end
+            if profiler then profiler:increment('toggle_restore_calls')end
+        end
         if reason~='release' and ((backend and backend.lease) or
             (reason~='weapon_not_effective' and reason~='invalid_gameplay_state'))then
-            if host.invalidate_identity then host:invalidate_identity()end
-            if backend and backend.invalidate then backend:invalidate()end
+            if reason=='toggle' and not had_lease then
+                counters.toggle_cache_invalidation_skips=counters.toggle_cache_invalidation_skips+1
+                if profiler then profiler:increment('toggle_cache_invalidation_skips')end
+            else
+                local invalidation_started=profiler and reason=='toggle' and profiler:start()
+                if host.invalidate_identity then host:invalidate_identity()end
+                if backend and backend.invalidate then backend:invalidate()end
+                if reason=='toggle' then
+                    counters.toggle_cache_invalidations=counters.toggle_cache_invalidations+1
+                    if profiler then
+                        profiler:finish('toggle_cache_invalidation',invalidation_started)
+                        profiler:increment('toggle_cache_invalidations')
+                    end
+                end
+            end
         end
-        if state then state:set_repeat(false) end
-        leased_entity_id,leased_resource_hash,leased_avatar_id,leased_identity_token=nil,nil,nil,nil
-        if not backend or not backend.lease then unit_ref=nil;return end
+        if not backend or not backend.lease then
+            if state then state:set_repeat(false)end
+            leased_entity_id,leased_resource_hash,leased_avatar_id,leased_identity_token=nil,nil,nil,nil
+            unit_ref=nil;return
+        end
         local restore_started=profiler and profiler:start()
         local clean,detail=backend:restore();unit_ref=nil
         if profiler then profiler:finish('native_fire_restore',restore_started)end
+        if clean~=true and detail~=last_restore_conflict then
+            counters.restore_conflicts=counters.restore_conflicts+1;last_restore_conflict=detail
+        end
+        -- A false return is unresolved ownership, not a completed OFF transition.
+        assert(clean==true and backend.lease==nil,'Fire restoration pending: '..tostring(detail))
+        last_restore_conflict=nil
+        if state then state:set_repeat(false)end
+        leased_entity_id,leased_resource_hash,leased_avatar_id,leased_identity_token=nil,nil,nil,nil
         local wall=lease_started and math.max(0,backend.clock_us()-lease_started) or 0
         local repeats=counters.repeat_frames-(lease_repeat_start or counters.repeat_frames)
         counters.repeat_wall_us=counters.repeat_wall_us+wall
         lease_started,lease_repeat_start=nil,nil
         if trace then trace:record('lease_released',{reason=reason,clean=clean,detail=detail,wall_us=wall,
             observed_repeat_pulses=repeats,active_lease=backend.lease~=nil,state=state:snapshot()}) end
-        if not clean then
-            if host.invalidate_identity then host:invalidate_identity()end
-            counters.restore_conflicts=counters.restore_conflicts+1
-            emit('warning','restore_conflict',{reason=detail}) end
         if settings and settings.debug_logging then emit('info','hold_stopped',
             {reason=reason,clean=clean,wall_us=wall,observed_repeat_pulses=repeats}) end
     end
@@ -88,13 +126,16 @@ function M.install(host,backend_factory,read_config,validation_factory)
         if not failed then
             if profiler then profiler:increment('failure_entries')end
             failed=true;counters.errors=counters.errors+1
-            if state then state:invalidate('consumer_failed') end
+            if state then state:set_enabled(false);state:invalidate('consumer_failed') end
             if backend and backend.invalidate then backend:invalidate()end
             emit('error','assist_disabled',{reason=tostring(why)})
             if input_token then host:remove(input_token);input_token=nil end
         end
         local ok,reason=pcall(restore,'error')
-        if not ok then emit('error','restore_failed',{reason=tostring(reason)}) end
+        if not ok and tostring(reason)~=last_restore_error then
+            last_restore_error=tostring(reason)
+            emit('error','restore_failed',{reason=last_restore_error,originals_retained=backend and backend.lease~=nil})
+        elseif ok then last_restore_error=nil end
         -- Retain the hook only while a failed write still needs restoration.
         if (not backend or not backend.lease) and hook_token then host:remove(hook_token);hook_token=nil end
         if identity_token then host:remove(identity_token);identity_token=nil end
@@ -122,16 +163,22 @@ function M.install(host,backend_factory,read_config,validation_factory)
     end)
     local loaded,load_error=pcall(function()
         settings=host:config(schema,(read_config or config_text)(),rawget(_G,'FullAutoAssistArsenalOptions'))
+        if host.force_performance_profile then settings.performance_profile=true end
         if settings.performance_profile then
             assert(type(host.clock_us)=='function' and type(host.set_profiler)=='function',
                 'Performance profiling is unavailable on this host')
             profiler=PerformanceProfile.new(function()return host:clock_us()end,settings.performance_label)
+            profiler:increment('config_parse_calls')
             host:set_profiler(profiler)
             if type(host.startup_timing)=='function' then
                 local startup=host:startup_timing()
                 profiler:observe('startup_exe_hash',startup.exe_hash_us or 0)
                 profiler:observe('startup_game_dll_hash',startup.game_dll_hash_us or 0)
             end
+            emit('info','performance_profile_active',{enabled=true,
+                forced_by_private_diagnostic_build=host.force_performance_profile==true,
+                diagnostic_only=host.force_performance_profile==true,label=settings.performance_label,
+                summary_on='unload'})
         end
         assert(settings.fire_rate_mode=='balanced' or settings.fire_rate_mode=='native_cap',
             'fire_rate_mode must be balanced or native_cap')
@@ -142,6 +189,24 @@ function M.install(host,backend_factory,read_config,validation_factory)
         policy=Policy.new(settings.fire_rate_mode,settings.talon_mode,settings)
         state=AssistState.new(policy,IDENTITY_VALIDATED)
         state:set_enabled(settings.user_enabled)
+        menu_bridge=ModOptionsMenu.new(settings,{
+            set_enabled=function(enabled)
+                if state:is_enabled()==enabled then return end
+                if not enabled then wait_release=true end
+                state:set_enabled(enabled)
+            end,
+            set_profile=function(profile,weapon)
+                if not policy:set_profile(weapon or 'P-2 Peacemaker',profile) then return end
+                state:refresh_policy()
+                menu_profile_changed=true
+            end,
+        },function(event,fields)emit('info',event,fields)end)
+        if host.set_hud_provider then host:set_hud_provider(function()
+            local started=profiler and profiler:start()
+            local model=state:hud_state()
+            if profiler then profiler:finish('hud_state_project',started);profiler:increment('hud_state_project_calls')end
+            return model
+        end,settings)end
         if not policy.available then
             emit('warning','selective_assist_unavailable',{reason=policy.reason,
                 fallback='vanilla',required='known_current_build_policy'})
@@ -173,7 +238,39 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     counters.toggle_rejected=counters.toggle_rejected+1;return
                 end
                 local enabled=not state:is_enabled()
-                restore('toggle');state:set_enabled(enabled);wait_release=true
+                -- Close the authoritative gate before attempting rollback.
+                -- Enabling is allowed only after rollback positively completes.
+                if not enabled then state:set_enabled(false)end
+                local writes_before=backend and backend.writes or 0
+                local restored_before=backend and backend.restored or 0
+                local toggle_restore_started=profiler and profiler:start()
+                wait_release=true;restore('toggle')
+                if profiler then
+                    profiler:finish('toggle_restore',toggle_restore_started)
+                    if backend then
+                        profiler:increment('toggle_mapping_writes',math.max(0,backend.writes-writes_before))
+                        profiler:increment('toggle_mapping_restored',math.max(0,backend.restored-restored_before))
+                    end
+                end
+                counters.toggle_mapping_writes=counters.toggle_mapping_writes+
+                    math.max(0,(backend and backend.writes or 0)-writes_before)
+                counters.toggle_mapping_restored=counters.toggle_mapping_restored+
+                    math.max(0,(backend and backend.restored or 0)-restored_before)
+                if enabled then state:set_enabled(true)end
+                if menu_bridge then menu_bridge:set_enabled(enabled)end
+                if toggle_fire_pending then
+                    local counter=enabled and 'toggle_fire_pending_replaced' or 'toggle_fire_pending_canceled'
+                    counters[counter]=counters[counter]+1
+                    if profiler then profiler:increment(counter)end
+                end
+                toggle_fire_pending=profiler~=nil and enabled or false
+                toggle_fire_pending_since=toggle_fire_pending and host:clock_us() or nil
+                if trace and backend.audit and audit_records<96 then
+                    audit_records=audit_records+1
+                    local row=backend:sample(true)
+                    trace:record('toggle_mapping_audit',{enabled=enabled,audit=backend:audit(row),
+                        phase='after_stock_toggle_before_next_native_evaluation'})
+                end
                 if trace then trace:state(state:snapshot(),'toggle')end
                 counters.toggles=counters.toggles+1
                 emit('info','assist_toggled',{active=enabled})
@@ -244,19 +341,56 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 if profiler then profiler:increment('restoration_retry_calls')end
                 fail('restoration_retry');return
             end
-            if not state:is_enabled() and not trace then return end
+            if menu_bridge then menu_bridge:step()end
+            if menu_profile_changed then
+                menu_profile_changed=false
+                if backend and backend.lease then
+                    wait_release=true
+                    local restored,why=pcall(restore,'menu_profile_changed')
+                    if not restored then fail(why);return end
+                end
+            end
+            if not state:is_enabled() and not trace then
+                if backend and backend.lease then
+                    local ok,why=pcall(restore,'disabled_guard');if not ok then fail(why)end
+                end
+                return
+            end
             if not backend then
                 local init_started=profiler and profiler:start()
                 backend=backend_factory(host)
                 if profiler then profiler:finish('backend_initialize',init_started)end
             end
             local started=(profiler or trace) and backend.clock_us();local held=false;local leased_before=backend.lease~=nil
+            local toggle_followup_started
             local ok,why=pcall(function()
                 counters.input_checks=counters.input_checks+1
                 local sample_started=profiler and profiler:start()
                 local row=backend:sample(trace~=nil)
                 if profiler then profiler:finish('native_input_sample',sample_started);profiler:increment('native_input_samples')end
+                if toggle_fire_pending and row and row.held and not wait_release then
+                    if host:clock_us()-(toggle_fire_pending_since or host:clock_us())<=2000000 then
+                        toggle_fire_pending=false;toggle_fire_pending_since=nil
+                        counters.toggle_followup_first_fire_calls=counters.toggle_followup_first_fire_calls+1
+                        if profiler then toggle_followup_started=profiler:start()end
+                    else
+                        toggle_fire_pending=false;toggle_fire_pending_since=nil
+                        counters.toggle_fire_pending_expired=counters.toggle_fire_pending_expired+1
+                        if profiler then profiler:increment('toggle_fire_pending_expired')end
+                    end
+                end
                 if trace then trace:input(row,state:snapshot(),backend.lease~=nil)end
+                if trace and backend.audit then
+                    local now=backend.clock_us()
+                    local held_now=row and row.held==true or false
+                    if audit_records<96 and (audit_records==0 or held_now~=audit_held or
+                        (held_now and now>=next_audit_us)) then
+                        audit_records=audit_records+1;next_audit_us=now+250000
+                        trace:record('fire_mapping_audit',{enabled=state:is_enabled(),
+                            audit=backend:audit(row),state=state:snapshot(),phase='before_stock_update'})
+                    end
+                    audit_held=held_now
+                end
                 if not row then restore('input_unavailable');wait_release=true;return end
                 held=row.held
                 if not inspected and type(backend.inspect)=='function' then
@@ -315,6 +449,10 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     native_retry_ms=(backend.native_repeat_seconds or seconds)*1000,state=state:snapshot()})end
                 if settings.debug_logging then emit('info','hold_started',{mappings=changed,repeat_ms=backend.repeat_seconds*1000}) end
             end)
+            if profiler and toggle_followup_started then
+                profiler:finish('toggle_followup_first_fire',toggle_followup_started)
+                profiler:increment('toggle_followup_first_fire_calls')
+            end
             local elapsed=started and math.max(0,backend.clock_us()-started)
             if held then counters.held_calls=counters.held_calls+1
             else counters.idle_calls=counters.idle_calls+1 end
@@ -342,7 +480,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
             if not ok then fail(why) end
         end
         if IDENTITY_VALIDATED then hook_token=host:on_fire(function()
-                local callback_started=backend and backend.clock_us()
+                local callback_started=trace and backend and backend.clock_us()
                 local ok,why=pcall(function()
                     host:read_scope(tick)
                 end)
@@ -357,7 +495,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     trace:flush(false)
                 end
             end) end
-        local initialized={version='1.0.1',hotkey=settings.toggle_hotkey,
+        local initialized={version='1.1.0-final-rc',hotkey=settings.toggle_hotkey,
             talon_mode=settings.talon_mode,
             active=state:is_enabled(),mechanism='selective_native_repeat_interval',identity_validated=IDENTITY_VALIDATED}
         if profiler then
@@ -377,7 +515,9 @@ function M.install(host,backend_factory,read_config,validation_factory)
         return state and state:snapshot() or {user_enabled=false,weapon={},eligibility={category='REVIEW'},
             identity_valid=false,effective=false,repeat_active=false,reason='consumer_unavailable'}
     end
+    function consumer:get_hud_state()return state and state:hud_state() or Hud.project(nil)end
     function consumer:status()return {active=state and state:is_enabled() or false,closed=closed,failed=failed,wait_release=wait_release,
+        restoration_pending=failed==true and backend and backend.lease~=nil or false,
         identity_validated=IDENTITY_VALIDATED,policy_available=policy and policy.available or false,
         assist_state=self:get_state(),counters=counters}end
     installed[host]=consumer

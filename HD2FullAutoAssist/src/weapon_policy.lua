@@ -4,7 +4,7 @@
 -- Policy categories:
 --   ASSIST               eligible for Full Auto Assist
 --   IGNORE_NATIVE_AUTO   weapon already has native Full Auto in the R-menu; never assist
---   EXCLUDE_CHARGE_HOLD   charge/hold weapon; hold-to-fire is inherent, repeated Fire assist incompatible
+--   EXCLUDE_CHARGE_HOLD   charge/hold weapon; generic repeat requires a validated charge policy
 --   SPECIAL              special-case weapon with per-weapon tuning (e.g. AMR)
 --   REVIEW               unresolved or ambiguous; fail closed (no assist)
 -- Unknown/unrecognised weapons always fail closed (no assist).
@@ -88,6 +88,7 @@ local KNOWN_HASHES={
     ['P-35 Re-Educator']='0b882808c6f498e8',
     ['P/40-K Bolt Pistol']='dbb6c961c59fadc1',
     ['P-92 Warrant']='cf8934ff6567a42d',
+    ['MLS-4X Commando']='5990123d142b16cb',
     ['ARC-12 Blitzer']='076dd5d4f4360204',
 }
 
@@ -163,8 +164,9 @@ local ENTRIES = {
       native_cap_status='RUNTIME_SNAPSHOT', notes='Burst/semi [3,2,0], conventional projectile. Repeated legal Fire chains native bursts like Amendment; Balanced 300 RPM.' },
     { kind='weapon', name='CB-9 Exploding Crossbow', category='ASSIST', native_cap_rpm=50,
       native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 50 RPM.' },
-    { kind='weapon', name='R-36 Eruptor', category='ASSIST', native_cap_rpm=32, balanced_rpm=26,
-      native_cap_status='RUNTIME_SNAPSHOT', notes='Controlled default 26 RPM gives the long bolt animation additional settling time. Optional Full Auto profile retains the 32 RPM native cap; game controls recovery.' },
+    { kind='weapon', name='R-36 Eruptor', category='ASSIST', native_cap_rpm=32, balanced_rpm=28,
+      assist_role='CADENCE_CONTROL', native_held_behavior='native_hold_to_repeat',
+      native_cap_status='RUNTIME_SNAPSHOT', notes='Vanilla native hold-to-repeat through the bolt cycle, observed near 32 RPM. FAA controls cadence: 27 slower, 28 default, 32 native-speed. OFF restores native repetition; game controls recovery.' },
     { kind='weapon', name='SG-8P Punisher Plasma', category='ASSIST', native_cap_rpm=80,
       native_cap_status='RUNTIME_SNAPSHOT', notes='Semi-only [2,0,0], conventional projectile. Balanced 80 RPM.' },
     { kind='weapon', name='R/40-K Hot-Shot Marksman Rifle', category='ASSIST', native_cap_rpm=210,
@@ -200,6 +202,10 @@ local ENTRIES = {
       notes='Pinned native mode vector [1,0,0] is Full Auto. Unsupported under current policy.' },
 
     -- ─── SUPPORT WEAPONS ─────────────────────────────────────────────────
+
+    { kind='support_weapon', name='MLS-4X Commando', category='ASSIST', native_cap_rpm=240, balanced_rpm=120,
+      native_cap_status='RUNTIME_SNAPSHOT',
+      notes='Exact retained identity and owned ProjectileWeapon fire_rate 240 RPM. Balanced 120 RPM; Full Auto 240 RPM. Ordinary Fire only; guidance, selector, projectiles, ammo and expendable behavior remain game-controlled. RC2 live cadence pending.' },
 
     { kind = 'support_weapon', name = 'APW-1 Anti-Materiel Rifle',
       category = 'SPECIAL', native_cap_rpm = 400, native_cap_status = 'VERIFIED',
@@ -256,6 +262,7 @@ local PROFILE_KEYS={
     ['P-69 Veto']='veto_profile',
     ['LAS-58 Talon']='talon_profile',
     ['APW-1 Anti-Materiel Rifle']='amr_profile',
+    ['MLS-4X Commando']='commando_profile',
     ['R-4 Hyena']='hyena_profile',
     ['SG-22 Bushwhacker']='bushwhacker_profile',
     ['R-36 Eruptor']='eruptor_profile',
@@ -267,9 +274,10 @@ local PROFILE_RPMS={
     ['LAS-58 Talon']={balanced=TALON_BALANCED_RPM,efficiency=TALON_EFFICIENCY_RPM,
         full_auto=TALON_FULL_AUTO_RPM,fuller_auto=TALON_FULLER_AUTO_RPM},
     ['APW-1 Anti-Materiel Rifle']={balanced=AMR_BALANCED_RPM,full_auto=400},
+    ['MLS-4X Commando']={balanced=120,full_auto=240},
     ['R-4 Hyena']={balanced=120,full_auto=190},
     ['SG-22 Bushwhacker']={balanced=90,full_auto=650},
-    ['R-36 Eruptor']={balanced=26,full_auto=32},
+    ['R-36 Eruptor']={slower_27=27,balanced_28=28,max_32=32},
 }
 
 function M.new(fire_rate_mode,talon_mode,profile_settings)
@@ -281,11 +289,23 @@ function M.new(fire_rate_mode,talon_mode,profile_settings)
     for name,key in pairs(PROFILE_KEYS)do
         local selected=profile_settings[key]
         -- Eruptor always defaults to controlled cadence, including legacy mode INIs.
-        if name=='R-36 Eruptor' and (selected==nil or selected=='') then selected='balanced' end
+        if name=='R-36 Eruptor' then
+            selected=require('config').eruptor_profile(selected)
+            if selected==nil or selected=='' then selected='balanced_28' end
+        end
         if PROFILE_RPMS[name][selected] then selected_profiles[name]=selected end
     end
     local by_hash, notes = {}, {}
     local self = { available = false, reason = 'known_policy_unavailable', fire_rate_mode = mode }
+
+    -- Runtime menu updates may select only an existing named policy profile.
+    -- Numeric cadence values never enter this interface.
+    function self:set_profile(name, selected)
+        local choices = PROFILE_RPMS[name]
+        if type(name) ~= 'string' or not choices or not choices[selected] then return false end
+        selected_profiles[name] = selected
+        return true
+    end
 
     function self:classify(resource_hash)
         local key = M.hash(resource_hash)
@@ -341,6 +361,8 @@ function M.new(fire_rate_mode,talon_mode,profile_settings)
             local allowed=is_assisted(entry.category)
             by_hash[key]={name=entry.name,semantic_id=entry.kind..':'..entry.name,
                 category=entry.category,allowed=allowed,resource_hash=key,
+                assist_role=entry.assist_role or (allowed and (entry.category=='SPECIAL' and 'SPECIAL' or 'REPEAT_ASSIST') or 'UNSUPPORTED'),
+                native_held_behavior=entry.native_held_behavior or 'not_individually_audited',
                 reason='explicit_consumer_policy',notes=entry.notes,
                 native_cap_status=entry.native_cap_status,
                 native_cap_rpm=allowed and entry.native_cap_rpm or nil,

@@ -71,10 +71,13 @@ function M.new(options)
             self:record('input_edge',{available=row~=nil,native_held=held,raw_lmb_down=physical,
                 physical_binding_verified=false,state=current,lease_active=lease})
         end
-        if row and row.pressed then
+        -- Trigger 2 is a level, not a new pulse on each held frame. Keep its
+        -- rising edge and all trigger-8 pulses, without 120 identical records/s.
+        if row and row.pressed and (row.trigger~=2 or not self.last_level_pressed) then
             self:record('fire_observed',{native_held=held,trigger=row.trigger,held_seconds=row.held_seconds,
                 lease_active=lease,state=current,observation='native_input_sample_not_shot'})
         end
+        self.last_level_pressed=row and row.trigger==2 and row.pressed==true or false
     end
     function self:summary(extra)
         local result={}

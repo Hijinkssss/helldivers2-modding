@@ -1,0 +1,16 @@
+{
+  "Version": 1,
+  "Guid": "cf368f5c-f686-453f-a566-435b4b7fcf26",
+  "Name": "Full Auto Assist",
+  "Description": "Full Auto Assist 1.2.0 accessibility autofire for 31 supported weapons. Requires Bingus Shared Loader v18+ / API 1. Optional Mod Options Menu v1.2 / API 1. RPM controls repeated Fire input cadence, not weapon statistics.",
+  "Options": [
+    {
+      "Name": "Full Auto Assist",
+      "Description": "Core with all existing profiles; optional in-game menu. Diagnostics off by default.",
+      "Include": [
+        "Core"
+      ],
+      "Image": "thumbnail.png"
+    }
+  ]
+}

@@ -14,8 +14,8 @@ local RVAS={player_manager=0x3326468,entity_owner=0x346bf98,
 local READABLE={[2]=true,[4]=true,[8]=true,[32]=true,[64]=true,[128]=true}
 local function integer(v,lo,hi)return type(v)=='number' and v==v and v%1==0 and v>=lo and v<=hi end
 local function ok(v)return {ok=true,value=v}end
-local function attempt(fn)
-    local good,value=pcall(fn)
+local function attempt(fn,...)
+    local good,value=pcall(fn,...)
     return good and ok(value) or {ok=false,error={code='Unavailable',detail=tostring(value)}}
 end
 local function pack(...)return {n=select('#',...),...}end
@@ -34,7 +34,8 @@ function M.new(environment,options)
         'Unsupported build: exact EXE and game.dll fingerprints required')
     local base=assert(platform:module_address('game.dll'))
     local self={platform=platform,base=base,callbacks={},closed=false,reads=0,queries=0,
-        failures=0,slow=0,slow_by_kind={},log_errors=0,
+        failures=0,slow=0,slow_by_kind={},log_errors=0,live_region_last=nil,
+        force_performance_profile=options.force_performance_profile==true,
         startup_metrics={exe_hash_us=startup_exe_hash_us,game_dll_hash_us=startup_game_dll_hash_us}}
     local file
     function self:log(level,event,fields)
@@ -54,6 +55,9 @@ function M.new(environment,options)
     local observer
     function self:invalidate_native_cache()
         self.live_regions=nil
+        self.live_region_last=nil
+        self.live_region_hints=nil
+        self.live_region_hint_count=0
         self.native_cache_revision=(self.native_cache_revision or 0)+1
         if observer then observer:invalidate()end
     end
@@ -89,44 +93,111 @@ function M.new(environment,options)
         if profiler then profiler:finish('memory_platform_read',read_started)end
         assert(type(bytes)=='string' and #bytes==n,'Short or failed memory read');return bytes
     end
+    -- Reuse this protected read body. Its arguments used to be captured by a
+    -- newly allocated closure for every fresh native read.
+    local function read_live_checked(at,n,profiler,validation_started,expected)
+            local now=platform:clock_us()
+            if not self.live_regions or now>=self.live_regions_until then
+                self.live_regions={};self.live_region_last=nil;self.live_regions_until=now+1000000
+                self.live_region_hints={};self.live_region_hint_count=0
+            end
+            -- Keep the cheapest same-region case ahead of the address lookup.
+            local hint=self.live_region_last
+            if not (hint and hint.hint_end and at>=hint.base and at+n<=hint.hint_end) then
+                hint=self.live_region_hints[at]
+            end
+            if hint and at+n<=hint.hint_end then
+                -- A full-span hit needs no generic region walk. The metadata
+                -- has the identical expiry; RPM still checks current access.
+                self.live_region_last=hint
+                if profiler then
+                    profiler:increment('region_hint_checks');profiler:increment('region_hint_hits')
+                end
+            else
+                local cursor,last,walk=at,at+n,0
+                while cursor<last do
+                    walk=walk+1;assert(walk<=64,'Memory region walk budget exceeded')
+                    -- Address hints refer only to the same expiring metadata rows.
+                    -- No native bytes or pointer values are cached as current state.
+                    local region=self.live_region_hints[cursor] or self.live_region_last
+                    if profiler then profiler:increment('region_hint_checks')end
+                    if region and cursor>=region.base and cursor<region.base+region.size then
+                        if profiler then profiler:increment('region_hint_hits')end
+                    else
+                        region=nil
+                        if profiler then profiler:increment('region_cache_searches')end
+                        for _,r in ipairs(self.live_regions)do
+                            if profiler then profiler:increment('region_cache_entries_examined')end
+                            if cursor>=r.base and cursor<r.base+r.size then region=r;break end
+                        end
+                    end
+                    if not region then
+                        self.queries=self.queries+1
+                        if self.profiler then self.profiler:increment('page_queries')end
+                        region=assert(platform:query_region(cursor),'Memory page unavailable')
+                        assert(integer(region.base,0,0x7fffffffffff) and integer(region.size,1,0x7fffffffffff) and
+                            integer(region.protect,0,0xffffffff) and region.size<=0x7fffffffffff-region.base+1 and
+                            cursor>=region.base and cursor<region.base+region.size and region.state==0x1000 and
+                            READABLE[region.protect%256] and math.floor(region.protect/256)%2==0,
+                            'Unreadable or guarded page')
+                        if #self.live_regions<64 then
+                            region.hint_end=region.base+region.size
+                            self.live_regions[#self.live_regions+1]=region
+                        end
+                    end
+                    self.live_region_last=region
+                    if region.hint_end and not self.live_region_hints[cursor] and self.live_region_hint_count<256 then
+                        self.live_region_hints[cursor]=region
+                        self.live_region_hint_count=self.live_region_hint_count+1
+                    end
+                    cursor=math.min(last,region.base+region.size)
+                end
+            end
+            if profiler then profiler:finish('memory_page_validation',validation_started)end
+            -- Current access is checked on EVERY reuse, including protection
+            -- changes between metadata refreshes. Never dereference game memory
+            -- with ffi.copy: RPM must return the full span or no value.
+            local read_started=profiler and profiler:sample('memory_platform_read',profiler.memory_samples_every)
+                and profiler:start()
+            local bytes
+            if expected then bytes=platform:read_matches(at,expected,n)
+            else bytes=platform:read(at,n)end
+            self.reads=self.reads+1
+            if self.profiler then self.profiler:increment('memory_reads')end
+            if profiler then profiler:finish('memory_platform_read',read_started)end
+            if expected then assert(type(bytes)=='boolean','Short or failed memory read')
+            else assert(type(bytes)=='string' and #bytes==n,'Short or failed memory read')end
+            return bytes
+    end
     function self:read_live(at,n)
         if not platform.safe_cached_reads then return self:read(at,n)end
         assert(integer(at,0x10000,0x7fffffffffff) and integer(n,1,32768) and
             n-1<=0x7fffffffffff-at,'Read outside supported bounds')
-        local good,value=pcall(function()
-            local now=platform:clock_us()
-            if not self.live_regions or now>=self.live_regions_until then
-                self.live_regions={};self.live_regions_until=now+1000000
-            end
-            local cursor,last,walk=at,at+n,0
-            while cursor<last do
-                walk=walk+1;assert(walk<=64,'Memory region walk budget exceeded')
-                local region
-                for _,r in ipairs(self.live_regions)do
-                    if cursor>=r.base and cursor<r.base+r.size then region=r;break end
-                end
-                if not region then
-                    self.queries=self.queries+1
-                    if self.profiler then self.profiler:increment('page_queries')end
-                    region=assert(platform:query_region(cursor),'Memory page unavailable')
-                    assert(integer(region.base,0,0x7fffffffffff) and integer(region.size,1,0x7fffffffffff) and
-                        integer(region.protect,0,0xffffffff) and region.size<=0x7fffffffffff-region.base+1 and
-                        cursor>=region.base and cursor<region.base+region.size and region.state==0x1000 and
-                        READABLE[region.protect%256] and math.floor(region.protect/256)%2==0,
-                        'Unreadable or guarded page')
-                    if #self.live_regions<64 then self.live_regions[#self.live_regions+1]=region end
-                end
-                cursor=math.min(last,region.base+region.size)
-            end
-            -- Current access is checked on EVERY reuse, including protection
-            -- changes between metadata refreshes. Never dereference game memory
-            -- with ffi.copy: RPM must return the full span or no value.
-            local bytes=platform:read(at,n);self.reads=self.reads+1
-            if self.profiler then self.profiler:increment('memory_reads')end
-            assert(type(bytes)=='string' and #bytes==n,'Short or failed memory read')
-            return bytes
-        end)
-        if not good then self:invalidate_native_cache();error(value,0)end
+        local profiler=self.profiler
+        local validation_started=profiler and profiler:sample('memory_page_validation',profiler.memory_samples_every)
+            and profiler:start()
+        local good,value=pcall(read_live_checked,at,n,profiler,validation_started)
+        if not good then
+            if profiler then profiler:finish('memory_page_validation',validation_started)end
+            self:invalidate_native_cache();error(value,0)
+        end
+        return value
+    end
+    function self:prepare_match_live(bytes)
+        if platform.safe_cached_reads and type(platform.prepare_match)=='function' and
+            type(platform.read_matches)=='function' then return platform:prepare_match(bytes)end
+    end
+    function self:match_live(at,n,expected)
+        assert(integer(at,0x10000,0x7fffffffffff) and integer(n,1,32768) and
+            n-1<=0x7fffffffffff-at,'Read outside supported bounds')
+        local profiler=self.profiler
+        local validation_started=profiler and profiler:sample('memory_page_validation',profiler.memory_samples_every)
+            and profiler:start()
+        local good,value=pcall(read_live_checked,at,n,profiler,validation_started,expected)
+        if not good then
+            if profiler then profiler:finish('memory_page_validation',validation_started)end
+            self:invalidate_native_cache();error(value,0)
+        end
         return value
     end
     function self:read_scope(fn)
@@ -160,12 +231,20 @@ function M.new(environment,options)
     end
     function self:build_status()return {id=PROFILE,state='exact_fingerprints_matched'}end
     function self:config(schema,text,arsenal_options)return Config.load(schema,text,arsenal_options)end
-    local memory={read=function(_,at,n)return attempt(function()return self:read_live(at,n)end)end,
-        read_pointer=function(_,at)return attempt(function()
-            local bytes=self:read_live(at,8);local a,b,c,d,e,f,g,h=bytes:byte(1,8)
-            local p=a+b*256+c*65536+d*16777216+(e+f*256+g*65536+h*16777216)*4294967296
-            assert(integer(p,0x10000,0x7fffffffffff),'Invalid pointer');return p
-        end)end,
+    -- These protected bodies are retained per host, including cached certificate reads.
+    -- Arguments belong to the call, so there is no temporary closure or shared argument slot.
+    local function read_pointer_checked(at)
+        local bytes=self:read_live(at,8);local a,b,c,d,e,f,g,h=bytes:byte(1,8)
+        local p=a+b*256+c*65536+d*16777216+(e+f*256+g*65536+h*16777216)*4294967296
+        assert(integer(p,0x10000,0x7fffffffffff),'Invalid pointer');return p
+    end
+    local memory={read=function(_,at,n)return attempt(self.read_live,self,at,n)end,
+        read_pointer=function(_,at)return attempt(read_pointer_checked,at)end,
+        prepare_match=function(_,bytes)return self:prepare_match_live(bytes)end,
+        matches=function(_,at,n,expected)
+            local good,value=pcall(self.match_live,self,at,n,expected)
+            return good and value==true
+        end,
         with_region_cache=function(_,fn)return self:read_scope(fn)end}
     -- Identity immediately reads and later revalidates each resolved global.
     -- Keep the startup-facing symbol API guarded, but avoid reading the same
@@ -174,7 +253,8 @@ function M.new(environment,options)
     observer=Identity.new(memory,symbols)
     function self:local_avatar()return observer:snapshot()end
     function self:invalidate_identity()observer:invalidate()end
-    function self:eligibility()return Input.sample(platform,memory,{id=PROFILE},environment.stingray)end
+    local input_profile={id=PROFILE}
+    function self:eligibility()return Input.sample(platform,memory,input_profile,environment.stingray)end
     function self:parse_key(key)
         local named={SPACE=32,TAB=9,ENTER=13,ESCAPE=27,INSERT=45,DELETE=46,HOME=36,END=35,
             PAGEUP=33,PAGEDOWN=34,LEFT=37,UP=38,RIGHT=39,DOWN=40}
@@ -208,9 +288,29 @@ function M.new(environment,options)
     end
     function self:write_status()self:log('info','status',self:diagnostics())end
     local previous_update,previous_shutdown=environment.update,environment.shutdown
+    local hud,hud_provider,charge_research
+    function self:set_hud_provider(provider,settings)
+        hud_provider=provider
+        local anchor=require('hud_anchor').new(self)
+        hud=require('hud_indicator').new(environment.stingray,{
+            force_visible=settings and settings.hud_probe_visible==true,
+            profiler=self.profiler,
+            clock_us=function()return self:clock_us()end,
+            log=(settings and settings.hud_diagnostics==true) and function(fields)
+                self:log('info','hud_rc2',fields)
+            end or nil},function(width,height,weapon_key)return anchor:sample(width,height,weapon_key)end)
+    end
+    function self:set_charge_research(provider)
+        charge_research=require('charge_research').new(self,provider,loader)
+    end
     local update_wrapper,shutdown_wrapper
     function self:stop()
         if self.closed then return ok(true)end
+        if hud then hud:clear()end
+        if charge_research then
+            -- Diagnostic I/O must never prevent restoration of the Fire lease.
+            pcall(charge_research.close,charge_research);charge_research=nil
+        end
         -- A restore failure retains callbacks and cleanup for a later retry.
         local good,why=pcall(self.cleanup or function()end)
         if not good then self:log('error','cleanup_failed',{reason=tostring(why)});return {ok=false,error={detail=tostring(why)}}end
@@ -298,6 +398,18 @@ function M.new(environment,options)
             end
             local after_started=self.profiler and self.profiler:start()
             local good,why=pcall(toggle_tick)
+            if hud and hud_provider then
+                local hud_started=self.profiler and self.profiler:start()
+                hud:present(hud_provider())
+                if self.profiler then self.profiler:finish('hud_present',hud_started)end
+            end
+            if charge_research then
+                local ok,reason=pcall(charge_research.tick,charge_research)
+                if not ok then
+                    self:log('warning','charge_research_stopped',{reason=tostring(reason)})
+                    pcall(charge_research.close,charge_research);charge_research=nil
+                end
+            end
             local after_stock=after_started and math.max(0,platform:clock_us()-after_started) or 0
             if self.profiler then self.profiler:observe('update_wrapper',before_stock+after_stock)end
             if not good then self:log('error','input_failed',{reason=tostring(why)});self:stop()end
@@ -325,9 +437,10 @@ function M.start(environment,options)
         veto_profile={'balanced','full_auto'},
         talon_profile={'balanced','efficiency','full_auto','fuller_auto'},
         amr_profile={'balanced','full_auto'},
+        commando_profile={'balanced','full_auto'},
         hyena_profile={'balanced','full_auto'},
         bushwhacker_profile={'balanced','full_auto'},
-        eruptor_profile={'balanced','full_auto'},
+        eruptor_profile={'slower_27','balanced_28','max_32','balanced','full_auto','stable_26','balanced_27','fast_28'},
     }
     local application=environment.stingray and environment.stingray.Application
     local global_require=rawget(_G,'require')
@@ -349,6 +462,10 @@ function M.start(environment,options)
         options and options.backend_factory or function(h)return require('native_fire').new(h)end,
         options and options.read_config,options and options.validation_factory)
     if not good then host:stop();error(consumer,0)end
+    if options and options.charge_research==true then
+        local ready,reason=pcall(host.set_charge_research,host,function()return consumer:get_state()end)
+        if not ready then host:log('warning','charge_research_unavailable',{reason=tostring(reason)})end
+    end
     local attached,why=pcall(host.attach,host)
     if not attached then host:stop();error(why,0)end
     environment.HD2FullAutoAssistStandalone=consumer;return consumer

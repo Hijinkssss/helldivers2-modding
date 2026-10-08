@@ -1,0 +1,8 @@
+{
+  "version": "1.2.0",
+  "release_baseline": "Candidate D",
+  "supported_build": "25480438",
+  "supported_weapons": 31,
+  "archive_sha256": "95e393c0b77cc760e135bf10e002c3a45bcba175f8b48c18df9edefcd118abc7",
+  "public_guid": "cf368f5c-f686-453f-a566-435b4b7fcf26"
+}

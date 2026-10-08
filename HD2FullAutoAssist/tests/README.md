@@ -1,21 +1,7 @@
-# Offline tests
+# Offline release checks
 
-Run `python HD2FullAutoAssist/tests/run_standalone.py` from a full Git clone with
-Python and `lupa.luajit21`. `run.py` and `run_weapon_policy_v2.py` forward to this
-same suite. Package checks follow building, as described in the mod README.
-It covers Arsenal-over-INI precedence and every profile-to-policy cadence. Run
-`test_package.py --loader-discovery <discover.lua>` to verify the core and option
-archives against Bingus Shared Loader's actual addon scanner.
+For v1.2.0 run `python HD2FullAutoAssist/tests/run_release.py` from a full clone with Python and `lupa.luajit21`. This compiles the shipped bundle, checks all 31 supported defaults and unsupported exclusions, exercises all 21 menu choices and native restoration transitions, checks the HUD fixture, audits ZIP contents/defaults/resource identity, and verifies a deterministic rebuild against the exact Candidate D archive checksum.
 
-Legacy Lua fixtures are retained to replay reference commit a93008f, not as
-independent current-version runners. Runtime bridge fault fixtures describe the
-old dependency and run against that preserved version only. New standalone
-controller and native lifecycle checks require no installed game or Runtime.
+The fixtures use simulated memory. They never open or launch the game and do not establish gameplay performance or live rendering behavior. Gameplay measurements in the release notes were supplied separately by the tester.
 
-The B2 native-transition fixture connects the real lifecycle, guarded identity,
-controller, policy and native mapping backend over synthetic byte memory. It
-covers all 30 assisted resources in both modes and every selectable profile,
-active A/B/C swaps, unsupported transitions, hash/entity/root changes, transient
-identity page/read failure, ship/mission and death/new-avatar respawn. Page-scope
-checks reject different and crossing addresses and verify error cleanup.
-Eruptor and Crossbow must pass through native `begin`, not a permissive mock.
+Older runners and fixtures remain for historical reference and are not the v1.2.0 release gate. No private profiling datasets or development logs are included.

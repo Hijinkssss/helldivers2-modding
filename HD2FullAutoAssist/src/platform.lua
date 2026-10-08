@@ -3,66 +3,71 @@ local function integer(v,lo,hi)return type(v)=='number' and v==v and v%1==0 and 
 local M = {}
 local Windows = {}
 Windows.__index = Windows
-local declarations_done=false
+local SENTINEL="hd2_faa_platform2_region"
 
 local DECLARATIONS = [[
-    uint32_t GetCurrentProcessId(void);
-    short GetAsyncKeyState(int key);
-    void *GetForegroundWindow(void);
-    uint32_t GetWindowThreadProcessId(void *window, uint32_t *process);
-    void *GetModuleHandleA(const char *name);
-    uint32_t GetModuleFileNameW(void *module, uint16_t *path, uint32_t capacity);
-    void *GetCurrentProcess(void);
-    uint64_t GetTickCount64(void);
-    int QueryPerformanceCounter(void *counter);
-    int QueryPerformanceFrequency(void *frequency);
-    int ReadProcessMemory(void *process, const void *address, void *buffer,
-        size_t size, size_t *read);
+    uint32_t hd2_faa_platform2_GetCurrentProcessId(void) __asm__("GetCurrentProcessId");
+    short hd2_faa_platform2_GetAsyncKeyState(int key) __asm__("GetAsyncKeyState");
+    void *hd2_faa_platform2_GetForegroundWindow(void) __asm__("GetForegroundWindow");
+    uint32_t hd2_faa_platform2_GetWindowThreadProcessId(void *window, uint32_t *process) __asm__("GetWindowThreadProcessId");
+    void *hd2_faa_platform2_GetModuleHandleA(const char *name) __asm__("GetModuleHandleA");
+    uint32_t hd2_faa_platform2_GetModuleFileNameW(void *module, uint16_t *path, uint32_t capacity) __asm__("GetModuleFileNameW");
+    void *hd2_faa_platform2_GetCurrentProcess(void) __asm__("GetCurrentProcess");
+    uint64_t hd2_faa_platform2_GetTickCount64(void) __asm__("GetTickCount64");
+    int hd2_faa_platform2_QueryPerformanceCounter(void *counter) __asm__("QueryPerformanceCounter");
+    int hd2_faa_platform2_QueryPerformanceFrequency(void *frequency) __asm__("QueryPerformanceFrequency");
+    int hd2_faa_platform2_ReadProcessMemory(void *process, const void *address, void *buffer,
+        size_t size, size_t *read) __asm__("ReadProcessMemory");
     typedef struct {
         void *base; void *allocation_base; uint32_t allocation_protection;
         uint16_t partition; uint16_t reserved; size_t size;
         uint32_t state; uint32_t protection; uint32_t type;
-    } HD2FAAMemoryRegionV1;
-    size_t VirtualQuery(const void *address, void *region, size_t size);
-    void *CreateFileW(const uint16_t *path, uint32_t access, uint32_t share,
-        void *security, uint32_t disposition, uint32_t flags, void *template_file);
-    int ReadFile(void *file, void *buffer, uint32_t size, uint32_t *read,
-        void *overlapped);
-    int CloseHandle(void *handle);
-    int32_t BCryptOpenAlgorithmProvider(void **algorithm, const uint16_t *name,
-        const uint16_t *provider, uint32_t flags);
-    int32_t BCryptCloseAlgorithmProvider(void *algorithm, uint32_t flags);
-    int32_t BCryptCreateHash(void *algorithm, void **hash, void *object,
+    } hd2_faa_platform2_region;
+    size_t hd2_faa_platform2_VirtualQuery(const void *address, void *region, size_t size) __asm__("VirtualQuery");
+    void *hd2_faa_platform2_CreateFileW(const uint16_t *path, uint32_t access, uint32_t share,
+        void *security, uint32_t disposition, uint32_t flags, void *template_file) __asm__("CreateFileW");
+    int hd2_faa_platform2_ReadFile(void *file, void *buffer, uint32_t size, uint32_t *read,
+        void *overlapped) __asm__("ReadFile");
+    int hd2_faa_platform2_CloseHandle(void *handle) __asm__("CloseHandle");
+    int32_t hd2_faa_platform2_BCryptOpenAlgorithmProvider(void **algorithm, const uint16_t *name,
+        const uint16_t *provider, uint32_t flags) __asm__("BCryptOpenAlgorithmProvider");
+    int32_t hd2_faa_platform2_BCryptCloseAlgorithmProvider(void *algorithm, uint32_t flags) __asm__("BCryptCloseAlgorithmProvider");
+    int32_t hd2_faa_platform2_BCryptCreateHash(void *algorithm, void **hash, void *object,
         uint32_t object_size, const void *secret, uint32_t secret_size,
-        uint32_t flags);
-    int32_t BCryptHashData(void *hash, const void *data, uint32_t size,
-        uint32_t flags);
-    int32_t BCryptFinishHash(void *hash, void *digest, uint32_t size,
-        uint32_t flags);
-    int32_t BCryptDestroyHash(void *hash);
+        uint32_t flags) __asm__("BCryptCreateHash");
+    int32_t hd2_faa_platform2_BCryptHashData(void *hash, const void *data, uint32_t size,
+        uint32_t flags) __asm__("BCryptHashData");
+    int32_t hd2_faa_platform2_BCryptFinishHash(void *hash, void *digest, uint32_t size,
+        uint32_t flags) __asm__("BCryptFinishHash");
+    int32_t hd2_faa_platform2_BCryptDestroyHash(void *hash) __asm__("BCryptDestroyHash");
 ]]
 
 function M.new()
     local ffi = require('ffi')
     assert(ffi.abi('64bit'), 'Full Auto Assist requires Windows x64 LuaJIT')
-    if not declarations_done then
+    if not pcall(ffi.typeof,SENTINEL) then
         local declared, why = pcall(ffi.cdef, DECLARATIONS)
         assert(declared, 'Windows FFI declaration failed: '..tostring(why))
-        declarations_done=true
     end
-    local kernel, bcrypt = ffi.load('kernel32'), ffi.load('bcrypt')
+    -- Bind private symbols once. Plain Windows names remain untouched in the shared VM.
+    local kernel_dll,bcrypt_dll=ffi.load('kernel32'),ffi.load('bcrypt')
+    local kernel,bcrypt={},{}
+    for _,name in ipairs({'GetCurrentProcessId','GetModuleHandleA','GetModuleFileNameW','GetCurrentProcess','GetTickCount64','QueryPerformanceCounter','QueryPerformanceFrequency','ReadProcessMemory','VirtualQuery','CreateFileW','ReadFile','CloseHandle'})do kernel[name]=kernel_dll['hd2_faa_platform2_'..name]end
+    for _,name in ipairs({'BCryptOpenAlgorithmProvider','BCryptCloseAlgorithmProvider','BCryptCreateHash','BCryptHashData','BCryptFinishHash','BCryptDestroyHash'})do bcrypt[name]=bcrypt_dll['hd2_faa_platform2_'..name]end
     local frequency = ffi.new('uint32_t[2]')
-    local query_counter = ffi.cast('int (*)(void *)', kernel.QueryPerformanceCounter)
-    local query_frequency = ffi.cast('int (*)(void *)', kernel.QueryPerformanceFrequency)
+    local query_counter = kernel.QueryPerformanceCounter
+    local query_frequency = kernel.QueryPerformanceFrequency
     local precise = query_frequency(frequency) ~= 0
     local ticks_per_second = frequency[0] + frequency[1] * 4294967296
     precise = precise and ticks_per_second > 0
+    local scratch=ffi.new('uint8_t[32768]')
     return setmetatable({ffi=ffi, kernel=kernel, bcrypt=bcrypt,
         safe_cached_reads=true, -- RPM checks current access and length on every read.
         process=kernel.GetCurrentProcess(),
-        query=ffi.cast('size_t (*)(const void *, void *, size_t)',kernel.VirtualQuery),
-        count=ffi.new('size_t[1]'), scratch=ffi.new('uint8_t[32768]'),
-        region=ffi.new('HD2FAAMemoryRegionV1[1]'),
+        query=kernel.VirtualQuery,
+        count=ffi.new('size_t[1]'), scratch=scratch,
+        scratch_words=ffi.cast('const uint32_t *',scratch),
+        region=ffi.new('hd2_faa_platform2_region[1]'),
         counter=ffi.new('uint32_t[2]'), query_counter=query_counter,
         ticks_per_second=ticks_per_second, precise_clock=precise}, Windows)
 end
@@ -78,7 +83,10 @@ end
 function Windows:prepare_input()
     if self.user32 then return true end
     local ok,why=pcall(function()
-        self.user32=self.ffi.load('user32')
+        local dll=self.ffi.load('user32')
+        self.user32={GetAsyncKeyState=dll.hd2_faa_platform2_GetAsyncKeyState,
+            GetForegroundWindow=dll.hd2_faa_platform2_GetForegroundWindow,
+            GetWindowThreadProcessId=dll.hd2_faa_platform2_GetWindowThreadProcessId}
         self.input_pid=tonumber(self.kernel.GetCurrentProcessId())
         self.foreground_pid=self.ffi.new('uint32_t[1]')
     end)
@@ -157,6 +165,37 @@ function Windows:read(address,size)
         return nil,'ReadProcessMemory failed or short read'
     end
     return ffi.string(self.scratch,size)
+end
+
+-- Expected bytes belong to a retained identity certificate. Both views below
+-- are aligned, owned buffers; game addresses are passed only to guarded RPM.
+function Windows:prepare_match(bytes)
+    assert(type(bytes)=='string' and #bytes>0 and #bytes<=32768,'Invalid expected span')
+    local buffer=self.ffi.new('uint32_t[?]',math.ceil(#bytes/4))
+    self.ffi.copy(buffer,bytes,#bytes)
+    return {words=buffer,size=#bytes}
+end
+function Windows:read_matches(address,expected,size)
+    if not integer(address,0x10000,0x7fffffffffff) or
+        not integer(size,1,32768) then return nil,'invalid read arguments' end
+    local ffi=self.ffi
+    assert(type(expected)=='table' and expected.size==size,'Expected buffer size changed')
+    if self.kernel.ReadProcessMemory(self.process,ffi.cast('const void *',address),
+        self.scratch,size,self.count)==0 or self.count[0]~=size then
+        return nil,'ReadProcessMemory failed or short read'
+    end
+    local actual=self.scratch_words
+    local wanted=expected.words
+    for i=0,math.floor(size/4)-1 do
+        if actual[i]~=wanted[i] then return false end
+    end
+    if size%4~=0 then
+        local tail=ffi.cast('const uint8_t *',wanted)
+        for i=size-size%4,size-1 do
+            if self.scratch[i]~=tail[i] then return false end
+        end
+    end
+    return true
 end
 
 function Windows:module_hash(name)

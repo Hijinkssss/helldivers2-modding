@@ -1,5 +1,6 @@
 -- One consumer-owned resolved state. A future HUD reads snapshot(), never memory.
 local Policy=require('weapon_policy')
+local Hud=require('hud_indicator')
 local M={}
 local function integer(value,maximum)
     return type(value)=='number' and value==value and value%1==0 and value>0 and value<maximum
@@ -21,6 +22,21 @@ function M.new(policy,validated)
         state.user_enabled=enabled==true;derive();state.revision=state.revision+1
     end
     function self:is_enabled()return state.user_enabled end
+    -- Reclassify the already-validated held identity after a named profile
+    -- changes. This uses the same policy table without another native read.
+    function self:refresh_policy()
+        local resource_hash=state.identity_observed and state.weapon.resource_hash
+        if not resource_hash then return false end
+        local decision=policy:classify(resource_hash)
+        last_hash,last_decision=resource_hash,decision
+        state.weapon.semantic_id=decision.semantic_id
+        state.weapon.name=decision.name
+        state.eligibility={category=decision.category,max_repeat_rpm=decision.max_repeat_rpm,notes=decision.notes}
+        state.identity_valid=validated==true and decision.semantic_id~=nil
+        state.reason=decision.reason or 'explicit_consumer_policy'
+        derive();state.revision=state.revision+1
+        return true
+    end
     function self:invalidate(reason)
         last_decision,last_hash=nil,nil
         state.weapon={};state.eligibility={category='REVIEW'};state.identity_valid=false
@@ -58,6 +74,7 @@ function M.new(policy,validated)
     end
     function self:set_repeat(active)state.repeat_active=active==true end
     function self:snapshot()return clone(state) end
+    function self:hud_state()return Hud.project(state)end
     function self:cache_status()return {hits=self.cache_hits,misses=self.cache_misses}end
     return self
 end

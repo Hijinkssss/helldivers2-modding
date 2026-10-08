@@ -8,7 +8,7 @@ local function u32(n)return string.char(n%256,math.floor(n/256)%256,math.floor(n
 local function ptr(n)return u32(n)..u32(0)end
 local function float(n)local v=ffi.new('float[1]',n);return ffi.string(v,4)end
 local function hash_bytes(hash)local out={};for i=16,2,-2 do out[#out+1]=string.char(tonumber(hash:sub(i-1,i),16))end;return table.concat(out)end
-function M.new(config)
+function M.new(config,validation_factory)
     local f={now=0,logs={},queries={},writes=0,physical_samples=0,stock_calls=0,read_log={},write_log={}}
     local bytes={}
     function f:put(at,s)for i=1,#s do bytes[at+i-1]=s:sub(i,i)end end
@@ -103,7 +103,7 @@ function M.new(config)
         end}
     f.consumer=require('full_auto_assist').install(f.host,function(host)
         f.backend=Native.new(host,function()return adapter end);return f.backend
-    end,function()return config or ''end)
+    end,function()return config or ''end,validation_factory)
     f.host:attach()
     function f:tick(delta)
         self.now=self.now+(delta or 120000)

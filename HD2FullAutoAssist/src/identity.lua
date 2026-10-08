@@ -36,10 +36,39 @@ local function hash64(bytes)
     return table.concat(out)
 end
 
+local function validate_cached(self)
+    local cached=self.certificate
+    -- Keep the original parent-before-child order and the final root rereads.
+    for _,guard in ipairs(cached.guards)do
+        self.cached_reads=self.cached_reads+1
+        if self.cached_reads>96 then return false end
+        if guard.expected then
+            if not self.memory:matches(guard.address,#guard.bytes,guard.expected) then return false end
+        else
+            local result=self.memory:read(guard.address,#guard.bytes)
+            if not result.ok or result.value~=guard.bytes then return false end
+        end
+    end
+    for _,guard in ipairs(cached.guards)do
+        if guard.root then
+            self.cached_reads=self.cached_reads+1
+            if self.cached_reads>96 then return false end
+            if guard.expected then
+                if not self.memory:matches(guard.address,#guard.bytes,guard.expected) then return false end
+            else
+                local result=self.memory:read(guard.address,#guard.bytes)
+                if not result.ok or result.value~=guard.bytes then return false end
+            end
+        end
+    end
+    return true
+end
 function M.new(memory,symbols)
     assert(memory and symbols,'observer dependencies required')
-    return setmetatable({memory=memory,symbols=symbols,calls=0,successes=0,
+    local self=setmetatable({memory=memory,symbols=symbols,calls=0,successes=0,
         unavailable=0,failures=0,reads=0,cache_hits=0,discoveries=0,invalidations=0},Observer)
+    self.cached_runner=function()return validate_cached(self)end
+    return self
 end
 
 function Observer:invalidate()
@@ -49,7 +78,25 @@ end
 
 function Observer:snapshot()
     self.calls=self.calls+1
-    local reads,guards=0,{}
+    local reads=0
+    local cached=self.certificate
+    if cached then
+        -- A stable certificate needs fresh validation, not fresh discovery
+        -- closures and a temporary guard collection on every update.
+        self.cached_reads=0
+        local checked,valid
+        if type(self.memory.with_region_cache)=='function' then
+            checked,valid=pcall(self.memory.with_region_cache,self.memory,self.cached_runner)
+        else checked,valid=pcall(self.cached_runner)end
+        reads=self.cached_reads;self.cached_reads=0
+        if checked and valid then
+            self.cache_hits=self.cache_hits+1;self.successes=self.successes+1
+            self.reads=self.reads+reads
+            return Result.ok(cached.snapshot)
+        end
+        self:invalidate()
+    end
+    local guards={}
     local function fail(code,stage,detail)
         error({code=code,stage=stage,detail=detail},0)
     end
@@ -111,23 +158,6 @@ function Observer:snapshot()
         fail('Unavailable',stage,'probe limit reached')
     end
     local function run()
-        local cached=self.certificate
-        if cached then
-            -- Parents precede children: never follow an old slot after its
-            -- manager, table, key/index, ownership or generation changed.
-            local checked,valid=pcall(function()
-                for _,guard in ipairs(cached.guards) do
-                    if read(guard.address,#guard.bytes,'cache_validate')~=guard.bytes then return false end
-                end
-                for _,guard in ipairs(cached.guards) do
-                    if guard.root and read(guard.address,#guard.bytes,'cache_roots')~=guard.bytes then return false end
-                end
-                return true
-            end)
-            if not checked then valid=false end
-            if valid then self.cache_hits=self.cache_hits+1;return cached.snapshot end
-            self:invalidate()
-        end
         self.discoveries=self.discoveries+1
         local pm=global('player_manager')
         local counts=read(pm+0x84,8,'local_player',true)
@@ -208,6 +238,9 @@ function Observer:snapshot()
             if read(guard.address,#guard.bytes,'revalidate')~=guard.bytes then
                 fail('SnapshotChanged','revalidate','identity changed during snapshot')
             end
+        end
+        if type(self.memory.prepare_match)=='function' and type(self.memory.matches)=='function' then
+            for _,guard in ipairs(guards)do guard.expected=self.memory:prepare_match(guard.bytes)end
         end
         self.certificate={guards=guards,snapshot=snapshot}
         return snapshot
