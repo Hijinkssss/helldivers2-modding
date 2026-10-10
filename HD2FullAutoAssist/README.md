@@ -1,63 +1,48 @@
-# Full Auto Assist 1.2.0
+# Full Auto Assist 1.3.0
 
-Full Auto Assist is an accessibility feature that repeats ordinary Fire input while held for 31 supported weapons, reducing the need for repeated clicks or presses. The game controls accepted shots and weapon behavior. FAA does not change damage, recoil, ammunition, projectiles, penetration, heat, aim, reload, or native weapon statistics.
+**NEW: In-game per-weapon settings!** Configure all 31 supported weapons directly in one **FULL AUTO ASSIST** menu. Each weapon starts enabled, with Balanced behavior where applicable.
 
-## Installation and updating
+Full Auto Assist is an accessibility-focused Helldivers 2 mod that simulates automatic firing by repeating normal Fire input while held. It does not change damage, ammunition, reload behavior or weapon statistics, and does not bypass native firing restrictions. Input cadence does not guarantee accepted shots.
 
-1. Close Helldivers 2 before updating mods.
-2. Install Bingus Shared Loader v18+ / API 1. FAA supports Steam build 25480438 behind its existing exact EXE/game.dll fingerprint gate.
-3. Import `Full-Auto-Assist-1.2.0-Arsenal.zip` into Arsenal, enable its Full Auto Assist Core, and deploy exactly one FAA runtime. Disable any separately installed private FAA candidate before deploying this public package.
-4. Optional: install CowboyBingus Mod Options Menu v1.2 / API 1 for in-game FAA settings. Install only one copy of that menu. FAA remains functional without it.
-5. Keep your existing INI and saved menu values. Do not overwrite them with the example configuration. No settings reset is required.
+## Installation
 
-The package keeps the public FAA GUID `cf368f5c-f686-453f-a566-435b4b7fcf26`. Older public Arsenal entries update under that identity. Private trial entries have a different GUID and must be disabled separately.
+Choose one route for in-game settings and keybind configuration:
 
-For manual installation, use only the three files in `Core/`, with one matching, unused patch suffix for the archive and both sidecars. Replace only an identified previous FAA slot. Do not overwrite another mod's archive or install a second FAA copy. Arsenal may assign patch suffixes during deployment.
+**Recommended convenience route:** install [Bingus Shared Loader](https://www.nexusmods.com/helldivers2/mods/16292) and [CB Vanilla Plus Megapack](https://www.nexusmods.com/helldivers2/mods/16294). Enable the Megapack's **Mod Options Menu** and **Mod Bindings Menu** components.
 
-## Controls and settings
+**Standalone route:** install [Bingus Shared Loader](https://www.nexusmods.com/helldivers2/mods/16292), [CB Mod Options Menu](https://www.nexusmods.com/helldivers2/mods/16625) and [CB Mod Bindings Menu](https://www.nexusmods.com/helldivers2/mods/16478).
 
-FAA starts ON by default for a fresh configuration. Press `=` (`+` on some keyboard layouts) to toggle; optional Mod Bindings Menu integration retains the rebindable action. Existing `user_enabled` settings are respected. With Mod Options Menu, FAA Enabled and the nine weapon profile rows use saved, applied values. Select a profile and use the menu's Apply control. The toggle stays synchronized with FAA Enabled. Release Fire after changing a profile or enabling FAA before starting another assisted hold.
+Use either bundled or standalone copies of each menu component, not both. The whole Megapack is not mandatory. Current documented versions are Shared Loader **v19 / API 1** (v18+ supported), Mod Options Menu **v1.2 / API 1**, and Mod Bindings Menu **v2.2 / API 1**. These releases target Steam build **25480438**.
 
-Applied/saved menu values take precedence. Legacy Arsenal option addons can seed missing menu choices, ahead of explicit per-weapon INI choices, legacy INI mode and built-in defaults. Existing keys and profile indices keep their meaning. Without the optional menu, the legacy Arsenal/INI/default path remains available. This Core package needs no separate profile addons.
+Then import `Full-Auto-Assist-1.3.0-Arsenal.zip` into Arsenal, enable **FULL AUTO ASSIST 1.3.0** and its single Core option, and deploy. Keep only one FAA runtime enabled. Preserve your existing settings; no reset is needed. Keep Shared Loader as the winning Wwise startup replacement.
 
-Optional INI: `%LOCALAPPDATA%\CowboyBingus\Helldivers2\HD2FullAutoAssist.ini`. The supplied example leaves profiling, validation logging, HUD diagnostics and debug logging OFF. It is an example, not a replacement for your settings.
+**What each component provides:** Shared Loader is required for core FAA operation. Mod Options Menu is required for in-game weapon/profile configuration. Mod Bindings Menu is required for in-game keybind configuration. FAA's core firing and existing fallback configuration still work without either menu. None of these companion mods is bundled in FAA's ZIP.
 
-## Input cadence profiles
+## Configure in-game
 
-RPM values control repeated Fire input cadence. They do not modify weapon statistics or guarantee that every attempted input produces a shot.
+1. Launch Helldivers 2 after installing and deploying FAA and the menu components.
+2. Open the game's **MODS** settings tab.
+3. Select **FULL AUTO ASSIST**.
+4. Set **FAA Enabled** and the individual weapon selectors, then press **Apply**.
 
-| Weapon | Profiles (attempted Fire inputs per minute) |
-|---|---|
-| P-2 Peacemaker | Balanced 380; Full Auto 900 |
-| M6C/SOCOM | Balanced 380; Full Auto 900 |
-| P-69 Veto | Balanced 380; Full Auto 750 |
-| LAS-58 Talon | Balanced 210; Efficiency 60; Full Auto 380; FULLER AUTO 750 |
-| APW-1 Anti-Materiel Rifle | Balanced 120; Full Auto 400 |
-| MLS-4X Commando | Balanced 120; Full Auto 240 |
-| R-4 Hyena | Balanced 120; Full Auto 190 |
-| SG-22 Bushwhacker | Balanced 90; Full Auto 650 |
-| R-36 Eruptor | Balanced/default 28; Slower 27; Maximum/native-speed 32 |
+The single menu contains 32 settings: one global toggle and 31 weapon selectors, grouped Primary → Secondary → Support with two visual separators. Ordinary weapons use OFF/ON, default ON. Nine special-case weapons combine OFF with Balanced and all their existing profile/cadence choices. Eruptor defaults to 28 RPM. Contextual descriptions explain every option, and applied selections persist across sessions.
 
-Balanced remains the default. FAA OFF preserves the Eruptor's native held-fire behavior. The existing supported roster, burst behavior, Fire release/swap/toggle cleanup and restoration guards remain intact. See [supported weapons](docs/SUPPORTED_WEAPONS_1.2.0.md).
+Global OFF overrides every weapon without changing its selection. Individual OFF disables assistance only for that weapon. The existing `=` global toggle remains available. With Mod Bindings Menu, configure its toggle action on the MODS tab of the keyboard/controller bindings pages. Release Fire after enabling FAA or changing a profile before beginning another assisted hold.
 
-## HUD and unsupported weapons
+## Supported weapons and profiles
 
-The existing three-cartridge indicator is yellow for supported weapons with FAA ON, white with FAA OFF, and hidden for unsupported weapons. Unknown and native Full Auto weapons remain under normal game control.
+The same 31 production-supported weapons and all 21 existing enabled profile choices are preserved. See [SUPPORTED_WEAPONS.md](SUPPORTED_WEAPONS.md) for the full names, groupings and special-case cadences. No new weapon support, firing modes or experimental charge functionality is included.
 
-ARC-3 Arc Thrower, PLAS-101 Purifier, PLAS-15 Loyalist, PLAS-39 Accelerator Rifle and 40-K Meltagun remain intentionally unsupported. Charge automation is not included. HD2ModCore and HD2Runtime are not required.
+## Upgrading and advanced fallback
 
-## Measured gameplay performance
+Keep your existing INI and saved menu values. Disabled legacy weapons migrate to OFF; enabled weapons retain their valid saved profiles. New combined selectors use separate persisted IDs so OFF cannot shift old numeric profile selections. Missing or invalid settings use established enabled defaults. The existing public package GUID and runtime installation paths are unchanged.
 
-Verified Candidate D gameplay measurements supplied by the tester:
+Manual INI editing is an advanced fallback, not the normal configuration method. Without Mod Options Menu, edit `%LOCALAPPDATA%/CowboyBingus/Helldivers2/HD2FullAutoAssist.ini` while the game is closed. Existing legacy Arsenal profile options remain supported. Applied/saved in-game selections take precedence when the menu is installed. The example INI keeps diagnostics and profiling disabled.
 
-| Metric | Peacemaker | Full mission |
-|---|---:|---:|
-| Duration | 4 minutes | 12 minutes |
-| Average | 7.7 ms/s | 7.9 ms/s |
-| Worst minute | 12.0 ms/s | 12.7 ms/s |
-| Worst frame | 3 ms | 3 ms |
-| Stalls >=150 ms | 0 | 0 |
+For manual installation, use one verified FAA patch slot for the archive and both sidecars in `Core/`; do not overwrite another mod's files.
 
-The full mission used AMR, Eruptor and Commando in Balanced mode. These are measured FAA processing costs for those sessions, not a universal performance ceiling or an FPS improvement guarantee. Results vary with system, gameplay and mod setup.
+## Compatibility and validation
+
+Supports Steam build 25480438 behind the existing exact-build gate. The author confirmed the v1.3.0 candidate works in-game. This release changes only metadata, documentation and packaging; its runtime archive is byte-identical to that tested candidate. Targeted package checks confirmed the unchanged runtime, roster, menu, profiles and migration, preserved identity and a freshly calculated ZIP checksum. No additional gameplay or performance testing was performed for this metadata update.
 
 [More mods and guides by Hijinks](https://hijinkssss.github.io/)

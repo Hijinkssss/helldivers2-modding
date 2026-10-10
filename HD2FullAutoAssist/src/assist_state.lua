@@ -15,7 +15,7 @@ function M.new(policy,validated)
         identity_observed=false,effective=false,repeat_active=false,reason='identity_unavailable',revision=0}
     local self={cache_hits=0,cache_misses=0}
     local function derive()
-        state.effective=state.user_enabled and state.identity_valid and
+        state.effective=state.user_enabled and state.identity_valid and state.eligibility.weapon_enabled==true and
             (state.eligibility.category=='ASSIST' or state.eligibility.category=='SPECIAL')
     end
     function self:set_enabled(enabled)
@@ -31,7 +31,8 @@ function M.new(policy,validated)
         last_hash,last_decision=resource_hash,decision
         state.weapon.semantic_id=decision.semantic_id
         state.weapon.name=decision.name
-        state.eligibility={category=decision.category,max_repeat_rpm=decision.max_repeat_rpm,notes=decision.notes}
+        state.eligibility={category=decision.category,weapon_enabled=decision.weapon_enabled,
+            max_repeat_rpm=decision.max_repeat_rpm,notes=decision.notes}
         state.identity_valid=validated==true and decision.semantic_id~=nil
         state.reason=decision.reason or 'explicit_consumer_policy'
         derive();state.revision=state.revision+1
@@ -65,7 +66,8 @@ function M.new(policy,validated)
         end
         state.weapon={unit_ref=avatar.unit_ref,avatar_id=avatar.avatar_id,entity_id=held.entity_id,resource_hash=resource_hash,
             identity_token=identity_token,semantic_id=decision.semantic_id,name=decision.name,selected_mode=nil}
-        state.eligibility={category=decision.category,max_repeat_rpm=decision.max_repeat_rpm,notes=decision.notes}
+        state.eligibility={category=decision.category,weapon_enabled=decision.weapon_enabled,
+            max_repeat_rpm=decision.max_repeat_rpm,notes=decision.notes}
         state.identity_observed=true
         state.identity_valid=validated==true and decision.semantic_id~=nil
         state.reason=not validated and 'identity_validation_pending' or decision.reason

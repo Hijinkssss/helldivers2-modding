@@ -4,7 +4,7 @@ import argparse,hashlib,json,struct,subprocess,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 MODULE='mods/codex/hd2_full_auto_assist'
 ARCHIVE='9ba626afa44a3aa3.patch_0'
-VERSION='1.2.0'
+VERSION='1.3.0'
 PACKAGE=f'Full-Auto-Assist-{VERSION}-Arsenal.zip'
 OUTPUT=ROOT/'build'/VERSION
 LUA_TYPE=0xA14E8DFA2CD117E2
@@ -86,8 +86,8 @@ def main():
     files={'manifest.json':(ROOT/'manifest.json').read_bytes(),'thumbnail.png':(ROOT/'thumbnail.png').read_bytes(),
         'Core/'+ARCHIVE:archive,'Core/'+ARCHIVE+'.stream':b'','Core/'+ARCHIVE+'.gpu_resources':b'',
         'README.md':(ROOT/'README.md').read_bytes(),'HD2FullAutoAssist.example.ini':(ROOT/'HD2FullAutoAssist.example.ini').read_bytes(),
-        'CHANGELOG.md':(ROOT/'CHANGELOG.md').read_bytes(),'RELEASE_NOTES.md':(ROOT/'docs/RELEASE_1.2.0.md').read_bytes(),
-        'SUPPORTED_WEAPONS.md':(ROOT/'docs/SUPPORTED_WEAPONS_1.2.0.md').read_bytes(),'version.json':(ROOT/'version.json').read_bytes()}
+        'CHANGELOG.md':(ROOT/'CHANGELOG.md').read_bytes(),'RELEASE_NOTES.md':(ROOT/'docs/RELEASE_1.3.0.md').read_bytes(),
+        'SUPPORTED_WEAPONS.md':(ROOT/'docs/SUPPORTED_WEAPONS_1.3.0.md').read_bytes(),'version.json':(ROOT/'version.json').read_bytes(),'CONFIGURATION.md':(ROOT/'docs/WEAPON_CONFIGURATION.md').read_bytes()}
     with zipfile.ZipFile(OUTPUT/PACKAGE,'w',zipfile.ZIP_DEFLATED) as z:
         for name,raw in sorted(files.items()):
             info=zipfile.ZipInfo(name,(1980,1,1,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED;info.external_attr=0o100644<<16;z.writestr(info,raw)

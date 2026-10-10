@@ -1,8 +1,8 @@
 {
-  "version": "1.2.0",
-  "release_baseline": "Candidate D",
+  "version": "1.3.0",
+  "release_baseline": "Author-confirmed live-tested FAA 1.3.0 candidate",
   "supported_build": "25480438",
   "supported_weapons": 31,
-  "archive_sha256": "95e393c0b77cc760e135bf10e002c3a45bcba175f8b48c18df9edefcd118abc7",
+  "archive_sha256": "84aaf53a88ecd719b634235df16a38e07440c0cde00c571b5ecb633a0db1eac0",
   "public_guid": "cf368f5c-f686-453f-a566-435b4b7fcf26"
 }

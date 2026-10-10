@@ -26,6 +26,73 @@
 
 local M = {}
 
+-- Stable INI names for the supported roster. Loaded once; never read from
+-- disk or scanned through weapon tables during an update.
+M.WEAPON_SETTINGS={
+    ['P-2 Peacemaker']='peacemaker_enabled',
+    ['M6C/SOCOM Pistol']='socom_enabled',
+    ['P-69 Veto']='veto_enabled',
+    ['P-113 Verdict']='verdict_enabled',
+    ['R-63 Diligence']='diligence_enabled',
+    ['R-63CS Diligence Counter Sniper']='diligence_cs_enabled',
+    ['R-2 Amendment']='amendment_enabled',
+    ['P-92 Warrant']='warrant_enabled',
+    ['R-2124 Constitution']='constitution_enabled',
+    ['R-6 Deadeye']='deadeye_enabled',
+    ['R-4 Hyena']='hyena_enabled',
+    ['R-72 Censor']='censor_enabled',
+    ['SG-8 Punisher']='punisher_enabled',
+    ['SG-8S Slugger']='slugger_enabled',
+    ['SG-20 Halt']='halt_enabled',
+    ['SG-451 Cookout']='cookout_enabled',
+    ['M90A Shotgun']='m90a_enabled',
+    ['SG-225IE Breaker Incendiary']='breaker_incendiary_enabled',
+    ['CB-9 Exploding Crossbow']='crossbow_enabled',
+    ['R-36 Eruptor']='eruptor_enabled',
+    ['SG-8P Punisher Plasma']='punisher_plasma_enabled',
+    ['R/40-K Hot-Shot Marksman Rifle']='hot_shot_enabled',
+    ['JAR-5 Dominator']='dominator_enabled',
+    ['P-4 Senator']='senator_enabled',
+    ['P-11 Stim Pistol']='stim_pistol_enabled',
+    ['SG-22 Bushwhacker']='bushwhacker_enabled',
+    ['P-35 Re-Educator']='re_educator_enabled',
+    ['P/40-K Bolt Pistol']='bolt_pistol_enabled',
+    ['LAS-58 Talon']='talon_enabled',
+    ['MLS-4X Commando']='commando_enabled',
+    ['APW-1 Anti-Materiel Rifle']='amr_enabled',
+}
+
+-- Stable public roster, ordered by the 1.2.0 menu sections. This list is
+-- checked against WEAPON_SETTINGS so a menu row cannot silently disappear.
+M.WEAPON_MENU_GROUPS={
+    {key='primary',label='Full Auto Assist - Primary',weapons={
+        'R-63 Diligence','R-63CS Diligence Counter Sniper','R-2 Amendment',
+        'R-2124 Constitution','R-6 Deadeye','R-4 Hyena','R-72 Censor',
+        'SG-8 Punisher','SG-8S Slugger','SG-20 Halt','SG-451 Cookout','M90A Shotgun',
+        'SG-225IE Breaker Incendiary','CB-9 Exploding Crossbow','R-36 Eruptor',
+        'SG-8P Punisher Plasma','R/40-K Hot-Shot Marksman Rifle','JAR-5 Dominator',
+    }},
+    {key='secondary',label='Full Auto Assist - Secondary',weapons={
+        'P-2 Peacemaker','M6C/SOCOM Pistol','P-69 Veto','P-113 Verdict','P-4 Senator',
+        'P-11 Stim Pistol','SG-22 Bushwhacker','P-35 Re-Educator','P/40-K Bolt Pistol',
+        'LAS-58 Talon','P-92 Warrant',
+    }},
+    {key='support',label='Full Auto Assist - Stratagem/Support',weapons={
+        'MLS-4X Commando','APW-1 Anti-Materiel Rifle',
+    }},
+}
+do
+    local seen,count={},0
+    for _,group in ipairs(M.WEAPON_MENU_GROUPS)do
+        for _,name in ipairs(group.weapons)do
+            assert(M.WEAPON_SETTINGS[name] and not seen[name],'Invalid/duplicate weapon menu roster entry: '..name)
+            seen[name]=true;count=count+1
+        end
+    end
+    for name in pairs(M.WEAPON_SETTINGS)do assert(seen[name],'Supported weapon missing menu row: '..name)end
+    assert(count==31,'Stable supported-weapon roster changed; audit before release')
+end
+
 -- Generic Balanced ceiling: 380 RPM ~= 157.9 ms interval.
 -- Chosen as a plausible trained rapid-manual ceiling without turning
 -- high-cap semi-auto weapons into pseudo-SMGs.
@@ -295,7 +362,7 @@ function M.new(fire_rate_mode,talon_mode,profile_settings)
         end
         if PROFILE_RPMS[name][selected] then selected_profiles[name]=selected end
     end
-    local by_hash, notes = {}, {}
+    local by_hash, by_name, notes = {}, {}, {}
     local self = { available = false, reason = 'known_policy_unavailable', fire_rate_mode = mode }
 
     -- Runtime menu updates may select only an existing named policy profile.
@@ -305,6 +372,20 @@ function M.new(fire_rate_mode,talon_mode,profile_settings)
         if type(name) ~= 'string' or not choices or not choices[selected] then return false end
         selected_profiles[name] = selected
         return true
+    end
+
+    function self:set_weapon_enabled(name, enabled)
+        local setting_key=M.WEAPON_SETTINGS[name]
+        if not setting_key or type(enabled)~='boolean' then return false end
+        profile_settings[setting_key]=enabled
+        local found=false
+        for _,entry in pairs(by_name[name] or {})do
+            entry.weapon_enabled=enabled
+            entry.allowed=enabled
+            entry.reason=enabled and 'explicit_consumer_policy' or 'weapon_disabled'
+            found=true
+        end
+        return found
     end
 
     function self:classify(resource_hash)
@@ -359,14 +440,23 @@ function M.new(fire_rate_mode,talon_mode,profile_settings)
         if key then
             assert(M.hash(key) and not by_hash[key],'Malformed or duplicate known weapon')
             local allowed=is_assisted(entry.category)
+            local setting_key=M.WEAPON_SETTINGS[entry.name]
+            assert(not allowed or setting_key,'Supported weapon has no enable setting')
+            local weapon_enabled
+            if allowed then weapon_enabled=profile_settings[setting_key]~=false end
             by_hash[key]={name=entry.name,semantic_id=entry.kind..':'..entry.name,
-                category=entry.category,allowed=allowed,resource_hash=key,
+                category=entry.category,allowed=allowed and weapon_enabled,resource_hash=key,
+                weapon_enabled=weapon_enabled,setting_key=setting_key,
                 assist_role=entry.assist_role or (allowed and (entry.category=='SPECIAL' and 'SPECIAL' or 'REPEAT_ASSIST') or 'UNSUPPORTED'),
                 native_held_behavior=entry.native_held_behavior or 'not_individually_audited',
-                reason='explicit_consumer_policy',notes=entry.notes,
+                reason=allowed and not weapon_enabled and 'weapon_disabled' or 'explicit_consumer_policy',notes=entry.notes,
                 native_cap_status=entry.native_cap_status,
                 native_cap_rpm=allowed and entry.native_cap_rpm or nil,
                 _base=allowed and entry or nil}
+            if allowed then
+                by_name[entry.name]=by_name[entry.name] or {}
+                by_name[entry.name][#by_name[entry.name]+1]=by_hash[key]
+            end
         else
             notes[#notes+1]={name=entry.name,category='REVIEW',reason='semantic_identity_not_unique_or_malformed'}
         end

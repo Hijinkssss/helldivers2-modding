@@ -10,6 +10,9 @@ function M.project(state)
         (category=='ASSIST' or category=='SPECIAL' or category=='CHARGE'),
         weapon=weapon.name,resource_hash=weapon.resource_hash,category=category,
         eligible=category=='ASSIST' or category=='SPECIAL',
+        weapon_enabled=eligibility.weapon_enabled,
+        off_reason=state and not state.user_enabled and 'global_off' or
+            (eligibility.weapon_enabled==false and 'weapon_off' or nil),
         user_enabled=state and state.user_enabled==true or false,
         effective=state and state.effective==true or false,
         identity_valid=state and state.identity_valid==true or false,

@@ -36,6 +36,7 @@ local schema={enabled={type='boolean',default=true},user_enabled={type='boolean'
     bushwhacker_profile={type='string',default='',max_length=16,values={['']=true,balanced=true,full_auto=true}},
     eruptor_profile={type='string',default='',max_length=16,
         values={['']=true,slower_27=true,balanced_28=true,max_32=true}}}
+for _,key in pairs(Policy.WEAPON_SETTINGS)do schema[key]={type='boolean',default=true}end
 local function config_text()
     local root=assert(os.getenv('LOCALAPPDATA'),'LOCALAPPDATA unavailable')
     local f,why,number=io.open(root..'/CowboyBingus/Helldivers2/HD2FullAutoAssist.ini','rb')
@@ -53,7 +54,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
     -- physical release. This lets delayed mission/player initialization settle
     -- while the user is already holding ordinary Fire.
     local wait_release,unit_ref,inspected=false,nil,false
-    local menu_profile_changed=false
+    local menu_settings_changed=false
     local toggle_fire_pending,toggle_fire_pending_since=false,nil
     local lease_started,lease_repeat_start
     local trace,last_metrics_us,last_restore_error,last_restore_conflict
@@ -198,7 +199,12 @@ function M.install(host,backend_factory,read_config,validation_factory)
             set_profile=function(profile,weapon)
                 if not policy:set_profile(weapon or 'P-2 Peacemaker',profile) then return end
                 state:refresh_policy()
-                menu_profile_changed=true
+                menu_settings_changed=true
+            end,
+            set_weapon_enabled=function(weapon,enabled)
+                if not policy:set_weapon_enabled(weapon,enabled) then return end
+                state:refresh_policy()
+                menu_settings_changed=true
             end,
         },function(event,fields)emit('info',event,fields)end)
         if host.set_hud_provider then host:set_hud_provider(function()
@@ -342,11 +348,11 @@ function M.install(host,backend_factory,read_config,validation_factory)
                 fail('restoration_retry');return
             end
             if menu_bridge then menu_bridge:step()end
-            if menu_profile_changed then
-                menu_profile_changed=false
+            if menu_settings_changed then
+                menu_settings_changed=false
                 if backend and backend.lease then
                     wait_release=true
-                    local restored,why=pcall(restore,'menu_profile_changed')
+                    local restored,why=pcall(restore,'menu_setting_changed')
                     if not restored then fail(why);return end
                 end
             end
@@ -495,7 +501,7 @@ function M.install(host,backend_factory,read_config,validation_factory)
                     trace:flush(false)
                 end
             end) end
-        local initialized={version='1.1.0-final-rc',hotkey=settings.toggle_hotkey,
+        local initialized={version='1.3.0',hotkey=settings.toggle_hotkey,
             talon_mode=settings.talon_mode,
             active=state:is_enabled(),mechanism='selective_native_repeat_interval',identity_validated=IDENTITY_VALIDATED}
         if profiler then

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.0 - 2026-10-10
+
+**NEW: In-game per-weapon settings!**
+
+- One FULL AUTO ASSIST category with the global FAA toggle and all 31 individual weapon selectors.
+- Primary, Secondary and Support grouping with two visual separators; contextual profile/cadence descriptions.
+- Ordinary OFF/ON controls; special-case OFF plus all existing profiles, with enabled/Balanced defaults and Eruptor 28 RPM preserved.
+- Persistent selections and migration from existing weapon enable/profile values; global `=` toggle, HUD and firing behavior retained.
+- In-game configuration is the primary interface. Shared Loader remains the core dependency; use either Vanilla Plus's menu components or the standalone Mod Options Menu and Mod Bindings Menu.
+- Arsenal display name: FULL AUTO ASSIST 1.3.0. No new weapons, experimental features or runtime dependencies.
+
 ## 1.2.0 - 2026-10-07
 
 This release uses the validated Candidate D runtime, with no Candidate E changes.
